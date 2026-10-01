@@ -20,7 +20,8 @@ const exportLibraryItemToSvg = async (elements: LibraryItem["elements"]) => {
       exportBackground: false,
       viewBackgroundColor: COLOR_PALETTE.white,
     },
-    files: null,
+    // images of the local ArcGIS library are registered here by excalidraw-app
+    files: (window as any).__arcgisLibraryFiles ?? null,
     renderEmbeddables: false,
     skipInliningFonts: true,
   });

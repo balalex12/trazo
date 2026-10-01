@@ -1930,6 +1930,12 @@ class App extends React.Component<AppProps, AppState> {
             }
           } else {
             src = getEmbedLink(toValidURL(el.link || ""));
+            // ArcGIS viewer embeds: give each element its own saved state (layers, drawings)
+            if (src && "link" in src && /^https?:\/\/[^/]+:3001\//.test(src.link)) {
+              const viewerUrl = new URL(src.link);
+              viewerUrl.searchParams.set("eid", el.id);
+              src = { ...src, link: viewerUrl.toString() };
+            }
           }
 
           const isActive =

@@ -131,6 +131,8 @@ const parseGoogleDriveVideoLink = (
 };
 
 const ALLOWED_DOMAINS = new Set([
+  "localhost",
+  "*.arcgis.com",
   "youtube.com",
   "youtu.be",
   "vimeo.com",
@@ -150,6 +152,8 @@ const ALLOWED_DOMAINS = new Set([
 ]);
 
 const ALLOW_SAME_ORIGIN = new Set([
+  "localhost",
+  "*.arcgis.com",
   "youtube.com",
   "youtu.be",
   "vimeo.com",
@@ -164,6 +168,49 @@ const ALLOW_SAME_ORIGIN = new Set([
   "forms.microsoft.com",
 ]);
 
+
+// ---- ArcGIS: any portal / any item -------------------------------------
+const ID32 = "([0-9a-f]{32})";
+const RE_ARCGIS_APP =
+  /\/(apps\/(opsdashboard|dashboards|experiencebuilder|instant|webappviewer|storymaps|sites|webappbuilder)|experience\/)|^https?:\/\/(experience|storymaps|[^/]*\.maps)\.arcgis\.com\//i;
+
+const arcgisViewerBase = () =>
+  `${window.location.protocol}//${window.location.hostname}:3001/`;
+
+/** Rewrites ArcGIS item/service URLs to the local viewer. Returns null if not an ArcGIS data URL. */
+const toArcGISViewerLink = (url: string): string | null => {
+  const clean = url.split("#")[0];
+  let m: RegExpMatchArray | null;
+  const viewer = (params: Record<string, string>) => {
+    const u = new URL(arcgisViewerBase());
+    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+    return u.toString();
+  };
+  const before = (marker: string) => clean.slice(0, clean.toLowerCase().indexOf(marker));
+
+  if ((m = clean.match(new RegExp(String.raw`/home/item\.html\?(?:.*&)?id=${ID32}`, "i")))) {
+    return viewer({ portal: before("/home/"), item: m[1], id: m[1].slice(0, 8) });
+  }
+  if ((m = clean.match(new RegExp(String.raw`/home/webmap/viewer\.html\?(?:.*&)?webmap=${ID32}`, "i")))) {
+    return viewer({ portal: before("/home/"), item: m[1], id: m[1].slice(0, 8) });
+  }
+  if ((m = clean.match(new RegExp(String.raw`/apps/mapviewer/index\.html\?(?:.*&)?webmap=${ID32}`, "i")))) {
+    return viewer({ portal: before("/apps/"), item: m[1], id: m[1].slice(0, 8) });
+  }
+  if ((m = clean.match(new RegExp(String.raw`/sharing/rest/content/items/${ID32}`, "i")))) {
+    return viewer({ portal: before("/sharing/"), item: m[1], id: m[1].slice(0, 8) });
+  }
+  if (/\/rest\/services\/.+\/(Feature|Map|Image|VectorTile)Server(\/\d+)?\/?$/i.test(clean.split("?")[0])) {
+    const svc = clean.split("?")[0].replace(/\/$/, "");
+    return viewer({ layers: svc, id: "svc" + svc.length });
+  }
+  return null;
+};
+
+export const isArcGISUrl = (url: string): boolean =>
+  !!toArcGISViewerLink(url) || RE_ARCGIS_APP.test(url);
+// -------------------------------------------------------------------------
+
 export const createSrcDoc = (body: string) => {
   return `<html><body>${body}</body></html>`;
 };
@@ -177,6 +224,18 @@ export const getEmbedLink = (
 
   if (embeddedLinkCache.has(link)) {
     return embeddedLinkCache.get(link)!;
+  }
+
+  const arcgisViewer = toArcGISViewerLink(link);
+  if (arcgisViewer || RE_ARCGIS_APP.test(link)) {
+    const data: IframeDataWithSandbox = {
+      link: arcgisViewer || link,
+      intrinsicSize: { w: 760, h: 480 },
+      type: "generic",
+      sandbox: { allowSameOrigin: true },
+    };
+    embeddedLinkCache.set(link, data);
+    return data;
   }
 
   const originalLink = link;
@@ -531,5 +590,5 @@ export const embeddableURLValidator = (
     }
   }
 
-  return !!matchHostname(url, ALLOWED_DOMAINS);
+  return !!matchHostname(url, ALLOWED_DOMAINS) || isArcGISUrl(url);
 };

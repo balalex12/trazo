@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>OAuth callback</title></head>
+<body>
+<script>
+  // Entrega el hash OAuth al visor que abrió el popup (el iframe embebido o su parent).
+  (function () {
+    var hash = window.location.hash;
+    var cands = [window.opener, window.opener && window.opener.parent];
+    for (var i = 0; i < cands.length; i++) {
+      var w = cands[i];
+      try {
+        if (w && w.require) {
+          w.require(["esri/kernel"], function (k) { k.id.setOAuthResponseHash(hash); });
+          break;
+        }
+      } catch (e) {}
+    }
+    setTimeout(function () { window.close(); }, 500);
+  })();
+</script>
+</body></html>

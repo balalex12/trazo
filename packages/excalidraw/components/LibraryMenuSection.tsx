@@ -29,6 +29,8 @@ interface Props {
   itemsRenderedPerBatch: number;
   /** larger items with their name below */
   showNames?: boolean;
+  /** show only the part after " / " (category is already in the section header) */
+  shortNames?: boolean;
 }
 
 export const LibraryMenuSectionGrid = ({
@@ -60,6 +62,7 @@ export const LibraryMenuSection = memo(
     svgCache,
     itemsRenderedPerBatch,
     showNames,
+    shortNames,
   }: Props) => {
     const [, startTransition] = useTransition();
     const [index, setIndex] = useState(0);
@@ -82,7 +85,13 @@ export const LibraryMenuSection = memo(
               onClick={onClick}
               svgCache={svgCache}
               id={item?.id}
-              name={"name" in item ? item.name : undefined}
+              name={
+                "name" in item
+                  ? shortNames
+                    ? item.name?.split(" / ").slice(1).join(" / ") || item.name
+                    : item.name
+                  : undefined
+              }
               showName={showNames}
               selected={isItemSelected(item.id)}
               onToggle={onItemSelectToggle}

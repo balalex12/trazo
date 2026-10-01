@@ -116,13 +116,32 @@ export default function LibraryMenuItems({
     });
   }, [libraryItems, searchInputValue]);
 
+  // Items shipped by the local ArcGIS library (id "arcgis:*", name "Category / Name")
+  // are grouped by category in their own sections, apart from external/personal items.
+  const arcgisGroups = useMemo(() => {
+    const groups = new Map<string, LibraryItem[]>();
+    for (const item of libraryItems) {
+      if (item.id.startsWith("arcgis:")) {
+        const category = (item.name || "").split(" / ")[0] || "ArcGIS";
+        groups.set(category, [...(groups.get(category) || []), item]);
+      }
+    }
+    return [...groups.entries()];
+  }, [libraryItems]);
+
   const unpublishedItems = useMemo(
-    () => libraryItems.filter((item) => item.status !== "published"),
+    () =>
+      libraryItems.filter(
+        (item) => item.status !== "published" && !item.id.startsWith("arcgis:"),
+      ),
     [libraryItems],
   );
 
   const publishedItems = useMemo(
-    () => libraryItems.filter((item) => item.status === "published"),
+    () =>
+      libraryItems.filter(
+        (item) => item.status === "published" && !item.id.startsWith("arcgis:"),
+      ),
     [libraryItems],
   );
 
@@ -266,6 +285,29 @@ export default function LibraryMenuItems({
 
   const JSX_whenNotSearching = !IS_SEARCHING && (
     <>
+      {arcgisGroups.map(([category, items]) => (
+        <React.Fragment key={category}>
+          <div
+            className="library-menu-items-container__header"
+            style={{ marginTop: "0.5rem" }}
+          >
+            {category}
+          </div>
+          <LibraryMenuSectionGrid showNames>
+            <LibraryMenuSection
+              itemsRenderedPerBatch={itemsRenderedPerBatch}
+              items={items}
+              onItemSelectToggle={onItemSelectToggle}
+              onItemDrag={onItemDrag}
+              onClick={onItemClick}
+              isItemSelected={isItemSelected}
+              svgCache={svgCache}
+              showNames
+              shortNames
+            />
+          </LibraryMenuSectionGrid>
+        </React.Fragment>
+      ))}
       {!IS_LIBRARY_EMPTY && (
         <div className="library-menu-items-container__header">
           {t("labels.personalLib")}

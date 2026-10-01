@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ArcGIS Map → Excalidraw</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.31/esri/themes/light/main.css" />
+  <script src="https://js.arcgis.com/4.31/"></script>
+  <script src="config.js"></script>
+  <style>
+    html, body, #view { margin: 0; height: 100%; width: 100%; font-family: system-ui, sans-serif; }
+    #bar { position: absolute; z-index: 10; top: 12px; right: 12px; display: flex; gap: 6px; align-items: center; }
+    #bar button, #bar select { background: #007ac2; color: #fff; border: 0; padding: 7px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    #bar select { max-width: 170px; } #bar select option { background: #fff; color: #222; }
+    #bar button.ghost { background: #fff; color: #007ac2; border: 1px solid #007ac2; padding: 6px 9px; }
+    #pform { position: absolute; z-index: 11; top: 52px; right: 12px; width: 330px; background: #fff; padding: 10px; font-size: 13px; box-shadow: 0 1px 6px #0004; display: none; }
+    #pform input { width: 100%; box-sizing: border-box; margin: 4px 0; padding: 5px; }
+    #pform button { padding: 5px 8px; cursor: pointer; margin-right: 4px; }
+    #msg { position: absolute; z-index: 12; bottom: 28px; left: 12px; right: 12px; background: #fffe; padding: 6px 10px; border-radius: 4px; font-size: 13px; display: none; }
+    .panel { background: #fff; padding: 10px; width: 300px; font-size: 13px; }
+    .panel input { width: 100%; box-sizing: border-box; margin: 4px 0; padding: 5px; }
+    .panel button { margin-top: 4px; padding: 5px 8px; cursor: pointer; }
+    .panel li { display: flex; justify-content: space-between; gap: 8px; margin: 3px 0; }
+    .browse { width: 340px; } .browse select { width: 100%; margin: 4px 0; padding: 4px; }
+    .browse .results { max-height: 260px; overflow: auto; margin-top: 6px; }
+    .browse .row { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px solid #eee; }
+    .browse .row small { color: #666; display: block; }
+    .browse .row button { flex-shrink: 0; align-self: center; }
+    #ver { position: absolute; z-index: 10; bottom: 4px; right: 90px; font-size: 10px; color: #555; background: #fff8; padding: 0 4px; }
+    .panel li span { word-break: break-all; min-width: 0; } .panel li a { flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div id="view"></div>
+  <div id="bar">
+    <select id="psel" title="Active portal (ArcGIS Online or an ArcGIS Enterprise)"></select>
+    <button id="padd" class="ghost" title="Add an ArcGIS Enterprise portal">+</button>
+    <button id="prem" class="ghost" title="Remove this portal from the list">−</button>
+    <button id="login" title="Sign in to the active portal">Sign in</button>
+    <button id="trace" title="Utility Network trace tools (needs a Web Map with Utility Network)">UN Trace</button>
+    <button id="copy" title="Copy a map image to paste into Excalidraw and draw on top">Copy image</button>
+  </div>
+  <div id="pform">
+    <b>Add ArcGIS Enterprise portal</b><br>
+    <input id="purl" placeholder="https://gis.company.com/portal" />
+    <input id="pname" placeholder="Display name (optional)" />
+    <button id="pok">Add</button><button id="pcancel">Cancel</button>
+    <div id="pstatus" style="margin-top:4px;color:#555"></div>
+  </div>
+  <div id="msg"></div>
+  <div id="ver">viewer v8</div>
+  <script src="viewer.js"></script>
+</body>
+</html>

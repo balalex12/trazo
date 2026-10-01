@@ -1,0 +1,794 @@
+[
+ {
+  "set": "Containers Labels",
+  "name": "Data Center",
+  "file": "containers-labels/data-center.svg",
+  "aspect": 1.0
+ },
+ {
+  "set": "Containers Labels",
+  "name": "Private Network",
+  "file": "containers-labels/private-network.svg",
+  "aspect": 1.0
+ },
+ {
+  "set": "Containers Labels",
+  "name": "Public Subnet",
+  "file": "containers-labels/public-subnet.svg",
+  "aspect": 1.0
+ },
+ {
+  "set": "Containers Labels",
+  "name": "Private Subnet",
+  "file": "containers-labels/private-subnet.svg",
+  "aspect": 1.0
+ },
+ {
+  "set": "Containers Labels",
+  "name": "Base ArcGIS Enterprise",
+  "file": "containers-labels/base-arcgis-enterprise.svg",
+  "aspect": 1.0
+ },
+ {
+  "set": "Containers Labels",
+  "name": "Logical Grouping",
+  "file": "containers-labels/logical-grouping.svg",
+  "aspect": 1.0
+ },
+ {
+  "set": "Containers Labels",
+  "name": "GIS URL Horizontal",
+  "file": "containers-labels/gis-url-horizontal.svg",
+  "aspect": 11.718750000000023
+ },
+ {
+  "set": "Containers Labels",
+  "name": "GIS URL Vertical",
+  "file": "containers-labels/gis-url-vertical.svg",
+  "aspect": 11.718750000000023
+ },
+ {
+  "set": "Containers Labels",
+  "name": "URL Context Path",
+  "file": "containers-labels/url-context-path.svg",
+  "aspect": 3.75
+ },
+ {
+  "set": "Containers Labels",
+  "name": "URL Context Path Vertical",
+  "file": "containers-labels/url-context-path-vertical.svg",
+  "aspect": 3.75
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Web Adaptor",
+  "file": "enterprise-components/web-adaptor.svg",
+  "aspect": 1.7206649107199792
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Web Adaptor - IIS",
+  "file": "enterprise-components/web-adaptor-iis.svg",
+  "aspect": 1.132991563670831
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Web Adpator - JAVA",
+  "file": "enterprise-components/web-adpator-java.svg",
+  "aspect": 1.132991563670831
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Portal",
+  "file": "enterprise-components/portal.svg",
+  "aspect": 1.033628069682
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Branch Versioning",
+  "file": "enterprise-components/branch-versioning.svg",
+  "aspect": 0.9638136967702973
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Business An. Server",
+  "file": "enterprise-components/business-an-server.svg",
+  "aspect": 0.9832383206052077
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Data Reviewer Server",
+  "file": "enterprise-components/data-reviewer-server.svg",
+  "aspect": 0.9638136967702973
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "GeoEvent Server",
+  "file": "enterprise-components/geoevent-server.svg",
+  "aspect": 1.0145639011618395
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Geoprocess. Server",
+  "file": "enterprise-components/geoprocess-server.svg",
+  "aspect": 1.017921146953408
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "GIS Server",
+  "file": "enterprise-components/gis-server.svg",
+  "aspect": 0.9638136967702977
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Hosting Server",
+  "file": "enterprise-components/hosting-server.svg",
+  "aspect": 1.0372083282614286
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Image Server",
+  "file": "enterprise-components/image-server.svg",
+  "aspect": 1.0000000000000036
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Image Hosting ",
+  "file": "enterprise-components/image-hosting.svg",
+  "aspect": 1.0000000000000036
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Raster Analytics",
+  "file": "enterprise-components/raster-analytics.svg",
+  "aspect": 1.0000000000000036
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Knowledge Server",
+  "file": "enterprise-components/knowledge-server.svg",
+  "aspect": 0.9906089824007972
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Mission Server",
+  "file": "enterprise-components/mission-server.svg",
+  "aspect": 1.0553900276411727
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Multi Role Server",
+  "file": "enterprise-components/multi-role-server.svg",
+  "aspect": 1.0179211469534089
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Notebook Server",
+  "file": "enterprise-components/notebook-server.svg",
+  "aspect": 1.0743439149505667
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Python Script Server",
+  "file": "enterprise-components/python-script-server.svg",
+  "aspect": 1.0179211469534064
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Video Server",
+  "file": "enterprise-components/video-server.svg",
+  "aspect": 1.0145639011618406
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Workflow Mgr Server",
+  "file": "enterprise-components/workflow-mgr-server.svg",
+  "aspect": 1.0322038054333338
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "ArcGIS Monitor",
+  "file": "enterprise-components/arcgis-monitor.svg",
+  "aspect": 1.036496350364956
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "License Manager",
+  "file": "enterprise-components/license-manager.svg",
+  "aspect": 0.9502886629540678
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "Data Process Server",
+  "file": "enterprise-components/data-process-server.svg",
+  "aspect": 0.9999999999999941
+ },
+ {
+  "set": "Enterprise Components",
+  "name": "ETL Server",
+  "file": "enterprise-components/etl-server.svg",
+  "aspect": 0.9999999999999941
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Multiple Role Data Store",
+  "file": "enterprise-data-stores/multiple-role-data-store.svg",
+  "aspect": 0.948131487889277
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Object Data Store",
+  "file": "enterprise-data-stores/object-data-store.svg",
+  "aspect": 0.9632772913645217
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Raster Data Store",
+  "file": "enterprise-data-stores/raster-data-store.svg",
+  "aspect": 0.9814126394052023
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Relational Data Store",
+  "file": "enterprise-data-stores/relational-data-store.svg",
+  "aspect": 0.9804264137536233
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Spatiotemp Big Data Store",
+  "file": "enterprise-data-stores/spatiotemp-big-data-store.svg",
+  "aspect": 0.9999999846181543
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Tile Cache Data Store",
+  "file": "enterprise-data-stores/tile-cache-data-store.svg",
+  "aspect": 0.9813399485617283
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Geodatabase",
+  "file": "enterprise-data-stores/geodatabase.svg",
+  "aspect": 0.9641020145735101
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "File Geodatabase",
+  "file": "enterprise-data-stores/file-geodatabase.svg",
+  "aspect": 0.9641020145735101
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Enterprise Geodatabase",
+  "file": "enterprise-data-stores/enterprise-geodatabase.svg",
+  "aspect": 0.9641020145735101
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "IBM DB2 eGDB",
+  "file": "enterprise-data-stores/ibm-db2-egdb.svg",
+  "aspect": 0.7453416149068323
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Oracle eGDB",
+  "file": "enterprise-data-stores/oracle-egdb.svg",
+  "aspect": 0.7453416149068323
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "PostgreSQL eGDB",
+  "file": "enterprise-data-stores/postgresql-egdb.svg",
+  "aspect": 0.7453416149068323
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "SAP HANA eGDB",
+  "file": "enterprise-data-stores/sap-hana-egdb.svg",
+  "aspect": 0.7453416149068323
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "SQL Server eGDB",
+  "file": "enterprise-data-stores/sql-server-egdb.svg",
+  "aspect": 0.7453416149068323
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Mobile Geodatabase",
+  "file": "enterprise-data-stores/mobile-geodatabase.svg",
+  "aspect": 1.0005442511280043
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Cloud Data Warehouse",
+  "file": "enterprise-data-stores/cloud-data-warehouse.svg",
+  "aspect": 1.1362001759315055
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Amazon Redshift CDW",
+  "file": "enterprise-data-stores/amazon-redshift-cdw.svg",
+  "aspect": 0.8312052690553284
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Google BigQuery",
+  "file": "enterprise-data-stores/google-bigquery.svg",
+  "aspect": 0.8312052690553284
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Snowflake CDW",
+  "file": "enterprise-data-stores/snowflake-cdw.svg",
+  "aspect": 0.8312052690553284
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Big Data File Share",
+  "file": "enterprise-data-stores/big-data-file-share.svg",
+  "aspect": 1.0236443661971801
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Amazon S3 BDFS",
+  "file": "enterprise-data-stores/amazon-s3-bdfs.svg",
+  "aspect": 0.8169934640522755
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Hadoop DFS BDFS",
+  "file": "enterprise-data-stores/hadoop-dfs-bdfs.svg",
+  "aspect": 0.8169934640522755
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Hadoop Hive BDFS",
+  "file": "enterprise-data-stores/hadoop-hive-bdfs.svg",
+  "aspect": 0.8169934640522755
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "MS Azure Blob BDFS",
+  "file": "enterprise-data-stores/ms-azure-blob-bdfs.svg",
+  "aspect": 0.8169934640522755
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "MS Az Data Lake BDFS",
+  "file": "enterprise-data-stores/ms-az-data-lake-bdfs.svg",
+  "aspect": 0.8169934640522755
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Configuration Store",
+  "file": "enterprise-data-stores/configuration-store.svg",
+  "aspect": 1.037389135774685
+ },
+ {
+  "set": "Enterprise Data Stores",
+  "name": "Content Store",
+  "file": "enterprise-data-stores/content-store.svg",
+  "aspect": 1.037878787878783
+ },
+ {
+  "set": "General",
+  "name": "ArcGIS Online",
+  "file": "general/arcgis-online.svg",
+  "aspect": 1.1107715449846485
+ },
+ {
+  "set": "General",
+  "name": "ArcGIS Enterprise",
+  "file": "general/arcgis-enterprise.svg",
+  "aspect": 1.1107715449846485
+ },
+ {
+  "set": "General",
+  "name": "ArcGIS system",
+  "file": "general/arcgis-system.svg",
+  "aspect": 1.0251301497525631
+ },
+ {
+  "set": "General",
+  "name": "ArcGIS Pro",
+  "file": "general/arcgis-pro.svg",
+  "aspect": 1.1672862453531654
+ },
+ {
+  "set": "General",
+  "name": "Notebook",
+  "file": "general/notebook.svg",
+  "aspect": 0.8397887323943678
+ },
+ {
+  "set": "General",
+  "name": "Survey",
+  "file": "general/survey.svg",
+  "aspect": 0.7277520170507982
+ },
+ {
+  "set": "General",
+  "name": "Hub",
+  "file": "general/hub.svg",
+  "aspect": 1.3632478632478595
+ },
+ {
+  "set": "General",
+  "name": "Site",
+  "file": "general/site.svg",
+  "aspect": 1.3632478632478595
+ },
+ {
+  "set": "General",
+  "name": "Dashboard",
+  "file": "general/dashboard.svg",
+  "aspect": 1.2901785714285796
+ },
+ {
+  "set": "General",
+  "name": "Desktop Application",
+  "file": "general/desktop-application.svg",
+  "aspect": 1.3632187346424216
+ },
+ {
+  "set": "General",
+  "name": "Mobile Application",
+  "file": "general/mobile-application.svg",
+  "aspect": 0.5230263157894688
+ },
+ {
+  "set": "General",
+  "name": "Web Application",
+  "file": "general/web-application.svg",
+  "aspect": 1.5263157894736923
+ },
+ {
+  "set": "General",
+  "name": "Web Map",
+  "file": "general/web-map.svg",
+  "aspect": 1.2054794520548011
+ },
+ {
+  "set": "General",
+  "name": "System of systems",
+  "file": "general/system-of-systems.svg",
+  "aspect": 0.9997308295200779
+ },
+ {
+  "set": "General",
+  "name": "Collaboration",
+  "file": "general/collaboration.svg",
+  "aspect": 1.000595698093766
+ },
+ {
+  "set": "General",
+  "name": "Basemap",
+  "file": "general/basemap.svg",
+  "aspect": 1.0
+ },
+ {
+  "set": "General",
+  "name": "Point",
+  "file": "general/point.svg",
+  "aspect": 1.101869369369373
+ },
+ {
+  "set": "General",
+  "name": "Line",
+  "file": "general/line.svg",
+  "aspect": 1.101844553050612
+ },
+ {
+  "set": "General",
+  "name": "Polygon",
+  "file": "general/polygon.svg",
+  "aspect": 1.1018197378496408
+ },
+ {
+  "set": "General",
+  "name": "Raster",
+  "file": "general/raster.svg",
+  "aspect": 1.0
+ },
+ {
+  "set": "General",
+  "name": "Bar Chart",
+  "file": "general/bar-chart.svg",
+  "aspect": 1.0424710424710424
+ },
+ {
+  "set": "General",
+  "name": "Table",
+  "file": "general/table.svg",
+  "aspect": 1.1844262295081966
+ },
+ {
+  "set": "General",
+  "name": "Gauge",
+  "file": "general/gauge.svg",
+  "aspect": 1.4321608040201004
+ },
+ {
+  "set": "General",
+  "name": "Chart",
+  "file": "general/chart.svg",
+  "aspect": 1.1022044088176355
+ },
+ {
+  "set": "General",
+  "name": "Document",
+  "file": "general/document.svg",
+  "aspect": 0.7769516728624536
+ },
+ {
+  "set": "General",
+  "name": "Graph",
+  "file": "general/graph.svg",
+  "aspect": 1.1224489795918375
+ },
+ {
+  "set": "IT Components",
+  "name": "DDOS Attack",
+  "file": "it-components/ddos-attack.svg",
+  "aspect": 1.0197132616487454
+ },
+ {
+  "set": "IT Components",
+  "name": "DNS",
+  "file": "it-components/dns.svg",
+  "aspect": 1.0743238222618516
+ },
+ {
+  "set": "IT Components",
+  "name": "File Share",
+  "file": "it-components/file-share.svg",
+  "aspect": 1.2589519650655023
+ },
+ {
+  "set": "IT Components",
+  "name": "Firewall",
+  "file": "it-components/firewall.svg",
+  "aspect": 1.400666547374072
+ },
+ {
+  "set": "IT Components",
+  "name": "Forward Proxy",
+  "file": "it-components/forward-proxy.svg",
+  "aspect": 0.9841549295774646
+ },
+ {
+  "set": "IT Components",
+  "name": "Identity Provider",
+  "file": "it-components/identity-provider.svg",
+  "aspect": 0.950285714285716
+ },
+ {
+  "set": "IT Components",
+  "name": "License Manger",
+  "file": "it-components/license-manger.svg",
+  "aspect": 0.9502886629540724
+ },
+ {
+  "set": "IT Components",
+  "name": "Load Balancer",
+  "file": "it-components/load-balancer.svg",
+  "aspect": 1.0207622289938199
+ },
+ {
+  "set": "IT Components",
+  "name": "Reverse Proxy",
+  "file": "it-components/reverse-proxy.svg",
+  "aspect": 1.0307578966755686
+ },
+ {
+  "set": "IT Components",
+  "name": "SSL Certificate",
+  "file": "it-components/ssl-certificate.svg",
+  "aspect": 0.9519097903410157
+ },
+ {
+  "set": "User Personas",
+  "name": "Administrator",
+  "file": "user-personas/administrator.svg",
+  "aspect": 1.0742325699937705
+ },
+ {
+  "set": "User Personas",
+  "name": "Developer",
+  "file": "user-personas/developer.svg",
+  "aspect": 0.7918214285714211
+ },
+ {
+  "set": "User Personas",
+  "name": "Family",
+  "file": "user-personas/family.svg",
+  "aspect": 0.70024647887324
+ },
+ {
+  "set": "User Personas",
+  "name": "GIS Analyst",
+  "file": "user-personas/gis-analyst.svg",
+  "aspect": 0.9909788964249685
+ },
+ {
+  "set": "User Personas",
+  "name": "IT Professional",
+  "file": "user-personas/it-professional.svg",
+  "aspect": 0.8335
+ },
+ {
+  "set": "User Personas",
+  "name": "Knowledge Worker",
+  "file": "user-personas/knowledge-worker.svg",
+  "aspect": 0.7977857142857158
+ },
+ {
+  "set": "User Personas",
+  "name": "Manager",
+  "file": "user-personas/manager.svg",
+  "aspect": 0.8156249999999999
+ },
+ {
+  "set": "User Personas",
+  "name": "Mobile User",
+  "file": "user-personas/mobile-user.svg",
+  "aspect": 0.6407457627118632
+ },
+ {
+  "set": "User Personas",
+  "name": "Policy Maker",
+  "file": "user-personas/policy-maker.svg",
+  "aspect": 0.826451048951042
+ },
+ {
+  "set": "User Personas",
+  "name": "Presenter",
+  "file": "user-personas/presenter.svg",
+  "aspect": 0.7407106598984737
+ },
+ {
+  "set": "User Personas",
+  "name": "Programmer",
+  "file": "user-personas/programmer.svg",
+  "aspect": 0.7967333333333263
+ },
+ {
+  "set": "User Personas",
+  "name": "Project Owner",
+  "file": "user-personas/project-owner.svg",
+  "aspect": 0.780125
+ },
+ {
+  "set": "User Personas",
+  "name": "Researcher",
+  "file": "user-personas/researcher.svg",
+  "aspect": 0.7517142857142843
+ },
+ {
+  "set": "User Personas",
+  "name": "User",
+  "file": "user-personas/user.svg",
+  "aspect": 0.5322678571428526
+ },
+ {
+  "set": "User Personas",
+  "name": "User 1",
+  "file": "user-personas/user-1.svg",
+  "aspect": 0.8007342657342632
+ },
+ {
+  "set": "User Personas",
+  "name": "User 2",
+  "file": "user-personas/user-2.svg",
+  "aspect": 0.8007342657342632
+ },
+ {
+  "set": "User Personas",
+  "name": "User 3",
+  "file": "user-personas/user-3.svg",
+  "aspect": 1.0
+ },
+ {
+  "set": "User Personas",
+  "name": "User 4",
+  "file": "user-personas/user-4.svg",
+  "aspect": 0.7898275862068947
+ },
+ {
+  "set": "User Personas",
+  "name": "Users at Board or Map",
+  "file": "user-personas/users-at-board-or-map.svg",
+  "aspect": 1.0771658707548484
+ },
+ {
+  "set": "User Personas",
+  "name": "Users (2)",
+  "file": "user-personas/users-2.svg",
+  "aspect": 0.8712983961068
+ },
+ {
+  "set": "User Personas",
+  "name": "Users (3)",
+  "file": "user-personas/users-3.svg",
+  "aspect": 0.8842420726991497
+ },
+ {
+  "set": "User Personas",
+  "name": "Workforce",
+  "file": "user-personas/workforce.svg",
+  "aspect": 1.0796547314549219
+ },
+ {
+  "set": "User Types",
+  "name": "Contributor User",
+  "file": "user-types/contributor-user.svg",
+  "aspect": 0.8168309859154929
+ },
+ {
+  "set": "User Types",
+  "name": "Creator User",
+  "file": "user-types/creator-user.svg",
+  "aspect": 0.8217605633802815
+ },
+ {
+  "set": "User Types",
+  "name": "Mobile Worker User",
+  "file": "user-types/mobile-worker-user.svg",
+  "aspect": 0.7161267605633802
+ },
+ {
+  "set": "User Types",
+  "name": "Professional User",
+  "file": "user-types/professional-user.svg",
+  "aspect": 0.7682648796158763
+ },
+ {
+  "set": "User Types",
+  "name": "Professional Plus User",
+  "file": "user-types/professional-plus-user.svg",
+  "aspect": 0.7689436619718308
+ },
+ {
+  "set": "User Types",
+  "name": "Viewer User",
+  "file": "user-types/viewer-user.svg",
+  "aspect": 0.7693635610984867
+ },
+ {
+  "set": "User Types",
+  "name": "Contributor",
+  "file": "user-types/contributor.svg",
+  "aspect": 1.2905027932960895
+ },
+ {
+  "set": "User Types",
+  "name": "Creator",
+  "file": "user-types/creator.svg",
+  "aspect": 1.3550295857988164
+ },
+ {
+  "set": "User Types",
+  "name": "Mobile Worker",
+  "file": "user-types/mobile-worker.svg",
+  "aspect": 0.771689497716895
+ },
+ {
+  "set": "User Types",
+  "name": "Professional",
+  "file": "user-types/professional.svg",
+  "aspect": 0.980396865244821
+ },
+ {
+  "set": "User Types",
+  "name": "Professional Plus",
+  "file": "user-types/professional-plus.svg",
+  "aspect": 1.0
+ },
+ {
+  "set": "User Types",
+  "name": "Viewer",
+  "file": "user-types/viewer.svg",
+  "aspect": 1.1030927835051545
+ }
+]
