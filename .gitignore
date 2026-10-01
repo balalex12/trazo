@@ -27,3 +27,8 @@ dev-dist
 html
 meta*.json
 .claude
+
+# generated / fetched (see tools/)
+assets/calcite/
+viewer/libraries/
+public/arcgis.excalidrawlib

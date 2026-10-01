@@ -13,8 +13,12 @@ ARG NODE_ENV=production
 
 RUN npm_config_target_arch=${TARGETARCH} yarn build:app:docker
 
+# Strict CSP: allow exactly the inline scripts of the built index.html (no 'unsafe-inline' for scripts)
+RUN node scripts/csp-hashes.mjs excalidraw-app/build/index.html /opt/node_app/csp.inc
+
 FROM nginx:stable-alpine-slim@sha256:2c605dbeab79a6b2a63340474fe58119d0ef95bdc4b1f41df0aa689659b3d13b
 
 COPY --from=build /opt/node_app/excalidraw-app/build /usr/share/nginx/html
+COPY --from=build /opt/node_app/csp.inc /etc/nginx/conf.d/csp.inc
 
 HEALTHCHECK CMD wget -q -O /dev/null http://localhost || exit 1
