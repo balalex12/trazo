@@ -1,3 +1,4 @@
+import { BRAND } from "../branding";
 import Trans from "@excalidraw/excalidraw/components/Trans";
 import { t } from "@excalidraw/excalidraw/i18n";
 import * as Sentry from "@sentry/browser";
@@ -66,7 +67,7 @@ export class TopErrorBoundary extends React.Component<
     }
 
     window.open(
-      `https://github.com/excalidraw/excalidraw/issues/new?body=${body}`,
+      `${BRAND.repoUrl ? BRAND.repoUrl + "/issues/new?body=" + body : "#"}`,
       "_blank",
       "noopener noreferrer",
     );
