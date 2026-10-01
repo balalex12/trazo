@@ -1,0 +1,29 @@
+# Publishes the app image to GitHub Container Registry when a version tag is pushed.
+# Note: tools/build-library.js must generate public/arcgis.excalidrawlib before the image is built. That file embeds
+# Esri Calcite glyphs UNMODIFIED (Esri MLA allows that, with their notice). Get a legal review before making the
+# image public (docs/LIBRARIES.md).
+name: Publish Docker image
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+  packages: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: node tools/build-library.js
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
