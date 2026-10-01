@@ -1,5 +1,6 @@
 // define `EXCALIDRAW_ASSET_PATH` as a SSOT
-const OSS_FONTS_CDN = "https://excalidraw.nyc3.cdn.digitaloceanspaces.com/oss/";
+// Local-first build: fonts are served from this origin, never from a CDN.
+const OSS_FONTS_CDN = "/";
 const OSS_FONTS_FALLBACK = "/";
 
 /**

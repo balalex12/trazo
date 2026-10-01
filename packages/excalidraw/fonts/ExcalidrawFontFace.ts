@@ -163,8 +163,11 @@ export class ExcalidrawFontFace {
       });
     }
 
-    // fallback url for bundled fonts
-    urls.push(new URL(assetUrl, ExcalidrawFontFace.ASSETS_FALLBACK_URL));
+    // Fallback to a third-party CDN ONLY when the host app did not provide EXCALIDRAW_ASSET_PATH.
+    // This fork always provides it (fonts are served from the same origin), so no CDN is ever contacted.
+    if (!urls.length) {
+      urls.push(new URL(assetUrl, ExcalidrawFontFace.ASSETS_FALLBACK_URL));
+    }
 
     return urls;
   }

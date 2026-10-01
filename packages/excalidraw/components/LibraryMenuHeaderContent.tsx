@@ -220,7 +220,8 @@ export const LibraryDropdownMenuButton: React.FC<{
               {t("buttons.export")}
             </DropdownMenu.Item>
           )}
-          {itemsSelected && (
+          {/* "Publish" submits to a hosted backend: only shown when one is configured (off in this fork) */}
+          {itemsSelected && !!import.meta.env.VITE_APP_LIBRARY_BACKEND && (
             <DropdownMenu.Item
               icon={publishIcon}
               onSelect={() => setShowPublishLibraryDialog(true)}
