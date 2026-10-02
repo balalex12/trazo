@@ -9,7 +9,7 @@ Working name: **Trazo** ("stroke / trace" in Spanish). The name is centralised s
 | `excalidraw-app/branding.ts` | `BRAND.name`, `tagline`, `repoUrl` (currently https://github.com/balalex12/trazo) |
 | `excalidraw-app/index.html` | `<title>`, `<h1 class="visually-hidden">` |
 | `excalidraw-app/components/AppWelcomeScreen.tsx` | logo mark (inline SVG) |
-| `public/manifest.webmanifest`, favicons | app name and icons (still upstream's — replace with your own) |
+| `public/manifest.webmanifest`, favicons | app name and icons (still upstream's, replace with your own) |
 | `docker-compose.yml` | `name:`, `container_name`, `image` |
 | `README.md`, `docs/*`, `CONTRIBUTING.md` | text |
 

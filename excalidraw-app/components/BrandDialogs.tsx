@@ -68,22 +68,22 @@ const useOpen = (event: string) => {
 const CREDITS: [string, string][] = [
   [
     "Excalidraw",
-    `${BRAND.upstream.license} — ${BRAND.upstream.copyright}. This project is built on Excalidraw (${BRAND.upstream.url}).`,
+    `${BRAND.upstream.license}, ${BRAND.upstream.copyright}. This project is built on Excalidraw (${BRAND.upstream.url}).`,
   ],
   [
     "Esri ArcGIS Architecture Center icons",
-    "CC BY 4.0 — © Esri. Converted from the official Visio toolkit to SVG.",
+    "CC BY 4.0, © Esri. Converted from the official Visio toolkit to SVG.",
   ],
   [
     "Esri Calcite UI icons",
-    "Esri Master License Agreement — © Esri. Downloaded at build time, not redistributed.",
+    "Esri Master License Agreement, © Esri. Downloaded at build time, not redistributed.",
   ],
   [
     "ArcGIS Maps SDK for JavaScript",
     "© Esri, loaded at runtime from Esri's CDN only when a map is used.",
   ],
-  ["mp4-muxer", "MIT — Vanilagy. MP4 export."],
-  ["gifenc", "MIT — Matt DesLauriers. GIF export."],
+  ["mp4-muxer", "MIT, Vanilagy. MP4 export."],
+  ["gifenc", "MIT, Matt DesLauriers. GIF export."],
 ];
 
 const AboutDialog = () => {
@@ -99,14 +99,14 @@ const AboutDialog = () => {
         <p>
           <b>Local-first.</b> Your diagrams stay in this browser. The app makes
           no analytics or telemetry requests. It only contacts ArcGIS portals
-          you add, the LLM you configure, and — if you click “Browse libraries”
-          — the community libraries site.
+          you add, the LLM you configure, and, if you click “Browse libraries”,
+          the community libraries site.
         </p>
         <b>Credits &amp; licenses</b>
         <ul style={{ paddingLeft: 18 }}>
           {CREDITS.map(([n, d]) => (
             <li key={n}>
-              <b>{n}</b> — {d}
+              <b>{n}</b>: {d}
             </li>
           ))}
         </ul>
@@ -169,7 +169,7 @@ const AISettingsDialog = () => {
               e.target.value && setCfg(PRESETS[e.target.value].config)
             }
           >
-            <option value="">— choose to fill the fields —</option>
+            <option value="">Choose a preset to fill the fields</option>
             {Object.entries(PRESETS).map(([k, p]) => (
               <option key={k} value={k}>
                 {p.label}
@@ -218,7 +218,7 @@ const AISettingsDialog = () => {
                   const m = await listModels(cfg);
                   setModels(m);
                   setStatus(
-                    `${m.length} models available — pick one from the field.`,
+                    `${m.length} models available. Pick one from the field.`,
                   );
                 } catch (e: any) {
                   setStatus(e.message);

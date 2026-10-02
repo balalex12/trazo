@@ -19,9 +19,9 @@ Inside the map: **＋** _Add layer / open item_ (item ID, item URL or service UR
 Top bar: **portal selector** (● signed in / ○ not), **＋** add an ArcGIS Enterprise portal (e.g. `https://gis.company.com/portal`), **−** remove it, **Sign in / Sign out** (for the active portal), **UN Trace**, **Copy image**.
 
 - Several portals can be signed in simultaneously (one credential per server). Each map remembers its active portal; each layer remembers the portal it came from.
-- Without an OAuth app id the SDK shows its native **username/password** dialog — works with any portal. For SSO/SAML register an OAuth app in the portal (redirect URI `http://localhost:3001/oauth-callback.html`) and add its id to `viewer/config.js` → `oauthApps` (per portal).
+- Without an OAuth app id the SDK shows its native **username/password** dialog, works with any portal. For SSO/SAML register an OAuth app in the portal (redirect URI `http://localhost:3001/oauth-callback.html`) and add its id to `viewer/config.js` → `oauthApps` (per portal).
 - Credentials are saved in `localStorage` (`arcgis-credentials`) so a reload does not sign you out. See [SECURITY.md](SECURITY.md) §4.
-- The portal must allow requests from `http://localhost:3001` (CORS) — the default for ArcGIS.
+- The portal must allow requests from `http://localhost:3001` (CORS), the default for ArcGIS.
 
 ## Link parameters
 
@@ -29,7 +29,7 @@ Top bar: **portal selector** (● signed in / ○ not), **＋** add an ArcGIS En
 
 ## Utility Network trace
 
-The trace widget needs a **Web Map that has a Utility Network registered** — a plain map with a Utility Network layer added from a service is _not enough_ (the SDK exposes `utilityNetworks` only on `WebMap`). The panel line _Map type: Web Map — … (has Utility Network)_ tells you. If the map has one, the widget shows automatically; otherwise **UN Trace** explains what is missing.
+The trace widget needs a **Web Map that has a Utility Network registered**: a plain map with a Utility Network layer added from a service is _not enough_ (the SDK exposes `utilityNetworks` only on `WebMap`). The panel line _Map type: Web Map, … (has Utility Network)_ tells you. If the map has one, the widget shows automatically; otherwise **UN Trace** explains what is missing.
 
 **Status:** the multi-portal UI, item/layer resolution, browsing and persistence are tested against public portals, and sign-in and content browsing were validated by the maintainer against a private ArcGIS Enterprise portal. The trace itself has **not** been tested with real data yet.
 

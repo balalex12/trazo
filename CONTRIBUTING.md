@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping! This project is a derivative of [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT) — please keep the credits intact (README, About dialog, `LICENSE`, `THIRD_PARTY_NOTICES.md`).
+Thanks for helping! This project is a derivative of [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Please keep the credits intact (README, About dialog, `LICENSE`, `THIRD_PARTY_NOTICES.md`).
 
 ## Ground rules
 
@@ -31,7 +31,7 @@ The viewer (`viewer/`) has no build step: edit and reload. The animation module 
 
 ## Reporting bugs / security
 
-Bugs: open an issue with steps to reproduce, browser, and whether you use ArcGIS Online or Enterprise (version). Vulnerabilities: see [SECURITY.md](SECURITY.md) — please don't file them publicly.
+Bugs: open an issue with steps to reproduce, browser, and whether you use ArcGIS Online or Enterprise (version). Vulnerabilities: see [SECURITY.md](SECURITY.md). Please don't file them publicly.
 
 ## Good first issues
 

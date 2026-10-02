@@ -1,6 +1,6 @@
 # Security policy
 
-The full model — what stays local, what can leave your machine, hardening, and how to verify it — is in [docs/SECURITY.md](docs/SECURITY.md).
+The full model (what stays local, what can leave your machine, hardening, and how to verify it) is in [docs/SECURITY.md](docs/SECURITY.md).
 
 ## Reporting a vulnerability
 

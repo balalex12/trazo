@@ -18,7 +18,7 @@ Measured on the current build (headless Chrome, load + menu + library + map embe
 ## 2. What can leave your machine (by your action)
 
 1. **Interactive maps** → Esri and the portals you configure. Unavoidable: a map needs its data.
-2. **LLM** (opt-in, _Menu → AI assistant settings_) → only the base URL you set. With the **Ollama Cloud** preset the request goes to this app's nginx (`/llm/ollama-cloud/`), which forwards it to `ollama.com` — the only case where a container makes an outbound request, and only when the app sends one. The prompt and conversation are sent there. The API key is stored in `localStorage` (key `app-llm-config`) and sent only to that URL.
+2. **LLM** (opt-in, _Menu → AI assistant settings_) → only the base URL you set. With the **Ollama Cloud** preset the request goes to this app's nginx (`/llm/ollama-cloud/`), which forwards it to `ollama.com`, the only case where a container makes an outbound request, and only when the app sends one. The prompt and conversation are sent there. The API key is stored in `localStorage` (key `app-llm-config`) and sent only to that URL.
 3. **Browse libraries** → opens `libraries.excalidraw.com` in a new tab (a plain link). Importing a library from there into the app goes through the URL that site provides.
 4. **#url= links**: Excalidraw can load a scene from a URL you open (`#url=…`); that is a request you initiated.
 
@@ -38,11 +38,11 @@ frame-src 'self' http://localhost:3001 http://127.0.0.1:3001 https:;
 worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 ```
 
-Trade-offs, stated honestly: `style-src 'unsafe-inline'` is needed by React inline styles; `frame-src https:` lets you embed any HTTPS page (ArcGIS apps, video) — embedded pages run in a sandboxed iframe; `connect-src` allows local LLM servers on any port of localhost. **To use a remote LLM host**, add it to `connect-src` in `scripts/csp-hashes.mjs` and rebuild.
+Trade-offs, stated honestly: `style-src 'unsafe-inline'` is needed by React inline styles; `frame-src https:` lets you embed any HTTPS page (ArcGIS apps, video); embedded pages run in a sandboxed iframe; `connect-src` allows local LLM servers on any port of localhost. **To use a remote LLM host**, add it to `connect-src` in `scripts/csp-hashes.mjs` and rebuild.
 
 **Viewer CSP** (`deploy/nginx/viewer.conf`): scripts only from `self` and `https://js.arcgis.com` (no `unsafe-eval`, no inline scripts); it can only be framed by the app origin (`frame-ancestors`).
 
-**Iframe isolation**: the viewer runs on a different origin (port 3001) from the app (3000), inside an iframe sandbox (`allow-scripts allow-forms allow-popups …`; `allow-same-origin` only for localhost/ArcGIS URLs). Without `allow-modals`, `confirm()`/`prompt()` do nothing inside embeds — the viewer uses inline UI instead.
+**Iframe isolation**: the viewer runs on a different origin (port 3001) from the app (3000), inside an iframe sandbox (`allow-scripts allow-forms allow-popups …`; `allow-same-origin` only for localhost/ArcGIS URLs). Without `allow-modals`, `confirm()`/`prompt()` do nothing inside embeds; the viewer uses inline UI instead.
 
 ## 4. Where sensitive data lives (and the residual risk)
 
@@ -57,7 +57,7 @@ Never put tokens or API keys in a map link (`?token=`): links are stored in the 
 
 ## 5. Supply chain
 
-- Base images in the upstream `Dockerfile` are pinned by digest. The viewer uses `nginx:stable-alpine-slim` (unpinned) — pin it before production use.
+- Base images in the upstream `Dockerfile` are pinned by digest. The viewer uses `nginx:stable-alpine-slim` (unpinned); pin it before production use.
 - Vendored libraries live in `public/vendor/` (no yarn.lock change): hashes in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 - Calcite glyphs are fetched from jsDelivr at a pinned version (`tools/fetch-calcite.mjs`); community libraries from `raw.githubusercontent.com/excalidraw/excalidraw-libraries` (`tools/fetch-community-libraries.mjs`). Both downloads happen on **your machine at build time**, never at runtime. Review `libraries/community.json` before adding a source: library files are plain JSON of drawing elements (no code), but their drawings are third-party content.
 - The ArcGIS SDK is loaded from `js.arcgis.com` at runtime (version pinned in `viewer/index.html`). Self-hosting it is on the roadmap.

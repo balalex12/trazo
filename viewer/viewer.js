@@ -269,7 +269,7 @@ function (esriConfig, Map, WebMap, MapView, Graphic, Layer, GraphicsLayer, Porta
     const kind = panel.querySelector("#mapkind");
     const n = view.map && view.map.layers ? view.map.layers.length - 1 : 0; // minus the sketch layer
     kind.textContent = currentMapIsWebMap
-      ? "Map type: Web Map — " + currentMapTitle + (hasUtilityNetwork() ? " (has Utility Network)" : " (no Utility Network found)")
+      ? "Map type: Web Map, " + currentMapTitle + (hasUtilityNetwork() ? " (has Utility Network)" : " (no Utility Network found)")
       : "Map type: basic map + " + Math.max(n, 0) + " added layer(s). Not a Web Map.";
   };
   renderList();
@@ -328,7 +328,7 @@ function (esriConfig, Map, WebMap, MapView, Graphic, Layer, GraphicsLayer, Porta
         const r = await portal.queryItems(new PortalQueryParams({ query, num: 40, sortField: "modified", sortOrder: "desc" }));
         items = r.results;
       }
-      status.textContent = portalName(portalUrl) + ": " + items.length + " item(s)" + (portal.user ? " — signed in as " + portal.user.username : " — anonymous");
+      status.textContent = portalName(portalUrl) + ": " + items.length + " item(s)" + (portal.user ? ", signed in as " + portal.user.username : ", anonymous");
       items.forEach((it) => {
         const row = document.createElement("div"); row.className = "row";
         const info = document.createElement("div");

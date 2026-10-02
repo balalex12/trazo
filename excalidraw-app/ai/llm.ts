@@ -220,7 +220,7 @@ export const streamChat = async (
     const text = await res.text().catch(() => "");
     const hint =
       res.status === 401 || res.status === 403
-        ? " — the API key is missing or invalid."
+        ? ": the API key is missing or invalid."
         : "";
     return fail(
       `LLM error ${res.status}${hint} ${text.slice(0, 300)}`,
@@ -316,5 +316,5 @@ export const testConnection = async (): Promise<string> => {
   const r = await streamChat({
     messages: [{ role: "user", content: "flowchart with two nodes A to B" }],
   });
-  return r.error ? r.error.message : "Connected ✔ — the model answered.";
+  return r.error ? r.error.message : "Connected ✔. The model answered.";
 };
