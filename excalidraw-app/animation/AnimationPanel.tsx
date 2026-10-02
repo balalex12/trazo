@@ -430,31 +430,35 @@ export const AnimationPanel = ({
     transform: "translateX(-50%)",
     zIndex: 20,
     width: 380,
-    background: "#fff",
-    border: "1px solid #ddd",
+    background: "var(--island-bg-color)",
+    border: "1px solid var(--default-border-color, #8884)",
     borderRadius: 10,
     boxShadow: "0 4px 18px #0003",
     padding: 12,
     font: "13px system-ui, sans-serif",
-    color: "#222",
+    color: "var(--text-primary-color)",
   };
   const btn: React.CSSProperties = {
     padding: "6px 10px",
-    border: "1px solid #6965db",
-    background: "#6965db",
-    color: "#fff",
+    border: "1px solid var(--color-primary)",
+    background: "var(--color-primary)",
+    color: "var(--color-icon-white, #fff)",
     borderRadius: 6,
     cursor: "pointer",
   };
   const ghost: React.CSSProperties = {
     ...btn,
-    background: "#fff",
-    color: "#6965db",
+    background: "transparent",
+    color: "var(--color-primary)",
   };
   const field: React.CSSProperties = {
     width: "100%",
     padding: 4,
     boxSizing: "border-box",
+    background: "var(--input-bg-color, var(--island-bg-color))",
+    color: "var(--text-primary-color)",
+    border: "1px solid var(--default-border-color, #8888)",
+    borderRadius: 4,
   };
 
   return (
@@ -477,7 +481,7 @@ export const AnimationPanel = ({
       {open && (
         <div style={card}>
           <b>Animation</b>
-          <div style={{ color: "#666", margin: "4px 0 8px" }}>
+          <div style={{ color: "#888", margin: "4px 0 8px" }}>
             Slides = frames (press <kbd>F</kbd>). “Duplicate slide” copies the
             selected one below it; changed elements animate between slides,
             new/removed ones fade.
@@ -486,7 +490,7 @@ export const AnimationPanel = ({
             style={{
               maxHeight: 90,
               overflow: "auto",
-              background: "#f6f6f6",
+              background: "var(--color-surface-low, #f6f6f6)",
               padding: 6,
               borderRadius: 6,
             }}
@@ -594,7 +598,7 @@ export const AnimationPanel = ({
                 ))}
               </select>
             </label>
-            <div style={{ alignSelf: "end", color: "#666" }}>
+            <div style={{ alignSelf: "end", color: "#888" }}>
               {slides.length >= 2 ? `${totalSec}s total` : ""}
             </div>
           </div>
@@ -628,12 +632,18 @@ export const AnimationPanel = ({
           </div>
           {job && (
             <div style={{ marginTop: 6 }}>
-              <div style={{ height: 6, background: "#eee", borderRadius: 3 }}>
+              <div
+                style={{
+                  height: 6,
+                  background: "var(--color-surface-low, #eee)",
+                  borderRadius: 3,
+                }}
+              >
                 <div
                   style={{
                     height: 6,
                     width: `${(job.done / job.total) * 100}%`,
-                    background: "#6965db",
+                    background: "var(--color-primary)",
                     borderRadius: 3,
                   }}
                 />
@@ -645,7 +655,11 @@ export const AnimationPanel = ({
             </div>
           )}
           {error && (
-            <div style={{ color: "#c62828", marginTop: 6 }}>{error}</div>
+            <div
+              style={{ color: "var(--color-danger, #c62828)", marginTop: 6 }}
+            >
+              {error}
+            </div>
           )}
         </div>
       )}

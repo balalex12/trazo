@@ -1,0 +1,39 @@
+// Brand palette. Overrides the editor's theme variables (this file is imported after them, see index.tsx),
+// so nothing in packages/excalidraw/css has to change. Orange "ink":
+//   light mode  #cc440c  (white text on it: 4.8:1, WCAG AA)      dark mode  #ffa94d  (dark text on it: 9:1)
+// Change the colors here (and in tools/make-icons.cjs for the app icons) and nowhere else.
+.excalidraw {
+  --color-selection: #cc440c;
+  --color-primary: #cc440c;
+  --color-primary-darker: #b93c0b;
+  --color-primary-darkest: #9f3409;
+  --color-primary-light: #ffe8cc;
+  --color-primary-light-darker: #ffd8a8;
+  --color-primary-hover: #b93c0b;
+  --color-brand-hover: #b93c0b;
+  --color-brand-active: #9f3409;
+  --color-on-primary-container: #4d1d02;
+  --color-surface-primary-container: #ffe8cc;
+  --color-surface-high: #f8f2ec;
+  --color-surface-mid: #f7f5f3;
+  --color-surface-low: #eeeae6;
+  --color-logo-text: #3a1202;
+
+  &.theme--dark {
+    --color-selection: #ffa94d;
+    --color-primary: #ffa94d;
+    --color-primary-darker: #ffb865;
+    --color-primary-darkest: #ffc78a;
+    --color-primary-light: #4d3320;
+    --color-primary-light-darker: #3f2a1a;
+    --color-primary-hover: #ffb865;
+    --color-brand-hover: #ffb865;
+    --color-brand-active: #ffc78a;
+    --color-on-primary-container: #ffe8cc;
+    --color-surface-primary-container: #4d3320;
+    --color-surface-high: #2d2926;
+    --color-surface-mid: hsl(30deg 6% 10%);
+    --color-surface-low: hsl(30deg 6% 15%);
+    --color-logo-text: #ffe8cc;
+  }
+}

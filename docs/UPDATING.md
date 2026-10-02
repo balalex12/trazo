@@ -38,6 +38,8 @@ git diff HEAD~1 -- . ':!yarn.lock' | grep -n "^+.*https\?://" | grep -v -E "w3.o
 | `packages/element/src/embeddable.ts` | ArcGIS URL recognition, localhost/arcgis allowed |
 | `packages/excalidraw/fonts/ExcalidrawFontFace.ts` | CDN fallback removed |
 | `scripts/woff2/woff2-vite-plugins.js` | fonts from `/` |
+| `packages/excalidraw/renderer/interactiveScene.ts` | one canvas highlight color (`highlightPoint`) in the brand orange |
+| `excalidraw-app/index.tsx` | imports `brand.scss` after the editor styles (new file: the palette) |
 | `Dockerfile`, `docker-compose.yml`, `.env.production`, `.env.development`, `.gitignore`, `.dockerignore` | hardening / no hosted URLs |
 
 Files **deleted** from upstream (a merge will report "deleted by us" if upstream edits them — keep them deleted): `.github/FUNDING.yml`, `crowdin.yml`, `vercel.json`, `firebase-project/`, `.github/assets/`, workflows `autorelease-excalidraw`, `publish-docker`, `sentry-production`, `locales-coverage`, `size-limit`, `lint`, `test`, `build-docker`, `cancel`, `semantic-pr-title`, `test-coverage-pr` (replaced by our `ci.yml`), and the promo images in `public/`.
