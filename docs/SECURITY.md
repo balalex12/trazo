@@ -73,7 +73,7 @@ Never put tokens or API keys in a map link (`?token=`): links are stored in the 
 
 - Base images in the upstream `Dockerfile` are pinned by digest. The viewer uses `nginx:stable-alpine-slim` (unpinned) — pin it before production use.
 - Vendored libraries live in `public/vendor/` (no yarn.lock change): hashes in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
-- Calcite glyphs are fetched from jsDelivr at a pinned version (`tools/fetch-calcite.mjs`).
+- Calcite glyphs are fetched from jsDelivr at a pinned version (`tools/fetch-calcite.mjs`); community libraries from `raw.githubusercontent.com/excalidraw/excalidraw-libraries` (`tools/fetch-community-libraries.mjs`). Both downloads happen on **your machine at build time**, never at runtime. Review `libraries/community.json` before adding a source: library files are plain JSON of drawing elements (no code), but their drawings are third-party content.
 - The ArcGIS SDK is loaded from `js.arcgis.com` at runtime (version pinned in `viewer/index.html`). Self-hosting it is on the roadmap.
 - Run `yarn audit` before releases (Excalidraw's dependency tree is large).
 

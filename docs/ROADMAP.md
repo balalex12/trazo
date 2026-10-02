@@ -9,6 +9,7 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 - ✅ Animated slides, Preview/Present, MP4 + GIF export (browser-only)
 - ✅ Opt-in LLM connector (OpenAI-compatible + Anthropic) for Text to diagram
 - ✅ Own identity (name, welcome mark, app icons, PWA manifest), About & credits
+- ✅ Community libraries as per-source sections (16 libraries, 311 items; downloaded at build time, public profile without brand-logo libraries)
 
 ## Needs real-world validation 🧪
 - Sign-in against a **private ArcGIS Enterprise** (username/password and OAuth) and multi-portal sessions
@@ -17,7 +18,6 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 - MP4 export on browsers other than Chrome/Edge (WebCodecs H.264 availability)
 
 ## Next 🔜
-- **Community libraries loader**: ship third-party libraries (with license metadata) as their own sections; bring the libraries already added by the maintainer
 - Per-font license audit and a complete `THIRD_PARTY_NOTICES`
 - Committed browser test suite (the checks used during development, as Playwright tests) + CI
 - Self-hosted ArcGIS SDK option (fully offline except for map data)

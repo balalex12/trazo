@@ -66,6 +66,12 @@ The viewer folder is mounted read-only: edit `viewer/*` and reload, no rebuild. 
 `puppeteer-core` (install into a scratch dir, NOT in the repo). Library panel: `.sidebar-trigger`; menu:
 `.main-menu-trigger`; library items: `.library-unit__dragger`.
 
+## Libraries pipeline
+`libraries/community.json` (committed manifest) -> `tools/fetch-community-libraries.mjs` (download to git-ignored `assets/community/`) ->
+`tools/build-library.js` (sections "Community · name (author)", ids `lib:`; fingerprints + original ids so `App.tsx` replaces hand-imported copies;
+`--profile=public` drops `brandLogos` libraries). Fingerprint code must stay identical in `tools/build-library.js` and
+`excalidraw-app/libraryFingerprint.ts`. The catalog (libraries.json) has entries WITHOUT `id`: key them by `source`.
+
 ## Gotchas learned the hard way
 - Embedded iframes lack `allow-modals`: `confirm()/prompt()/alert()` silently do nothing — use inline UI.
 - `ExcalidrawFontFace` appended an `esm.sh` fallback to every font; fixed. Re-check after upstream merges.
@@ -79,5 +85,5 @@ The viewer folder is mounted read-only: edit `viewer/*` and reload, no rebuild. 
 - Removing `rm -f dir/*` style commands may be blocked by the sandbox: use new output dirs instead of deleting.
 
 ## Open items (see docs/ROADMAP.md)
-Community-library loader (waiting for the maintainer's exported libraries), per-font license audit, Playwright suite,
+Per-font license audit, Playwright suite,
 self-hosted ArcGIS SDK, validation against a real private Enterprise portal and a real Utility Network web map.

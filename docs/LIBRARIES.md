@@ -24,15 +24,30 @@ icon for several Utility Network concepts, e.g. Device = `switch`). Change a map
 - **Esri Calcite icons**: the Esri MLA allows use/redistribution **without modification**. They are embedded **byte-for-byte as downloaded** (no recoloring) into the generated library, which is git-ignored: each user generates it locally and the glyphs are never committed. Because they stay unmodified, the Esri MLA's "redistribute without modification" condition is respected; still, get a legal review before publishing a public Docker image that contains them.
 - Do not use "Esri"/"ArcGIS" as a product name or logo; describing compatibility is fine.
 
-## Adding your own libraries (community libraries)
+## Community libraries (built in)
 
-1. In the editor, open the library panel → **Browse libraries** (opens libraries.excalidraw.com), or import a file
-   (**⋮ → Open**).
-2. Imported libraries go to the standard library sections (*Personal* / *Excalidraw library*), below the Trazo sections.
-3. To **ship** a community library with the project, open an issue/PR with the `.excalidrawlib` file and its
-   license. Libraries on libraries.excalidraw.com are submitted by third parties: **check each library's license
-   before redistributing it** (the site's repository lists the author and a source/license for each entry).
-   We will keep them under `libraries/community/<name>/` with `LICENSE` + attribution and show them as their own section.
+`libraries/community.json` lists 16 libraries from the public catalog (authors, source file, item counts; see
+[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) for the table). `node tools/build-library.js`:
 
-> Status: the community-library loader is not implemented yet — it will be designed once real libraries are
-> provided (ROADMAP). Until then, import them with ⋮ → Open.
+1. downloads them from `excalidraw/excalidraw-libraries` into `assets/community/` (git-ignored — never committed);
+2. adds each as its own panel section **"Community · <name> (<author>)"** with stable ids `lib:<slug>:<id>`;
+3. records the original item ids and a content fingerprint of every item, so on load the app **replaces copies you had
+   imported by hand** (same items, different ids) instead of duplicating them. Items that are not in the pack (your own
+   drawings) are never touched.
+
+**Profiles.** The default profile (`local`) includes everything. `--profile=public` (or `LIBRARY_PROFILE=public`) skips
+libraries flagged `brandLogos` in the manifest because their logos are third-party trademarks the MIT license of the
+library does not cover. Use the public profile for any published image/artifact.
+
+### Adding or removing a library
+
+Edit `libraries/community.json` (keep `name`, `authors`, `source` exactly as in the catalog, set `brandLogos` honestly,
+`items` = number of items) and run `node tools/build-library.js`. To list what is in your own browser's library and
+find which catalog libraries it came from, export it (library menu → ⋮ → Export library) and compare ids with the catalog
+(the method used to build the manifest: items keep the ids of the catalog files; older imports are matched by content).
+
+### Importing something else
+
+Library panel → **Browse libraries** (opens libraries.excalidraw.com, a normal link) or ⋮ → Open to import a file. Anything
+imported goes to the standard *Personal*/*Excalidraw library* sections below the Trazo sections. Check each library's
+license before redistributing it.

@@ -25,7 +25,7 @@ teams keep asking for:
 | | |
 |---|---|
 | 🗺️ **Live maps inside the canvas** | Embed interactive ArcGIS maps. Add layers by URL or item ID, browse *My content* / search any portal, open Web Maps, sketch on top. Works with **ArcGIS Online and any number of ArcGIS Enterprise portals** at the same time. Optional Utility Network trace (needs a Web Map with a Utility Network). |
-| 🧩 **Architecture-ready library** | 150+ ready-to-use components in English, grouped by source: official **Esri Architecture Center** icons (Enterprise components, data stores, personas…), Utility Network concepts, services & SDKs. |
+| 🧩 **Architecture-ready library** | 450+ components grouped **by source**, never mixed: official **Esri Architecture Center** icons (Enterprise components, data stores, personas…), Utility Network concepts, services & SDKs, plus 16 curated **community libraries** (data platform, deep learning, system design, UML/ER, network topology, Microsoft Fabric…) downloaded from the official catalog at build time with their authors credited. |
 | 🎞️ **Animated slides** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). Preview, present with ← →, and **export MP4 or GIF** — rendered in your browser, nothing uploaded. |
 | 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model — Ollama / LM Studio locally, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes. |
 | 🔒 **Local-first & hardened** | No analytics, no Sentry, no CDN, no service worker, no hosted collaboration. Strict Content-Security-Policy, read-only containers, ports bound to `127.0.0.1`. See [docs/SECURITY.md](docs/SECURITY.md) — and verify it yourself. |
@@ -84,7 +84,8 @@ Stop with `docker compose down`. Everything listens on `127.0.0.1` only.
 
 - **Excalidraw** — © 2020 Excalidraw, MIT. This project is a derivative work; the upstream license and copyright are kept in [LICENSE](LICENSE) and the full upstream git history is preserved.
 - **Esri ArcGIS Architecture Center icons** — © Esri, CC BY 4.0, converted from the official Visio toolkit to SVG.
-- **Esri Calcite UI icons** — © Esri, Esri Master License Agreement. **Downloaded at build time, never redistributed here.**
+- **Esri Calcite UI icons** — © Esri, Esri Master License Agreement. **Downloaded at build time, embedded unmodified, never committed here.**
+- **Community libraries** — authors credited in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); MIT via the Excalidraw libraries catalog; downloaded at build time, **not committed** (`--profile=public` skips the ones with third-party brand logos).
 - **ArcGIS Maps SDK for JavaScript** — © Esri, loaded at runtime from Esri's CDN.
 - **mp4-muxer**, **gifenc** — MIT (vendored, hashes in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).
 
@@ -131,7 +132,7 @@ a la URL de tu LLM si lo configuras, y a `libraries.excalidraw.com` si pulsas *B
 
 ### Créditos y licencias
 
-Excalidraw (MIT, © 2020 Excalidraw) · íconos de Esri Architecture Center (CC BY 4.0, © Esri) · íconos Calcite (licencia de Esri, se descargan al construir y **no** se redistribuyen) ·
+Excalidraw (MIT, © 2020 Excalidraw) · íconos de Esri Architecture Center (CC BY 4.0, © Esri) · íconos Calcite (licencia de Esri, se descargan al construir y **no** se redistribuyen) · 16 librerías comunitarias con sus autores acreditados (se descargan del catálogo oficial al construir; el perfil `--profile=public` omite las que traen logos de marcas) ·
 ArcGIS Maps SDK (© Esri, se carga en ejecución) · mp4-muxer y gifenc (MIT). Detalle en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 Proyecto independiente, no afiliado ni respaldado por Excalidraw ni por Esri.
 
