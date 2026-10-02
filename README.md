@@ -6,7 +6,7 @@
 
 <img src="docs/media/animation-demo.gif" alt="An ArcGIS Enterprise architecture built step by step with Trazo: animated slides with official Esri icons, exported as a GIF" width="720">
 
-<sub>An ArcGIS Enterprise architecture built step by step — made and exported to GIF with Trazo itself (official Esri Architecture Center icons).</sub>
+<sub>An ArcGIS Enterprise architecture built step by step — made and exported to GIF with Trazo itself (official Esri Architecture Center icons). Elements that do not change stay perfectly still; only what changes animates.</sub>
 
 _Built on [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Not affiliated with or endorsed by Excalidraw or Esri._
 
@@ -32,12 +32,16 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 <table>
 <tr>
-<td><img src="docs/media/map-embed.png" alt="Interactive ArcGIS map in the canvas"></td>
-<td><img src="docs/media/library.png" alt="Library grouped by source"></td>
+<td><img src="docs/media/editor-light.png" alt="An ArcGIS Enterprise architecture in light mode"><br><sub><b>Light mode</b> — an ArcGIS Enterprise architecture with official Esri icons</sub></td>
+<td><img src="docs/media/editor-dark.png" alt="The same architecture in dark mode"><br><sub><b>Dark mode</b> — same drawing, theme-aware UI</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/text-to-diagram.png" alt="Text to diagram with your own LLM"></td>
-<td><img src="docs/media/welcome.png" alt="Trazo welcome screen"></td>
+<td><img src="docs/media/map-embed.png" alt="Interactive ArcGIS map in the canvas"><br><sub><b>Live map</b> inside the canvas (ArcGIS Online or any Enterprise portal)</sub></td>
+<td><img src="docs/media/text-to-diagram.png" alt="Text to diagram with your own LLM"><br><sub><b>Text to diagram</b> with your own LLM — colors, symbols and groups</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/library.png" alt="Library grouped by source"><br><sub><b>Library</b> grouped by source, never mixed</sub></td>
+<td><img src="docs/media/welcome.png" alt="Trazo welcome screen"><br><sub><b>Welcome screen</b> — local-first, nothing leaves your browser</sub></td>
 </tr>
 </table>
 
