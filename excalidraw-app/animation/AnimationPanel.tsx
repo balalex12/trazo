@@ -6,7 +6,12 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 import { downloadBlob, exportAnimation } from "./exporter";
 import { outputSize, renderAtTime, renderBlend } from "./renderer";
-import { DEFAULT_SETTINGS, getSlides, totalDurationMs } from "./timeline";
+import {
+  DEFAULT_SETTINGS,
+  getSlides,
+  totalDurationMs,
+  transitionModeOf,
+} from "./timeline";
 
 import type { ExportFormat } from "./exporter";
 import type { Slide, TimelineSettings } from "./timeline";
@@ -464,27 +469,32 @@ export const AnimationPanel = ({
     Number.isFinite(+v) && +v >= 0 ? +v : d;
   const totalSec = (totalDurationMs(slides, settings) / 1000).toFixed(1);
 
-  // Per-slide hold lives on the frame (customData.holdMs); empty = use the global default.
-  const setSlideHold = (frameId: string, value: string) => {
-    const v = value.trim() === "" ? null : Math.max(0, Math.round(+value));
-    if (v !== null && !Number.isFinite(v)) {
-      return;
-    }
+  // Per-slide settings live on the frame's customData (holdMs, transition); null/undefined = use the default.
+  const setSlideData = (frameId: string, key: string, value: unknown) => {
     const all = excalidrawAPI.getSceneElementsIncludingDeleted() as any[];
     excalidrawAPI.updateScene({
       elements: all.map((e) => {
         if (e.id !== frameId) {
           return e;
         }
-        const { holdMs: _old, ...rest } = e.customData || {};
+        const { [key]: _old, ...rest } = e.customData || {};
         return {
           ...e,
-          customData: v === null ? rest : { ...rest, holdMs: v },
+          customData:
+            value === null || value === undefined
+              ? rest
+              : { ...rest, [key]: value },
           version: e.version + 1,
           versionNonce: Math.floor(Math.random() * 2 ** 31),
         };
       }) as any,
     });
+  };
+  const setSlideHold = (frameId: string, value: string) => {
+    const v = value.trim() === "" ? null : Math.max(0, Math.round(+value));
+    if (v === null || Number.isFinite(v)) {
+      setSlideData(frameId, "holdMs", v);
+    }
   };
 
   const card: React.CSSProperties = {
@@ -493,7 +503,7 @@ export const AnimationPanel = ({
     left: "50%",
     transform: "translateX(-50%)",
     zIndex: 20,
-    width: 380,
+    width: 420,
     background: "var(--island-bg-color)",
     border: "1px solid var(--default-border-color, #8884)",
     borderRadius: 10,
@@ -582,6 +592,27 @@ export const AnimationPanel = ({
                     ({s.children.length} elements)
                   </span>
                 </span>
+                {i > 0 && (
+                  <select
+                    title={
+                      "How this slide is entered.\nSmart: matching elements move, new ones fade in.\nFade: nothing moves, cross-fade (identical elements stay put).\nCut: instant."
+                    }
+                    value={transitionModeOf(s)}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) =>
+                      setSlideData(
+                        s.frame.id,
+                        "transition",
+                        e.target.value === "smart" ? null : e.target.value,
+                      )
+                    }
+                    style={{ ...field, width: 66 }}
+                  >
+                    <option value="smart">Smart</option>
+                    <option value="fade">Fade</option>
+                    <option value="cut">Cut</option>
+                  </select>
+                )}
                 <HoldInput
                   value={s.frame.customData?.holdMs}
                   placeholder={String(settings.holdMs)}
