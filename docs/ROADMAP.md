@@ -6,8 +6,11 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 
 - ✅ Local-first: no telemetry/CDN/hosted services, strict CSP, hardened containers, network audit script
 - ✅ ArcGIS viewer: items/layers/services, any-host URL recognition, portal browser, sketch, multi-portal UI
-- ✅ Library: 150+ English components grouped by source; official Esri icons; per-source sections
+- ✅ Library: 150+ English ArcGIS components grouped by source (official Esri icons), plus the community libraries below
 - ✅ Animated slides, Preview/Present, MP4 + GIF export (browser-only)
+- ✅ Animation timing per slide (own hold time) and a transition type per slide (Smart, Fade, Cut); identical elements never move or blink
+- ✅ Brand color (orange ink) with light and dark themes, including our own panels and dialogs
+- ✅ Per-font license audit (see `THIRD_PARTY_NOTICES.md`)
 - ✅ Opt-in LLM connector (OpenAI-compatible, Ollama Cloud via local pass-through, Anthropic) for Text to diagram
 - ✅ Own identity (name, welcome mark, app icons, PWA manifest), About & credits
 - ✅ Community libraries as per-source sections (16 libraries, 311 items; downloaded at build time, public profile without brand-logo libraries)
@@ -21,7 +24,8 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 
 ## Next 🔜
 
-- Per-font license audit and a complete `THIRD_PARTY_NOTICES`
+- **Before the first release tag:** the publish workflow builds the full library, which includes Esri Calcite icons and the community libraries with third-party logos. Make the public image use `--profile=public` and leave Calcite out of it (the Esri MLA only allows redistribution of the unmodified software, with its license, and a legal check is still pending). See [LIBRARIES.md](LIBRARIES.md)
+- Replace Liberation Sans 1.05 (GPL v2 with font exception) with Liberation Sans 2.x (OFL), and ship the OFL 1.1 text next to the fonts
 - Committed browser test suite (the checks used during development, as Playwright tests) + CI
 - Self-hosted ArcGIS SDK option (fully offline except for map data)
 - Release workflow: GHCR image on tag, changelog, versioning; pin the viewer's nginx image by digest

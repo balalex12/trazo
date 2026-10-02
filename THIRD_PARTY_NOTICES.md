@@ -7,8 +7,26 @@ This project is an independent derivative of Excalidraw. It is **not affiliated 
 - Project: https://github.com/excalidraw/excalidraw
 - License: MIT: "Copyright (c) 2020 Excalidraw". The upstream license text and copyright notice are kept unchanged in [LICENSE](LICENSE); this project's own additions are under the same MIT license.
 - The full upstream git history (all contributors' commits) is preserved in this repository.
-- Bundled fonts (Excalifont, Virgil, Cascadia Code, Nunito, Lilita One, Liberation Sans, Xiaolai, Comic Shanns, Assistant) come from upstream Excalidraw under their own licenses (primarily the SIL Open Font License). A per-font license audit is an open task in [docs/ROADMAP.md](docs/ROADMAP.md).
+- Bundled fonts come from upstream Excalidraw, each under its own license (see the next section).
 - Hand-drawn rendering uses [Rough.js](https://roughjs.com/) (MIT) and the other open-source dependencies of Excalidraw (see `yarn.lock`).
+
+## Bundled fonts
+
+Audited on 2026-10-02 from the license data embedded in each font file (`packages/excalidraw/fonts/`), plus the upstream project page where the file carried no license text. The fonts are unmodified copies from upstream Excalidraw.
+
+| Font | License | Copyright and notes |
+| --- | --- | --- |
+| Assistant | SIL OFL 1.1 | © The Assistant Project Authors; includes Source Sans Pro (© The Source Sans Pro Authors, reserved name "Source") |
+| Cascadia Code | SIL OFL 1.1 | © 2020 Microsoft Corporation. The embedded text is generic and its license URL points to the OFL; the upstream project ([microsoft/cascadia-code](https://github.com/microsoft/cascadia-code)) is OFL 1.1 |
+| Comic Shanns | MIT | © 2018 Shannon Miwa and later contributors; the MIT notice is embedded in the font |
+| Excalifont | SIL OFL 1.1 | © 2024 Excalidraw. The file has no license text; the [official Excalifont page](https://plus.excalidraw.com/excalifont) states OFL 1.1 |
+| Liberation Sans 1.05 | **GPL v2 with the font exception (not OFL)** | © 2007 Ascender Corporation. Versions 2.00 and later are OFL; this file is 1.05. See the open item in [docs/ROADMAP.md](docs/ROADMAP.md) |
+| Lilita One | SIL OFL 1.1 | © 2011 Juan Montoreano, reserved name "Lilita One" |
+| Nunito | SIL OFL 1.1 | © The Nunito Project Authors |
+| Virgil | SIL OFL 1.1 | © 2011 Your Own Font Foundry; full license embedded |
+| Xiaolai SC | SIL OFL 1.1 | © 2020 LXGW; derived from SetoFont ([lxgw/kose-font](https://github.com/lxgw/kose-font)). The file has no license text. Reserved names: Xiaolai, Kose |
+
+Helvetica and Emoji have no font files here (system fonts). The full text of the SIL OFL 1.1 is at https://openfontlicense.org/open-font-license-official-text/.
 
 ## Icons and logos
 
