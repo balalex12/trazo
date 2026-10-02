@@ -92,21 +92,32 @@ const lerpColor = (a: string, b: string, t: number): string => {
 };
 
 // ---- sampling ---------------------------------------------------------
+/** A slide's own hold (stored on its frame as `customData.holdMs`) or the global default. */
+export const holdOf = (slide: Slide, s: TimelineSettings): number => {
+  const v = slide.frame.customData?.holdMs;
+  return typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : s.holdMs;
+};
+
 /** Sequence: hold(0) → transition(0→1) → hold(1) → … → hold(n-1). */
-export const totalDurationMs = (n: number, s: TimelineSettings) =>
-  n <= 0 ? 0 : n * s.holdMs + (n - 1) * s.transitionMs;
+export const totalDurationMs = (slides: Slide[], s: TimelineSettings) =>
+  slides.length <= 0
+    ? 0
+    : slides.reduce((sum, sl) => sum + holdOf(sl, s), 0) +
+      (slides.length - 1) * s.transitionMs;
 
 export const sampleAt = (
   timeMs: number,
-  n: number,
+  slides: Slide[],
   s: TimelineSettings,
 ): Sample => {
+  const n = slides.length;
   let t = Math.max(0, timeMs);
   for (let i = 0; i < n; i++) {
-    if (t <= s.holdMs || i === n - 1) {
+    const hold = holdOf(slides[i], s);
+    if (t <= hold || i === n - 1) {
       return { a: i, b: i, t: 0 };
     }
-    t -= s.holdMs;
+    t -= hold;
     if (t <= s.transitionMs) {
       return { a: i, b: i + 1, t: t / s.transitionMs };
     }

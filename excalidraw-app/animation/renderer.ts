@@ -72,6 +72,6 @@ export const renderAtTime = (
   timeMs: number,
   target?: HTMLCanvasElement,
 ) => {
-  const s = sampleAt(timeMs, opts.slides.length, opts.settings);
+  const s = sampleAt(timeMs, opts.slides, opts.settings);
   return renderBlend(opts, s.a, s.b, s.t, target);
 };

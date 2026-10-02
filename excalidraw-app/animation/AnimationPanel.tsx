@@ -88,7 +88,7 @@ const Player = ({
     };
 
     if (mode === "auto") {
-      const total = totalDurationMs(slides.length, settings);
+      const total = totalDurationMs(slides, settings);
       const start = performance.now();
       const tick = (now: number) => {
         if (!alive) {
@@ -225,6 +225,47 @@ const Player = ({
         ✕
       </button>
     </div>
+  );
+};
+
+/** Number field that keeps its own draft while typing and commits on blur/Enter (the slide list refreshes late). */
+const HoldInput = ({
+  value,
+  placeholder,
+  style,
+  onCommit,
+}: {
+  value: number | undefined;
+  placeholder: string;
+  style: React.CSSProperties;
+  onCommit: (v: string) => void;
+}) => {
+  const [draft, setDraft] = useState<string | null>(null);
+  const shown = draft ?? (value === undefined ? "" : String(value));
+  const commit = () => {
+    if (draft !== null) {
+      onCommit(draft);
+      setDraft(null);
+    }
+  };
+  return (
+    <input
+      type="number"
+      min={0}
+      step={500}
+      title="Hold for this slide (ms). Empty = default Hold."
+      placeholder={placeholder}
+      value={shown}
+      onClick={(e) => e.stopPropagation()}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          (e.target as HTMLInputElement).blur();
+        }
+      }}
+      style={style}
+    />
   );
 };
 
@@ -421,7 +462,30 @@ export const AnimationPanel = ({
 
   const num = (v: string, d: number) =>
     Number.isFinite(+v) && +v >= 0 ? +v : d;
-  const totalSec = (totalDurationMs(slides.length, settings) / 1000).toFixed(1);
+  const totalSec = (totalDurationMs(slides, settings) / 1000).toFixed(1);
+
+  // Per-slide hold lives on the frame (customData.holdMs); empty = use the global default.
+  const setSlideHold = (frameId: string, value: string) => {
+    const v = value.trim() === "" ? null : Math.max(0, Math.round(+value));
+    if (v !== null && !Number.isFinite(v)) {
+      return;
+    }
+    const all = excalidrawAPI.getSceneElementsIncludingDeleted() as any[];
+    excalidrawAPI.updateScene({
+      elements: all.map((e) => {
+        if (e.id !== frameId) {
+          return e;
+        }
+        const { holdMs: _old, ...rest } = e.customData || {};
+        return {
+          ...e,
+          customData: v === null ? rest : { ...rest, holdMs: v },
+          version: e.version + 1,
+          versionNonce: Math.floor(Math.random() * 2 ** 31),
+        };
+      }) as any,
+    });
+  };
 
   const card: React.CSSProperties = {
     position: "fixed",
@@ -488,7 +552,7 @@ export const AnimationPanel = ({
           </div>
           <div
             style={{
-              maxHeight: 90,
+              maxHeight: 130,
               overflow: "auto",
               background: "var(--color-surface-low, #f6f6f6)",
               padding: 6,
@@ -505,12 +569,26 @@ export const AnimationPanel = ({
                     fit: "scale-down",
                   } as any)
                 }
-                style={{ cursor: "pointer" }}
+                style={{
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
               >
-                {i + 1}. {s.name}{" "}
-                <span style={{ color: "#888" }}>
-                  ({s.children.length} elements)
+                <span style={{ flex: 1 }}>
+                  {i + 1}. {s.name}{" "}
+                  <span style={{ color: "#888" }}>
+                    ({s.children.length} elements)
+                  </span>
                 </span>
+                <HoldInput
+                  value={s.frame.customData?.holdMs}
+                  placeholder={String(settings.holdMs)}
+                  onCommit={(v) => setSlideHold(s.frame.id, v)}
+                  style={{ ...field, width: 78 }}
+                />
+                <span style={{ color: "#888" }}>ms</span>
               </div>
             ))}
           </div>
@@ -547,7 +625,7 @@ export const AnimationPanel = ({
               />
             </label>
             <label>
-              Hold (ms)
+              Hold, default (ms)
               <input
                 style={field}
                 type="number"
