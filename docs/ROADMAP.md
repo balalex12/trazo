@@ -24,11 +24,10 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 
 ## Next 🔜
 
-- **Before the first release tag:** the publish workflow builds the full library, which includes Esri Calcite icons and the community libraries with third-party logos. Make the public image use `--profile=public` and leave Calcite out of it (the Esri MLA only allows redistribution of the unmodified software, with its license, and a legal check is still pending). See [LIBRARIES.md](LIBRARIES.md)
 - Replace Liberation Sans 1.05 (GPL v2 with font exception) with Liberation Sans 2.x (OFL), and ship the OFL 1.1 text next to the fonts
 - Committed browser test suite (the checks used during development, as Playwright tests) + CI
 - Self-hosted ArcGIS SDK option (fully offline except for map data)
-- Release workflow: GHCR image on tag, changelog, versioning; pin the viewer's nginx image by digest
+- Source releases with a changelog and versioning; pin the viewer's nginx image by digest. **No prebuilt Docker image is published on purpose:** everyone builds locally, which keeps the Esri Calcite icons (Esri MLA) out of anything we redistribute. If a public image is ever wanted, build it with `--profile=public` and without the Calcite sections (see [LIBRARIES.md](LIBRARIES.md))
 - Replace the remaining upstream docs (`dev-docs/`, `examples/`) or move them out of the root
 - Spanish/English UI strings for the new dialogs (i18n)
 - Animation: audio narration / music; richer easing; animate map viewpoints between slides
