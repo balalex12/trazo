@@ -3,8 +3,8 @@
 export const BRAND = {
   name: "Trazo",
   tagline: "Local-first diagram studio for architecture, data, GIS and ML",
-  /** Set to the public repository URL before publishing; empty hides the link in the About dialog. */
-  repoUrl: "",
+  /** Repository URL shown in the About dialog and error reports; empty hides the link. */
+  repoUrl: "https://github.com/balalex12/trazo",
   upstream: {
     name: "Excalidraw",
     url: "https://github.com/excalidraw/excalidraw",

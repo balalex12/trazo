@@ -46,7 +46,7 @@ teams keep asking for:
 Requirements: **Docker** (with Compose v2) and **Node.js 20+** (only to generate the icon library).
 
 ```bash
-git clone https://github.com/<you>/<repo>.git && cd <repo>
+git clone https://github.com/balalex12/trazo.git && cd trazo
 
 node tools/build-library.js      # downloads the Calcite glyphs, builds the ArcGIS library
 docker compose up -d --build     # first build takes a few minutes
@@ -117,7 +117,7 @@ Un estudio de diagramas **local-first** para arquitectura, ingeniería de datos,
 ### Inicio rápido
 
 ```bash
-git clone https://github.com/<tu-usuario>/<repo>.git && cd <repo>
+git clone https://github.com/balalex12/trazo.git && cd trazo
 node tools/build-library.js       # descarga los glifos Calcite y genera la librería
 docker compose up -d --build      # la primera vez tarda unos minutos
 # abre http://localhost:3000
