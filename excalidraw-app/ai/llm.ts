@@ -11,6 +11,9 @@ export type LLMConfig = { provider: LLMProvider; baseUrl: string; model: string;
 
 export const PRESETS: Record<string, { label: string; config: LLMConfig }> = {
   ollama: { label: "Ollama (local)", config: { provider: "openai", baseUrl: "http://localhost:11434/v1", model: "llama3.1", apiKey: "" } },
+  // Ollama Cloud (https://ollama.com): browsers cannot call it directly (no CORS), so the app's nginx forwards
+  // /llm/ollama-cloud/* to ollama.com (deploy/nginx/app.conf). The API key (ollama.com/settings/keys) stays in the browser.
+  ollamacloud: { label: "Ollama Cloud (ollama.com)", config: { provider: "openai", baseUrl: "/llm/ollama-cloud/v1", model: "gpt-oss:120b", apiKey: "" } },
   lmstudio: { label: "LM Studio (local)", config: { provider: "openai", baseUrl: "http://localhost:1234/v1", model: "", apiKey: "" } },
   openai: { label: "OpenAI-compatible (custom URL)", config: { provider: "openai", baseUrl: "https://api.openai.com/v1", model: "", apiKey: "" } },
   anthropic: { label: "Anthropic (Claude)", config: { provider: "anthropic", baseUrl: "https://api.anthropic.com", model: "claude-sonnet-5-5", apiKey: "" } },
@@ -114,7 +117,8 @@ export const streamChat = async (props: TTTDDialog.OnTextSubmitProps): Promise<R
   }
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    return fail(`LLM error ${res.status}: ${text.slice(0, 300)}`, res.status);
+    const hint = res.status === 401 || res.status === 403 ? " — the API key is missing or invalid." : "";
+    return fail(`LLM error ${res.status}${hint} ${text.slice(0, 300)}`, res.status);
   }
 
   props.onStreamCreated?.();
@@ -154,6 +158,41 @@ export const streamChat = async (props: TTTDDialog.OnTextSubmitProps): Promise<R
     props.onChunk?.(cleaned.slice(emitted));
   }
   return cleaned ? { generatedResponse: cleaned, error: null } : fail("The LLM returned an empty answer.", 502);
+};
+
+/**
+ * Lists the models the configured server offers (for the settings dialog). Tries the OpenAI-compatible
+ * `GET {base}/models` first, then Ollama's native `GET {base without /v1}/api/tags` (public on Ollama Cloud).
+ */
+export const listModels = async (cfg: LLMConfig): Promise<string[]> => {
+  const base = cfg.baseUrl.replace(/\/+$/, "");
+  const headers: Record<string, string> = {};
+  if (cfg.apiKey) {
+    headers.Authorization = `Bearer ${cfg.apiKey}`;
+  }
+  const attempts: [string, (j: any) => string[]][] = [
+    [`${base}/models`, (j) => (j.data || []).map((m: any) => m.id)],
+  ];
+  if (base.endsWith("/v1")) {
+    attempts.push([`${base.slice(0, -3)}/api/tags`, (j) => (j.models || []).map((m: any) => m.name || m.model)]);
+  }
+  let lastError = "";
+  for (const [url, pick] of attempts) {
+    try {
+      const res = await fetch(url, { headers });
+      if (!res.ok) {
+        lastError = `HTTP ${res.status}`;
+        continue;
+      }
+      const names = pick(await res.json()).filter(Boolean);
+      if (names.length) {
+        return [...new Set(names)].sort();
+      }
+    } catch (e: any) {
+      lastError = e?.message || "network error";
+    }
+  }
+  throw new Error(`Could not list models (${lastError || "empty list"}). You can still type the model name.`);
 };
 
 /** Quick connectivity check used by the settings dialog. */

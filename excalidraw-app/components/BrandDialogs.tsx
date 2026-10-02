@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { BRAND, EVENTS } from "../branding";
-import { PRESETS, loadLLMConfig, saveLLMConfig, testConnection } from "../ai/llm";
+import { PRESETS, listModels, loadLLMConfig, saveLLMConfig, testConnection } from "../ai/llm";
 
 import type { LLMConfig } from "../ai/llm";
 
@@ -70,10 +70,12 @@ const AISettingsDialog = () => {
   const [open, setOpen] = useOpen(EVENTS.openAISettings);
   const [cfg, setCfg] = useState<LLMConfig>(loadLLMConfig);
   const [status, setStatus] = useState("");
+  const [models, setModels] = useState<string[]>([]);
   useEffect(() => {
     if (open) {
       setCfg(loadLLMConfig());
       setStatus("");
+      setModels([]);
     }
   }, [open]);
   if (!open) {
@@ -106,8 +108,28 @@ const AISettingsDialog = () => {
           </select>
         </label>
         <label>Base URL<input style={field} value={cfg.baseUrl} onChange={(e) => set({ baseUrl: e.target.value })} placeholder="http://localhost:11434/v1" /></label>
-        <label>Model<input style={field} value={cfg.model} onChange={(e) => set({ model: e.target.value })} placeholder="llama3.1" /></label>
+        <label>Model
+          <div style={{ display: "flex", gap: 6 }}>
+            <input style={{ ...field, flex: 1 }} list="llm-models" value={cfg.model} onChange={(e) => set({ model: e.target.value })} placeholder="llama3.1" />
+            <button
+              style={{ ...ghost, margin: "4px 0 10px", whiteSpace: "nowrap" }}
+              onClick={async () => {
+                setStatus("Loading models…");
+                try { const m = await listModels(cfg); setModels(m); setStatus(`${m.length} models available — pick one from the field.`); }
+                catch (e: any) { setStatus(e.message); }
+              }}
+            >Load models</button>
+          </div>
+          <datalist id="llm-models">{models.map((m) => <option key={m} value={m} />)}</datalist>
+        </label>
         <label>API key (leave empty for local servers)<input style={field} type="password" value={cfg.apiKey} onChange={(e) => set({ apiKey: e.target.value })} autoComplete="off" /></label>
+        {cfg.baseUrl.includes("/llm/ollama-cloud") && (
+          <div style={{ background: "#6965db18", padding: 8, borderRadius: 6, fontSize: 12, marginBottom: 10 }}>
+            <b>Ollama Cloud.</b> Create an API key at <code>ollama.com/settings/keys</code> (copy it here). Your prompts are sent
+            to <b>ollama.com</b> through this app's local server (<code>/llm/ollama-cloud</code>); the key is stored only in this
+            browser. Use <i>Load models</i> to see the cloud models available to you.
+          </div>
+        )}
         <div style={{ color: "#888", fontSize: 12, marginBottom: 10 }}>
           Ollama needs <code>OLLAMA_ORIGINS={location.origin}</code> to accept requests from this page. Remote providers also
           need their host allowed in the app's Content-Security-Policy (see docs/SECURITY.md).

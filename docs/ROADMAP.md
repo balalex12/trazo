@@ -7,7 +7,7 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 - ✅ ArcGIS viewer: items/layers/services, any-host URL recognition, portal browser, sketch, multi-portal UI
 - ✅ Library: 150+ English components grouped by source; official Esri icons; per-source sections
 - ✅ Animated slides, Preview/Present, MP4 + GIF export (browser-only)
-- ✅ Opt-in LLM connector (OpenAI-compatible + Anthropic) for Text to diagram
+- ✅ Opt-in LLM connector (OpenAI-compatible, Ollama Cloud via local pass-through, Anthropic) for Text to diagram
 - ✅ Own identity (name, welcome mark, app icons, PWA manifest), About & credits
 - ✅ Community libraries as per-source sections (16 libraries, 311 items; downloaded at build time, public profile without brand-logo libraries)
 

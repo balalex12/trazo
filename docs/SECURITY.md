@@ -23,7 +23,7 @@ SDK and basemaps) plus any portal you add.
 ## 2. What can leave your machine (by your action)
 
 1. **Interactive maps** → Esri and the portals you configure. Unavoidable: a map needs its data.
-2. **LLM** (opt-in, *Menu → AI assistant settings*) → only the base URL you set. The prompt and conversation are sent there. The API key is stored in `localStorage` (key `app-llm-config`) and sent only to that URL.
+2. **LLM** (opt-in, *Menu → AI assistant settings*) → only the base URL you set. With the **Ollama Cloud** preset the request goes to this app's nginx (`/llm/ollama-cloud/`), which forwards it to `ollama.com` — the only case where a container makes an outbound request, and only when the app sends one. The prompt and conversation are sent there. The API key is stored in `localStorage` (key `app-llm-config`) and sent only to that URL.
 3. **Browse libraries** → opens `libraries.excalidraw.com` in a new tab (a plain link). Importing a library from there into the app goes through the URL that site provides.
 4. **#url= links**: Excalidraw can load a scene from a URL you open (`#url=…`); that is a request you initiated.
 

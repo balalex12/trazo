@@ -29,7 +29,7 @@ teams keep asking for:
 | 🗺️ **Live maps inside the canvas** | Embed interactive ArcGIS maps. Add layers by URL or item ID, browse *My content* / search any portal, open Web Maps, sketch on top. Works with **ArcGIS Online and any number of ArcGIS Enterprise portals** at the same time. Optional Utility Network trace (needs a Web Map with a Utility Network). |
 | 🧩 **Architecture-ready library** | 450+ components grouped **by source**, never mixed: official **Esri Architecture Center** icons (Enterprise components, data stores, personas…), Utility Network concepts, services & SDKs, plus 16 curated **community libraries** (data platform, deep learning, system design, UML/ER, network topology, Microsoft Fabric…) downloaded from the official catalog at build time with their authors credited. |
 | 🎞️ **Animated slides** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). Preview, present with ← →, and **export MP4 or GIF** — rendered in your browser, nothing uploaded. |
-| 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model — Ollama / LM Studio locally, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes. |
+| 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model — Ollama / LM Studio locally, **Ollama Cloud**, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes. |
 | 🔒 **Local-first & hardened** | No analytics, no Sentry, no CDN, no service worker, no hosted collaboration. Strict Content-Security-Policy, read-only containers, ports bound to `127.0.0.1`. See [docs/SECURITY.md](docs/SECURITY.md) — and verify it yourself. |
 
 <table>
@@ -64,7 +64,7 @@ Stop with `docker compose down`. Everything listens on `127.0.0.1` only.
 |---|---|---|
 | Opening the app, drawing, saving, animating, exporting | **nothing** | fully local (verified: 0 external hosts, 0 CSP violations, 0 service workers) |
 | You use an interactive map | `js.arcgis.com`, Esri basemaps, **the portals you add** | an ArcGIS map needs them |
-| You configure an LLM | **the URL you set** (e.g. `http://localhost:11434`) | Text to diagram |
+| You configure an LLM | **the URL you set** (e.g. `http://localhost:11434`); with the *Ollama Cloud* preset, `ollama.com` through the local pass-through | Text to diagram |
 | You click *Browse libraries* | `libraries.excalidraw.com` | optional community libraries (a normal link) |
 
 ### Documentation

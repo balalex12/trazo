@@ -20,7 +20,7 @@ flowchart LR
   end
 ```
 
-Two containers, both plain nginx serving static files. There is **no backend**: no database, no API, no collaboration
+Two containers, both plain nginx serving static files (plus one optional pass-through in the app's nginx, `/llm/ollama-cloud/` → `ollama.com`, used only by the Ollama Cloud AI preset). There is **no backend**: no database, no API, no collaboration
 server. All state lives in the browser.
 
 ## 2. Repository map
