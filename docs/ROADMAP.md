@@ -12,9 +12,9 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 - ✅ Community libraries as per-source sections (16 libraries, 311 items; downloaded at build time, public profile without brand-logo libraries)
 
 ## Needs real-world validation 🧪
-- Sign-in against a **private ArcGIS Enterprise** (username/password and OAuth) and multi-portal sessions
+- OAuth sign-in (username/password sign-in and content browsing against a private Enterprise were validated by the maintainer)
 - **Utility Network trace** with a real Web Map containing a Utility Network
-- LLM connector against real Ollama / LM Studio / OpenAI / Anthropic endpoints
+- LLM connector against LM Studio / OpenAI / Anthropic endpoints (validated by the maintainer with one real LLM)
 - MP4 export on browsers other than Chrome/Edge (WebCodecs H.264 availability)
 
 ## Next 🔜

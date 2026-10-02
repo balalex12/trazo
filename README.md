@@ -29,7 +29,7 @@ teams keep asking for:
 | 🗺️ **Live maps inside the canvas** | Embed interactive ArcGIS maps. Add layers by URL or item ID, browse *My content* / search any portal, open Web Maps, sketch on top. Works with **ArcGIS Online and any number of ArcGIS Enterprise portals** at the same time. Optional Utility Network trace (needs a Web Map with a Utility Network). |
 | 🧩 **Architecture-ready library** | 450+ components grouped **by source**, never mixed: official **Esri Architecture Center** icons (Enterprise components, data stores, personas…), Utility Network concepts, services & SDKs, plus 16 curated **community libraries** (data platform, deep learning, system design, UML/ER, network topology, Microsoft Fabric…) downloaded from the official catalog at build time with their authors credited. |
 | 🎞️ **Animated slides** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). Preview, present with ← →, and **export MP4 or GIF** — rendered in your browser, nothing uploaded. |
-| 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model — Ollama / LM Studio locally, **Ollama Cloud**, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes. |
+| 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model — Ollama / LM Studio locally, **Ollama Cloud**, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes, colored by role with symbols (see [docs/AI.md](docs/AI.md#styling-diagrams-colors-symbols)). |
 | 🔒 **Local-first & hardened** | No analytics, no Sentry, no CDN, no service worker, no hosted collaboration. Strict Content-Security-Policy, read-only containers, ports bound to `127.0.0.1`. See [docs/SECURITY.md](docs/SECURITY.md) — and verify it yourself. |
 
 <table>
@@ -95,7 +95,7 @@ Full list: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). "Esri" and "ArcGIS"
 
 ### Status
 
-Trazo is young. Verified end-to-end with automated browser tests: local-first behaviour, library, map embed, animation + MP4/GIF export, LLM connector (against a mock server), multi-portal UI. **Not yet verified against real private portals** (OAuth/Enterprise sign-in, Utility Network trace) — please report what you find. See [docs/ROADMAP.md](docs/ROADMAP.md).
+Trazo is young. Verified end-to-end with automated browser tests: local-first behaviour, library, map embed, animation + MP4/GIF export, multi-portal UI, LLM connector. The maintainer has also validated it by hand against **a private ArcGIS Enterprise portal** (sign-in, content browsing) and with **a real LLM** (text to diagram). **Still pending validation: the Utility Network trace** with a real Web Map — please report what you find. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ### Contributing
 
@@ -140,5 +140,5 @@ Proyecto independiente, no afiliado ni respaldado por Excalidraw ni por Esri.
 
 ### Estado
 
-Joven. Probado de punta a punta con pruebas automáticas de navegador (modo local, librería, mapa, animación y exportación, conector LLM con servidor simulado, interfaz multi-portal).
-**Aún sin validar contra portales privados reales** (inicio de sesión Enterprise/OAuth y trazado de Utility Network): se agradecen reportes. Ver [docs/ROADMAP.md](docs/ROADMAP.md).
+Joven. Probado de punta a punta con pruebas automáticas de navegador (modo local, librería, mapa, animación y exportación, interfaz multi-portal, conector LLM). El mantenedor también lo validó a mano contra **un portal ArcGIS Enterprise privado** (inicio de sesión y exploración de contenido) y con **un LLM real** (texto a diagrama).
+**Pendiente de validar: el trazado de Utility Network** con un Web Map real; se agradecen reportes. Ver [docs/ROADMAP.md](docs/ROADMAP.md).

@@ -1,18 +1,19 @@
-// Configuración global del visor. Todo se puede sobreescribir por query string en el link del embed:
-//   ?id=mapa1&portal=https://gis.empresa.com/portal&webmap=<itemId>&layers=<url|itemId>,<url|itemId>&trace=1
+// Global viewer settings. Most can be overridden per map through the embed link's query string:
+//   ?portal=https://gis.company.com/portal&item=<itemId>&layers=<url|itemId>,<url|itemId>&center=<lon>,<lat>&zoom=<n>&trace=1
 window.ARCGIS_CONFIG = {
-  // ArcGIS Online por defecto. Para Enterprise: "https://gis.empresa.com/portal"
+  // ArcGIS Online by default. For ArcGIS Enterprise use e.g. "https://gis.company.com/portal"
+  // (or add portals from the viewer's top bar: no config needed).
   portalUrl: "https://www.arcgis.com",
-  // App ID (OAuth 2.0) registrado en el portal. Redirect URI a registrar:
+  // OAuth 2.0 app id registered in the portal (optional). Redirect URI to register:
   //   http://localhost:3001/oauth-callback.html
-  // Sin esto solo se ven capas públicas.
+  // Without it the SDK shows its native username/password dialog, which works with any portal.
   oauthAppId: "",
-  // OPCIONAL: App IDs por portal Enterprise (cada portal tiene los suyos). Sin esto, el SDK
-  // muestra su login nativo de usuario/contraseña, que funciona con cualquier portal.
-  //   "https://gis.empresa.com/portal": "AbCdEf123456"
+  // Optional: OAuth app ids per Enterprise portal (each portal has its own).
+  //   "https://gis.company.com/portal": "AbCdEf123456"
   oauthApps: {},
-  // API key (opcional; necesaria para basemaps "arcgis/*"). No la pongas en el link del embed.
+  // API key (optional; needed for "arcgis/*" basemaps). Never put it in a map link: links are stored in the diagram.
   apiKey: "",
+  // Initial view: the whole world. Override with your area of work, or per map with ?center=lon,lat&zoom=n
   center: [0, 20],
   zoom: 2,
   basemap: "streets-vector"

@@ -40,8 +40,9 @@ added from a service is *not enough* (the SDK exposes `utilityNetworks` only on 
 *Map type: Web Map — … (has Utility Network)* tells you. If the map has one, the widget shows automatically; otherwise
 **UN Trace** explains what is missing.
 
-**Status:** the multi-portal UI, item/layer resolution, browsing and persistence are tested against public portals.
-Sign-in against a private Enterprise and the trace itself have **not** been tested with real data yet.
+**Status:** the multi-portal UI, item/layer resolution, browsing and persistence are tested against public portals, and sign-in and
+content browsing were validated by the maintainer against a private ArcGIS Enterprise portal. The trace itself has **not** been
+tested with real data yet.
 
 ## Limits
 

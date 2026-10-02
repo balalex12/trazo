@@ -147,7 +147,11 @@ function (esriConfig, Map, WebMap, MapView, Graphic, Layer, GraphicsLayer, Porta
   // --- Base map + sketch layer ---
   const sketchLayer = new GraphicsLayer({ title: "Dibujo", listMode: "hide" });
   const map0 = new Map({ basemap: param("basemap", cfg.basemap || "streets-vector"), layers: [sketchLayer] });
-  const view = new MapView({ container: "view", map: map0, center: cfg.center, zoom: cfg.zoom });
+  // Initial view: ?center=lon,lat&zoom=n override the config defaults
+  const centerParam = param("center", "").split(",").map(Number);
+  const startCenter = centerParam.length === 2 && centerParam.every(Number.isFinite) ? centerParam : cfg.center;
+  const startZoom = Number.isFinite(Number(param("zoom", ""))) && param("zoom", "") !== "" ? Number(param("zoom", "")) : cfg.zoom;
+  const view = new MapView({ container: "view", map: map0, center: startCenter, zoom: startZoom });
 
   const LAYER_TYPES = ["Feature Service", "Map Service", "Image Service", "Vector Tile Service", "WMS", "WMTS", "KML", "GeoJson", "CSV", "Scene Service"];
   const isItemId = (s) => /^[0-9a-f]{32}$/i.test(s);
