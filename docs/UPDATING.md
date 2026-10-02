@@ -5,7 +5,7 @@ This repository keeps Excalidraw's **full git history** and a remote called `ups
 ```bash
 git remote -v                       # upstream → https://github.com/excalidraw/excalidraw.git
 git fetch upstream
-git merge upstream/master           # (or: git rebase upstream/master)   — conflicts are expected in the files below
+git merge upstream/master           # or: git rebase upstream/master (conflicts are expected in the files below)
 git config rerere.enabled true      # remember conflict resolutions between updates
 ```
 
@@ -42,7 +42,7 @@ git diff HEAD~1 -- . ':!yarn.lock' | grep -n "^+.*https\?://" | grep -v -E "w3.o
 | `excalidraw-app/index.tsx` | imports `brand.scss` after the editor styles (new file: the palette) |
 | `Dockerfile`, `docker-compose.yml`, `.env.production`, `.env.development`, `.gitignore`, `.dockerignore` | hardening / no hosted URLs |
 
-Files **deleted** from upstream (a merge will report "deleted by us" if upstream edits them — keep them deleted): `.github/FUNDING.yml`, `crowdin.yml`, `vercel.json`, `firebase-project/`, `.github/assets/`, workflows `autorelease-excalidraw`, `publish-docker`, `sentry-production`, `locales-coverage`, `size-limit`, `lint`, `test`, `build-docker`, `cancel`, `semantic-pr-title`, `test-coverage-pr` (replaced by our `ci.yml`), and the promo images in `public/`.
+Files **deleted** from upstream (a merge will report "deleted by us" if upstream edits them; keep them deleted): `.github/FUNDING.yml`, `crowdin.yml`, `vercel.json`, `firebase-project/`, `.github/assets/`, workflows `autorelease-excalidraw`, `publish-docker`, `sentry-production`, `locales-coverage`, `size-limit`, `lint`, `test`, `build-docker`, `cancel`, `semantic-pr-title`, `test-coverage-pr` (replaced by our `ci.yml`), and the promo images in `public/`.
 
 ## Tips
 

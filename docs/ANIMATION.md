@@ -36,7 +36,7 @@ Rendering uses Excalidraw's own exporter at the target size (vector re-render, s
 
 - Interactive map embeds render as a placeholder (use _Copy image_ in the map).
 - Matching is by `animKey`; slides not created with _Duplicate slide_ animate only through elements you link manually (`customData.animKey`).
-- No audio yet — see [ROADMAP.md](ROADMAP.md) (narration/music, ideas inspired by HeyGen's Hyperframes).
+- No audio yet; see [ROADMAP.md](ROADMAP.md) (narration/music, ideas inspired by HeyGen's Hyperframes).
 
 ## Inspiration
 

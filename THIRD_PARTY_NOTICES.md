@@ -5,7 +5,7 @@ This project is an independent derivative of Excalidraw. It is **not affiliated 
 ## Excalidraw (the base of this project)
 
 - Project: https://github.com/excalidraw/excalidraw
-- License: MIT — "Copyright (c) 2020 Excalidraw". The upstream license text and copyright notice are kept unchanged in [LICENSE](LICENSE); this project's own additions are under the same MIT license.
+- License: MIT: "Copyright (c) 2020 Excalidraw". The upstream license text and copyright notice are kept unchanged in [LICENSE](LICENSE); this project's own additions are under the same MIT license.
 - The full upstream git history (all contributors' commits) is preserved in this repository.
 - Bundled fonts (Excalifont, Virgil, Cascadia Code, Nunito, Lilita One, Liberation Sans, Xiaolai, Comic Shanns, Assistant) come from upstream Excalidraw under their own licenses (primarily the SIL Open Font License). A per-font license audit is an open task in [docs/ROADMAP.md](docs/ROADMAP.md).
 - Hand-drawn rendering uses [Rough.js](https://roughjs.com/) (MIT) and the other open-source dependencies of Excalidraw (see `yarn.lock`).
@@ -14,7 +14,7 @@ This project is an independent derivative of Excalidraw. It is **not affiliated 
 
 | Asset | Where | Source | License | Redistributed here? |
 | --- | --- | --- | --- | --- |
-| ArcGIS Architecture Center icons (Enterprise Components, Data Stores, General, IT Components, Containers & Labels, User Personas, User Types) | `assets/esri-icons/*.svg`, library sections "Esri Architecture Center · …" | Esri, _ArcGIS Architecture Center → Diagramming resources_ (`ArcGIS_Visio_Toolkit.zip`, updated 2024-12-19) — https://architecture.arcgis.com/en/framework/architecture-practices/diagramming-resources.html | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) © Esri | **Yes**, with attribution; adapted only by converting Visio geometry to SVG (`tools/visio_to_svg.py`) |
+| ArcGIS Architecture Center icons (Enterprise Components, Data Stores, General, IT Components, Containers & Labels, User Personas, User Types) | `assets/esri-icons/*.svg`, library sections "Esri Architecture Center · …" | Esri, _ArcGIS Architecture Center → Diagramming resources_ (`ArcGIS_Visio_Toolkit.zip`, updated 2024-12-19): https://architecture.arcgis.com/en/framework/architecture-practices/diagramming-resources.html | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) © Esri | **Yes**, with attribution; adapted only by converting Visio geometry to SVG (`tools/visio_to_svg.py`) |
 | Calcite UI icons (Utility Network and service/SDK glyphs, container badges) | generated library only | `@esri/calcite-ui-icons` 4.6.0-next.21 via jsDelivr | Esri Master License Agreement (use/redistribute **without modification**) | **No.** Downloaded by `tools/fetch-calcite.mjs` into git-ignored `assets/calcite/` and embedded unmodified (byte-for-byte) in the locally generated library; neither is committed |
 | Project mark / app icons | `public/favicon*`, `public/*chrome*`, welcome screen | original artwork by this project (`tools/make-icons.cjs`) | MIT | yes |
 
@@ -56,5 +56,5 @@ These libraries come from the community catalog at https://libraries.excalidraw.
 
 ## Inspiration (no code copied)
 
-- _Excalidraw Smart Presentation_ (MIT) — frames-as-slides with automatic interpolation.
-- _HyperFrames_ by HeyGen (Apache-2.0) — HTML-to-video; considered for a future audio/narration export.
+- _Excalidraw Smart Presentation_ (MIT): frames-as-slides with automatic interpolation.
+- _HyperFrames_ by HeyGen (Apache-2.0): HTML-to-video; considered for a future audio/narration export.

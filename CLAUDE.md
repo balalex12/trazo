@@ -35,7 +35,7 @@ yarn fix             # Auto-fix formatting and linting issues
 
 ---
 
-# Fork notes (Trazo) — read this first when working on this fork
+# Fork notes (Trazo): read this first when working on this fork
 
 This repository is a **derivative of Excalidraw** (MIT) published as an independent, **local-first** project (working name _Trazo_, see `excalidraw-app/branding.ts`). The sections above describe upstream's structure; this section is what is different here.
 
@@ -48,7 +48,7 @@ This repository is a **derivative of Excalidraw** (MIT) published as an independ
 
 ## Where things are
 
-- `docs/` — ARCHITECTURE, SECURITY, UPDATING, LOCAL_FIRST_CHANGES, VIEWER, ANIMATION, AI, LIBRARIES, BRANDING, ROADMAP.
+- `docs/`: ARCHITECTURE, SECURITY, UPDATING, LOCAL_FIRST_CHANGES, VIEWER, ANIMATION, AI, LIBRARIES, BRANDING, ROADMAP.
 - `viewer/` ArcGIS viewer (static, port 3001; no build step) · `excalidraw-app/animation/` slides + MP4/GIF · `excalidraw-app/ai/llm.ts` LLM connector · `tools/` library builder, icon conversion, Calcite fetch, audit, icons.
 - `deploy/nginx/` configs · `scripts/csp-hashes.mjs` (build-time CSP from inline-script hashes; lives in upstream's `scripts/` because `.dockerignore` only includes that folder).
 
@@ -67,7 +67,7 @@ The viewer folder is mounted read-only: edit `viewer/*` and reload, no rebuild. 
 
 ## Gotchas learned the hard way
 
-- Embedded iframes lack `allow-modals`: `confirm()/prompt()/alert()` silently do nothing — use inline UI.
+- Embedded iframes lack `allow-modals`: `confirm()/prompt()/alert()` silently do nothing; use inline UI.
 - `ExcalidrawFontFace` appended an `esm.sh` fallback to every font; fixed. Re-check after upstream merges.
 - `vite-plugin-pwa` injects service-worker registration by itself unless `injectRegister:false`.
 - Library items cannot carry image files; the generated library has a top-level `files` map that `App.tsx` registers and `useLibraryItemSvg.ts` uses for thumbnails.
