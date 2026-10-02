@@ -1,7 +1,6 @@
 # Updating from Excalidraw upstream
 
-This repository keeps Excalidraw's **full git history** and a remote called `upstream`, so improvements and security
-fixes can be merged. Keep our changes small and additive to make this painless.
+This repository keeps Excalidraw's **full git history** and a remote called `upstream`, so improvements and security fixes can be merged. Keep our changes small and additive to make this painless.
 
 ```bash
 git remote -v                       # upstream → https://github.com/excalidraw/excalidraw.git
@@ -21,9 +20,7 @@ npm i --no-save puppeteer-core && node tools/audit/network-audit.cjs   # MUST re
 
 ## Why the audit matters
 
-Upstream adds features regularly. A new feature may bring a new analytics call, a new CDN font, a new hosted
-endpoint or a new "upgrade" link. **Every merge must be followed by the network audit** and a skim of
-`git diff upstream/master...HEAD --stat` for new `https://` strings:
+Upstream adds features regularly. A new feature may bring a new analytics call, a new CDN font, a new hosted endpoint or a new "upgrade" link. **Every merge must be followed by the network audit** and a skim of `git diff upstream/master...HEAD --stat` for new `https://` strings:
 
 ```bash
 git diff HEAD~1 -- . ':!yarn.lock' | grep -n "^+.*https\?://" | grep -v -E "w3.org|github.com|developer.mozilla"
@@ -32,7 +29,7 @@ git diff HEAD~1 -- . ':!yarn.lock' | grep -n "^+.*https\?://" | grep -v -E "w3.o
 ## Conflict hotspots (files we patch)
 
 | File | Our change |
-|---|---|
+| --- | --- |
 | `excalidraw-app/App.tsx` | collab off, Plus/Share/AI backends removed, command palette, mounts `AnimationPanel`, `BrandDialogs`, library preload, `eid` handling is in the package App (below) |
 | `excalidraw-app/index.html`, `index.tsx`, `sentry.ts`, `vite.config.mts` | no analytics/redirect/preconnect, local fonts, no service worker |
 | `excalidraw-app/components/{AppMainMenu,AppWelcomeScreen,AppFooter,AI,TopErrorBoundary}.tsx` | rewritten / trimmed |
@@ -43,15 +40,10 @@ git diff HEAD~1 -- . ':!yarn.lock' | grep -n "^+.*https\?://" | grep -v -E "w3.o
 | `scripts/woff2/woff2-vite-plugins.js` | fonts from `/` |
 | `Dockerfile`, `docker-compose.yml`, `.env.production`, `.env.development`, `.gitignore`, `.dockerignore` | hardening / no hosted URLs |
 
-Files **deleted** from upstream (a merge will report "deleted by us" if upstream edits them — keep them deleted):
-`.github/FUNDING.yml`, `crowdin.yml`, `vercel.json`, `firebase-project/`, `.github/assets/`, workflows
-`autorelease-excalidraw`, `publish-docker`, `sentry-production`, `locales-coverage`, `size-limit`, and the promo
-images in `public/`.
+Files **deleted** from upstream (a merge will report "deleted by us" if upstream edits them — keep them deleted): `.github/FUNDING.yml`, `crowdin.yml`, `vercel.json`, `firebase-project/`, `.github/assets/`, workflows `autorelease-excalidraw`, `publish-docker`, `sentry-production`, `locales-coverage`, `size-limit`, `lint`, `test`, `build-docker`, `cancel`, `semantic-pr-title`, `test-coverage-pr` (replaced by our `ci.yml`), and the promo images in `public/`.
 
 ## Tips
 
-- If a conflict is in a file we *rewrote* (menu, welcome screen), take upstream's version for new features you want, and
-  re-apply our removals (no Plus/social/sign-up items).
-- A TypeScript error after a merge usually means an upstream API changed. The Docker build runs `tsc`, so it fails
-  loudly rather than silently.
+- If a conflict is in a file we _rewrote_ (menu, welcome screen), take upstream's version for new features you want, and re-apply our removals (no Plus/social/sign-up items).
+- A TypeScript error after a merge usually means an upstream API changed. The Docker build runs `tsc`, so it fails loudly rather than silently.
 - Security fixes in upstream dependencies: merge, rebuild, re-audit.

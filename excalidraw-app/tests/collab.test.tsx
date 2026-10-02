@@ -142,7 +142,10 @@ describe("collaboration", () => {
     });
   });
 
-  it("should allow to undo / redo even on force-deleted elements", async () => {
+  // Skipped on purpose: online collaboration is disabled in this build (`isCollabDisabled = true`), so
+  // `window.collab` does not exist. The collab code is kept dormant as the base of a future self-hosted /
+  // local-network collaboration feature (docs/MAINTAINING.md §3): re-enable this test together with it.
+  it.skip("should allow to undo / redo even on force-deleted elements", async () => {
     await render(<ExcalidrawApp />);
     const rect1Props = {
       type: "rectangle",

@@ -1,40 +1,32 @@
 # Security and privacy
 
-Trazo is designed to be **local-first**: your diagrams, credentials and settings stay in your browser, and the app
-does not phone home. This document states exactly what that means, what we hardened, what remains, and how you can
-verify every claim.
+Trazo is designed to be **local-first**: your diagrams, credentials and settings stay in your browser, and the app does not phone home. This document states exactly what that means, what we hardened, what remains, and how you can verify every claim.
 
 ## 1. Guarantees (and how they are verified)
 
 | Claim | How it is enforced | How to verify |
-|---|---|---|
-| No telemetry/analytics | Simple Analytics script, Sentry, Google Analytics block, tracking events removed (`excalidraw-app/index.html`, `sentry.ts`) | `tools/audit/network-audit.cjs` → *EXTERNAL HOSTS: none* |
+| --- | --- | --- |
+| No telemetry/analytics | Simple Analytics script, Sentry, Google Analytics block, tracking events removed (`excalidraw-app/index.html`, `sentry.ts`) | `tools/audit/network-audit.cjs` → _EXTERNAL HOSTS: none_ |
 | No third-party CDN | Fonts are served from this origin (`woff2-vite-plugins.js` → `/`; CDN fallback removed in `ExcalidrawFontFace.ts`) | same script; DevTools → Network |
 | No hosted services | Env vars for collab / share / Excalidraw+ / AI / Firebase are blank; UI entries removed | `docs/LOCAL_FIRST_CHANGES.md` |
 | No service worker | `injectRegister: false`; old workers are unregistered on load (`index.tsx`) | DevTools → Application → Service workers: none |
-| Strict CSP | nginx header generated at image build with the sha256 of each inline script (no `unsafe-inline` for scripts) | `curl -I http://localhost:3000` and the script above reports *CSP violations: none* |
+| Strict CSP | nginx header generated at image build with the sha256 of each inline script (no `unsafe-inline` for scripts) | `curl -I http://localhost:3000` and the script above reports _CSP violations: none_ |
 | Not reachable from your LAN | compose binds `127.0.0.1:3000/3001` | `docker compose ps` → `127.0.0.1:…` |
 
-Measured on the current build (headless Chrome, load + menu + library + map embed + animation panel + text-to-diagram
-dialog): **0 external hosts for the app, 0 CSP violations, 0 service workers**. Hosts contacted only when a map embed
-is used: `js.arcgis.com`, `www.arcgis.com`, `cdn.arcgis.com`, `basemaps.arcgis.com`, `static.arcgis.com` (the ArcGIS
-SDK and basemaps) plus any portal you add.
+Measured on the current build (headless Chrome, load + menu + library + map embed + animation panel + text-to-diagram dialog): **0 external hosts for the app, 0 CSP violations, 0 service workers**. Hosts contacted only when a map embed is used: `js.arcgis.com`, `www.arcgis.com`, `cdn.arcgis.com`, `basemaps.arcgis.com`, `static.arcgis.com` (the ArcGIS SDK and basemaps) plus any portal you add.
 
 ## 2. What can leave your machine (by your action)
 
 1. **Interactive maps** → Esri and the portals you configure. Unavoidable: a map needs its data.
-2. **LLM** (opt-in, *Menu → AI assistant settings*) → only the base URL you set. With the **Ollama Cloud** preset the request goes to this app's nginx (`/llm/ollama-cloud/`), which forwards it to `ollama.com` — the only case where a container makes an outbound request, and only when the app sends one. The prompt and conversation are sent there. The API key is stored in `localStorage` (key `app-llm-config`) and sent only to that URL.
+2. **LLM** (opt-in, _Menu → AI assistant settings_) → only the base URL you set. With the **Ollama Cloud** preset the request goes to this app's nginx (`/llm/ollama-cloud/`), which forwards it to `ollama.com` — the only case where a container makes an outbound request, and only when the app sends one. The prompt and conversation are sent there. The API key is stored in `localStorage` (key `app-llm-config`) and sent only to that URL.
 3. **Browse libraries** → opens `libraries.excalidraw.com` in a new tab (a plain link). Importing a library from there into the app goes through the URL that site provides.
 4. **#url= links**: Excalidraw can load a scene from a URL you open (`#url=…`); that is a request you initiated.
 
 ## 3. Hardening applied
 
-**Containers** (`docker-compose.yml`): ports bound to `127.0.0.1`; `read_only: true` root FS with `tmpfs` for nginx
-runtime dirs; `cap_drop: ALL` + only `CHOWN, SETGID, SETUID, NET_BIND_SERVICE`; `no-new-privileges`.
+**Containers** (`docker-compose.yml`): ports bound to `127.0.0.1`; `read_only: true` root FS with `tmpfs` for nginx runtime dirs; `cap_drop: ALL` + only `CHOWN, SETGID, SETUID, NET_BIND_SERVICE`; `no-new-privileges`.
 
-**nginx** (`deploy/nginx/*.conf`): `server_tokens off`; `X-Content-Type-Options: nosniff`; `Referrer-Policy`;
-`Permissions-Policy` (camera, microphone, geolocation, payment, usb denied); `Cross-Origin-Opener-Policy: same-origin`
-(app); `Cache-Control: no-cache` (avoids stale versions).
+**nginx** (`deploy/nginx/*.conf`): `server_tokens off`; `X-Content-Type-Options: nosniff`; `Referrer-Policy`; `Permissions-Policy` (camera, microphone, geolocation, payment, usb denied); `Cross-Origin-Opener-Policy: same-origin` (app); `Cache-Control: no-cache` (avoids stale versions).
 
 **App CSP** (generated by `scripts/csp-hashes.mjs` during `docker build`):
 
@@ -46,24 +38,18 @@ frame-src 'self' http://localhost:3001 http://127.0.0.1:3001 https:;
 worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 ```
 
-Trade-offs, stated honestly: `style-src 'unsafe-inline'` is needed by React inline styles; `frame-src https:` lets you
-embed any HTTPS page (ArcGIS apps, video) — embedded pages run in a sandboxed iframe; `connect-src` allows local
-LLM servers on any port of localhost. **To use a remote LLM host**, add it to `connect-src` in `scripts/csp-hashes.mjs`
-and rebuild.
+Trade-offs, stated honestly: `style-src 'unsafe-inline'` is needed by React inline styles; `frame-src https:` lets you embed any HTTPS page (ArcGIS apps, video) — embedded pages run in a sandboxed iframe; `connect-src` allows local LLM servers on any port of localhost. **To use a remote LLM host**, add it to `connect-src` in `scripts/csp-hashes.mjs` and rebuild.
 
-**Viewer CSP** (`deploy/nginx/viewer.conf`): scripts only from `self` and `https://js.arcgis.com` (no `unsafe-eval`,
-no inline scripts); it can only be framed by the app origin (`frame-ancestors`).
+**Viewer CSP** (`deploy/nginx/viewer.conf`): scripts only from `self` and `https://js.arcgis.com` (no `unsafe-eval`, no inline scripts); it can only be framed by the app origin (`frame-ancestors`).
 
-**Iframe isolation**: the viewer runs on a different origin (port 3001) from the app (3000), inside an iframe sandbox
-(`allow-scripts allow-forms allow-popups …`; `allow-same-origin` only for localhost/ArcGIS URLs). Without
-`allow-modals`, `confirm()`/`prompt()` do nothing inside embeds — the viewer uses inline UI instead.
+**Iframe isolation**: the viewer runs on a different origin (port 3001) from the app (3000), inside an iframe sandbox (`allow-scripts allow-forms allow-popups …`; `allow-same-origin` only for localhost/ArcGIS URLs). Without `allow-modals`, `confirm()`/`prompt()` do nothing inside embeds — the viewer uses inline UI instead.
 
 ## 4. Where sensitive data lives (and the residual risk)
 
 | Data | Location | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Diagrams | browser `localStorage` / IndexedDB of `localhost:3000` | export `.excalidraw` files regularly |
-| Portal sign-in tokens | `localStorage` of `localhost:3001` (key `arcgis-credentials`) | tokens expire per portal policy; anyone with access to your browser profile can read them. Use *Sign out* on shared machines |
+| Portal sign-in tokens | `localStorage` of `localhost:3001` (key `arcgis-credentials`) | tokens expire per portal policy; anyone with access to your browser profile can read them. Use _Sign out_ on shared machines |
 | Map layers / sketches per map | `localStorage` of `localhost:3001` (`arcgis-embed:<id>`) | not included in exported `.excalidraw` files |
 | LLM config + key | `localStorage` of `localhost:3000` (`app-llm-config`) | stored in clear text in the browser profile |
 
@@ -75,7 +61,7 @@ Never put tokens or API keys in a map link (`?token=`): links are stored in the 
 - Vendored libraries live in `public/vendor/` (no yarn.lock change): hashes in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 - Calcite glyphs are fetched from jsDelivr at a pinned version (`tools/fetch-calcite.mjs`); community libraries from `raw.githubusercontent.com/excalidraw/excalidraw-libraries` (`tools/fetch-community-libraries.mjs`). Both downloads happen on **your machine at build time**, never at runtime. Review `libraries/community.json` before adding a source: library files are plain JSON of drawing elements (no code), but their drawings are third-party content.
 - The ArcGIS SDK is loaded from `js.arcgis.com` at runtime (version pinned in `viewer/index.html`). Self-hosting it is on the roadmap.
-- Run `yarn audit` before releases (Excalidraw's dependency tree is large).
+- Run `yarn audit` before releases (Excalidraw's dependency tree is large). Known: the dormant, unreachable collaboration code keeps `firebase` (→ `protobufjs`, `websocket-driver`) in the tree, and the unused `examples/` workspace brings `next`; see [MAINTAINING.md](MAINTAINING.md) §3 for why these do not affect the deployed static app.
 
 ## 6. Verify it yourself
 
@@ -84,11 +70,8 @@ npm i --no-save puppeteer-core
 CHROME_PATH="/path/to/chrome" node tools/audit/network-audit.cjs
 ```
 
-The script opens the app, exercises menu / library / map / animation / text-to-diagram and prints every external host
-contacted, CSP violations and service workers. **Re-run it after every upstream merge**: new upstream features may add
-network calls ([UPDATING.md](UPDATING.md)).
+The script opens the app, exercises menu / library / map / animation / text-to-diagram and prints every external host contacted, CSP violations and service workers. **Re-run it after every upstream merge**: new upstream features may add network calls ([UPDATING.md](UPDATING.md)).
 
 ## 7. Reporting a vulnerability
 
-Please do **not** open a public issue. Use GitHub's private vulnerability reporting ("Security" tab → "Report a
-vulnerability") once the repository is public, or email the maintainer address in the repository profile.
+Please do **not** open a public issue. Use GitHub's private vulnerability reporting ("Security" tab → "Report a vulnerability") once the repository is public, or email the maintainer address in the repository profile.

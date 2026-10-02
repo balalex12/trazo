@@ -4,7 +4,8 @@ labels: [enhancement]
 body:
   - type: textarea
     id: problem
-    attributes: { label: What problem would this solve? (architecture, data, GIS, ML...) }
+    attributes:
+      { label: What problem would this solve? (architecture, data, GIS, ML...) }
     validations: { required: true }
   - type: textarea
     id: idea

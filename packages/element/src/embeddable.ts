@@ -168,7 +168,6 @@ const ALLOW_SAME_ORIGIN = new Set([
   "forms.microsoft.com",
 ]);
 
-
 // ---- ArcGIS: any portal / any item -------------------------------------
 const ID32 = "([0-9a-f]{32})";
 const RE_ARCGIS_APP =
@@ -186,23 +185,66 @@ const toArcGISViewerLink = (url: string): string | null => {
     Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
     return u.toString();
   };
-  const before = (marker: string) => clean.slice(0, clean.toLowerCase().indexOf(marker));
+  const before = (marker: string) =>
+    clean.slice(0, clean.toLowerCase().indexOf(marker));
 
-  if ((m = clean.match(new RegExp(String.raw`/home/item\.html\?(?:.*&)?id=${ID32}`, "i")))) {
-    return viewer({ portal: before("/home/"), item: m[1], id: m[1].slice(0, 8) });
+  if (
+    (m = clean.match(
+      new RegExp(String.raw`/home/item\.html\?(?:.*&)?id=${ID32}`, "i"),
+    ))
+  ) {
+    return viewer({
+      portal: before("/home/"),
+      item: m[1],
+      id: m[1].slice(0, 8),
+    });
   }
-  if ((m = clean.match(new RegExp(String.raw`/home/webmap/viewer\.html\?(?:.*&)?webmap=${ID32}`, "i")))) {
-    return viewer({ portal: before("/home/"), item: m[1], id: m[1].slice(0, 8) });
+  if (
+    (m = clean.match(
+      new RegExp(
+        String.raw`/home/webmap/viewer\.html\?(?:.*&)?webmap=${ID32}`,
+        "i",
+      ),
+    ))
+  ) {
+    return viewer({
+      portal: before("/home/"),
+      item: m[1],
+      id: m[1].slice(0, 8),
+    });
   }
-  if ((m = clean.match(new RegExp(String.raw`/apps/mapviewer/index\.html\?(?:.*&)?webmap=${ID32}`, "i")))) {
-    return viewer({ portal: before("/apps/"), item: m[1], id: m[1].slice(0, 8) });
+  if (
+    (m = clean.match(
+      new RegExp(
+        String.raw`/apps/mapviewer/index\.html\?(?:.*&)?webmap=${ID32}`,
+        "i",
+      ),
+    ))
+  ) {
+    return viewer({
+      portal: before("/apps/"),
+      item: m[1],
+      id: m[1].slice(0, 8),
+    });
   }
-  if ((m = clean.match(new RegExp(String.raw`/sharing/rest/content/items/${ID32}`, "i")))) {
-    return viewer({ portal: before("/sharing/"), item: m[1], id: m[1].slice(0, 8) });
+  if (
+    (m = clean.match(
+      new RegExp(String.raw`/sharing/rest/content/items/${ID32}`, "i"),
+    ))
+  ) {
+    return viewer({
+      portal: before("/sharing/"),
+      item: m[1],
+      id: m[1].slice(0, 8),
+    });
   }
-  if (/\/rest\/services\/.+\/(Feature|Map|Image|VectorTile)Server(\/\d+)?\/?$/i.test(clean.split("?")[0])) {
+  if (
+    /\/rest\/services\/.+\/(Feature|Map|Image|VectorTile)Server(\/\d+)?\/?$/i.test(
+      clean.split("?")[0],
+    )
+  ) {
     const svc = clean.split("?")[0].replace(/\/$/, "");
-    return viewer({ layers: svc, id: "svc" + svc.length });
+    return viewer({ layers: svc, id: `svc${svc.length}` });
   }
   return null;
 };

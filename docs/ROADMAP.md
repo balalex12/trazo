@@ -3,6 +3,7 @@
 Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 next · 💡 idea
 
 ## Done
+
 - ✅ Local-first: no telemetry/CDN/hosted services, strict CSP, hardened containers, network audit script
 - ✅ ArcGIS viewer: items/layers/services, any-host URL recognition, portal browser, sketch, multi-portal UI
 - ✅ Library: 150+ English components grouped by source; official Esri icons; per-source sections
@@ -12,12 +13,14 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 - ✅ Community libraries as per-source sections (16 libraries, 311 items; downloaded at build time, public profile without brand-logo libraries)
 
 ## Needs real-world validation 🧪
+
 - OAuth sign-in (username/password sign-in and content browsing against a private Enterprise were validated by the maintainer)
 - **Utility Network trace** with a real Web Map containing a Utility Network
 - LLM connector against LM Studio / OpenAI / Anthropic endpoints (validated by the maintainer with one real LLM)
 - MP4 export on browsers other than Chrome/Edge (WebCodecs H.264 availability)
 
 ## Next 🔜
+
 - Per-font license audit and a complete `THIRD_PARTY_NOTICES`
 - Committed browser test suite (the checks used during development, as Playwright tests) + CI
 - Self-hosted ArcGIS SDK option (fully offline except for map data)
@@ -27,6 +30,8 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 - Animation: audio narration / music; richer easing; animate map viewpoints between slides
 
 ## Ideas 💡
+
+- **Self-hosted / local-network collaboration**: reuse the dormant collab code (socket.io + storage) against a server you run yourself (never a third-party service by default), documented in SECURITY.md before it ships
 - Export slides to a HyperFrames composition for narration/overlays (Apache-2.0 tool by HeyGen)
 - Diagram-to-code and "explain this architecture" with a vision-capable model
 - ArcGIS-aware templates: Enterprise deployment topologies, Utility Network data models, ML/data platform reference architectures
@@ -34,6 +39,7 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 - Optional encrypted sync to a self-hosted store (never a hosted service by default)
 
 ## Known limits
+
 - Map embeds are live iframes: exported as a placeholder in video; layers/sketches are not part of the `.excalidraw` file
 - Web Scenes (3D) are not supported in the viewer
 - Interpolation: line points interpolate only when the point count matches

@@ -2,14 +2,13 @@
 
 # Trazo
 
-**A local-first diagram studio for architecture, data engineering, GIS and machine learning.**
-Hand-drawn whiteboard · live ArcGIS maps · animated slides → MP4/GIF · bring-your-own LLM · no telemetry.
+**A local-first diagram studio for architecture, data engineering, GIS and machine learning.** Hand-drawn whiteboard · live ArcGIS maps · animated slides → MP4/GIF · bring-your-own LLM · no telemetry.
 
 <img src="docs/media/animation-demo.gif" alt="An ArcGIS Enterprise architecture built step by step with Trazo: animated slides with official Esri icons, exported as a GIF" width="720">
 
 <sub>An ArcGIS Enterprise architecture built step by step — made and exported to GIF with Trazo itself (official Esri Architecture Center icons).</sub>
 
-*Built on [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Not affiliated with or endorsed by Excalidraw or Esri.*
+_Built on [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Not affiliated with or endorsed by Excalidraw or Esri._
 
 [English](#english) · [Español](#español)
 
@@ -21,12 +20,11 @@ Hand-drawn whiteboard · live ArcGIS maps · animated slides → MP4/GIF · brin
 
 ### Why Trazo?
 
-Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes it great and adds what technical
-teams keep asking for:
+Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes it great and adds what technical teams keep asking for:
 
-| | |
-|---|---|
-| 🗺️ **Live maps inside the canvas** | Embed interactive ArcGIS maps. Add layers by URL or item ID, browse *My content* / search any portal, open Web Maps, sketch on top. Works with **ArcGIS Online and any number of ArcGIS Enterprise portals** at the same time. Optional Utility Network trace (needs a Web Map with a Utility Network). |
+|  |  |
+| --- | --- |
+| 🗺️ **Live maps inside the canvas** | Embed interactive ArcGIS maps. Add layers by URL or item ID, browse _My content_ / search any portal, open Web Maps, sketch on top. Works with **ArcGIS Online and any number of ArcGIS Enterprise portals** at the same time. Optional Utility Network trace (needs a Web Map with a Utility Network). |
 | 🧩 **Architecture-ready library** | 450+ components grouped **by source**, never mixed: official **Esri Architecture Center** icons (Enterprise components, data stores, personas…), Utility Network concepts, services & SDKs, plus 16 curated **community libraries** (data platform, deep learning, system design, UML/ER, network topology, Microsoft Fabric…) downloaded from the official catalog at build time with their authors credited. |
 | 🎞️ **Animated slides** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). Preview, present with ← →, and **export MP4 or GIF** — rendered in your browser, nothing uploaded. |
 | 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model — Ollama / LM Studio locally, **Ollama Cloud**, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes, colored by role with symbols (see [docs/AI.md](docs/AI.md#styling-diagrams-colors-symbols)). |
@@ -61,16 +59,16 @@ Stop with `docker compose down`. Everything listens on `127.0.0.1` only.
 ### What talks to the network?
 
 | When | Contacts | Why |
-|---|---|---|
+| --- | --- | --- |
 | Opening the app, drawing, saving, animating, exporting | **nothing** | fully local (verified: 0 external hosts, 0 CSP violations, 0 service workers) |
 | You use an interactive map | `js.arcgis.com`, Esri basemaps, **the portals you add** | an ArcGIS map needs them |
-| You configure an LLM | **the URL you set** (e.g. `http://localhost:11434`); with the *Ollama Cloud* preset, `ollama.com` through the local pass-through | Text to diagram |
-| You click *Browse libraries* | `libraries.excalidraw.com` | optional community libraries (a normal link) |
+| You configure an LLM | **the URL you set** (e.g. `http://localhost:11434`); with the _Ollama Cloud_ preset, `ollama.com` through the local pass-through | Text to diagram |
+| You click _Browse libraries_ | `libraries.excalidraw.com` | optional community libraries (a normal link) |
 
 ### Documentation
 
-| | |
-|---|---|
+|  |  |
+| --- | --- |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How it is built and why |
 | [docs/SECURITY.md](docs/SECURITY.md) | Threat model, hardening, how to verify |
 | [docs/VIEWER.md](docs/VIEWER.md) | ArcGIS viewer: portals, sign-in, layers, Utility Network |
@@ -107,8 +105,7 @@ Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Security repo
 
 ### ¿Qué es Trazo?
 
-Un estudio de diagramas **local-first** para arquitectura, ingeniería de datos, GIS y ciencia de datos / ML, construido sobre
-[Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Conserva su estilo dibujado a mano y añade:
+Un estudio de diagramas **local-first** para arquitectura, ingeniería de datos, GIS y ciencia de datos / ML, construido sobre [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Conserva su estilo dibujado a mano y añade:
 
 - 🗺️ **Mapas ArcGIS vivos dentro del lienzo**, con capas por URL o ID, búsqueda en el portal, Web Maps y dibujo encima. Funciona con **ArcGIS Online y varios ArcGIS Enterprise a la vez**; trazado de Utility Network opcional.
 - 🧩 **Librería para arquitectura** con más de 150 componentes en inglés agrupados por fuente (íconos oficiales de Esri Architecture Center, Utility Network, servicios y SDK).
@@ -129,16 +126,12 @@ Requisitos: Docker y Node.js 20+. Todo escucha solo en `127.0.0.1`.
 
 ### Privacidad y red
 
-La app, el dibujo, la animación y la exportación **no hacen ninguna conexión externa**. Solo se conecta a Esri y a los portales que añadas cuando usas un mapa,
-a la URL de tu LLM si lo configuras, y a `libraries.excalidraw.com` si pulsas *Browse libraries*. Cómo verificarlo: [docs/SECURITY.md](docs/SECURITY.md).
+La app, el dibujo, la animación y la exportación **no hacen ninguna conexión externa**. Solo se conecta a Esri y a los portales que añadas cuando usas un mapa, a la URL de tu LLM si lo configuras, y a `libraries.excalidraw.com` si pulsas _Browse libraries_. Cómo verificarlo: [docs/SECURITY.md](docs/SECURITY.md).
 
 ### Créditos y licencias
 
-Excalidraw (MIT, © 2020 Excalidraw) · íconos de Esri Architecture Center (CC BY 4.0, © Esri) · íconos Calcite (licencia de Esri, se descargan al construir y **no** se redistribuyen) · 16 librerías comunitarias con sus autores acreditados (se descargan del catálogo oficial al construir; el perfil `--profile=public` omite las que traen logos de marcas) ·
-ArcGIS Maps SDK (© Esri, se carga en ejecución) · mp4-muxer y gifenc (MIT). Detalle en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-Proyecto independiente, no afiliado ni respaldado por Excalidraw ni por Esri.
+Excalidraw (MIT, © 2020 Excalidraw) · íconos de Esri Architecture Center (CC BY 4.0, © Esri) · íconos Calcite (licencia de Esri, se descargan al construir y **no** se redistribuyen) · 16 librerías comunitarias con sus autores acreditados (se descargan del catálogo oficial al construir; el perfil `--profile=public` omite las que traen logos de marcas) · ArcGIS Maps SDK (© Esri, se carga en ejecución) · mp4-muxer y gifenc (MIT). Detalle en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Proyecto independiente, no afiliado ni respaldado por Excalidraw ni por Esri.
 
 ### Estado
 
-Joven. Probado de punta a punta con pruebas automáticas de navegador (modo local, librería, mapa, animación y exportación, interfaz multi-portal, conector LLM). El mantenedor también lo validó a mano contra **un portal ArcGIS Enterprise privado** (inicio de sesión y exploración de contenido) y con **un LLM real** (texto a diagrama).
-**Pendiente de validar: el trazado de Utility Network** con un Web Map real; se agradecen reportes. Ver [docs/ROADMAP.md](docs/ROADMAP.md).
+Joven. Probado de punta a punta con pruebas automáticas de navegador (modo local, librería, mapa, animación y exportación, interfaz multi-portal, conector LLM). El mantenedor también lo validó a mano contra **un portal ArcGIS Enterprise privado** (inicio de sesión y exploración de contenido) y con **un LLM real** (texto a diagrama). **Pendiente de validar: el trazado de Utility Network** con un Web Map real; se agradecen reportes. Ver [docs/ROADMAP.md](docs/ROADMAP.md).

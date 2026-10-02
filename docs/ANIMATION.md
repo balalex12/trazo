@@ -3,19 +3,16 @@
 Open **🎞 Animation** (bottom center of the editor).
 
 1. **Slides are frames.** Press `F` and draw a frame; put your content inside it. Slides are ordered by y position (then x).
-2. **Duplicate slide** copies the selected frame (or the last one) *below* it and links every copy to its original with `customData.animKey`.
+2. **Duplicate slide** copies the selected frame (or the last one) _below_ it and links every copy to its original with `customData.animKey`.
 3. Change things in the new slide: move, resize, recolour, change opacity or font size, add or delete elements.
 4. **▶ Preview** plays the whole animation; **⛶ Present** is manual (`→`/`Space`/click = next, `←` = previous, `Esc` = exit).
 5. **Export MP4** (H.264) or **Export GIF**. Settings: transition (ms), hold (ms), easing, FPS, width.
 
 ## How it animates
 
-Elements with the same `animKey` are interpolated in frame-relative coordinates: position, size, angle, opacity, stroke
-and fill colour, stroke width, font size and the points of lines/arrows (when the point count matches). Elements that
-exist in only one slide fade out/in. Slides of different sizes interpolate their size.
+Elements with the same `animKey` are interpolated in frame-relative coordinates: position, size, angle, opacity, stroke and fill colour, stroke width, font size and the points of lines/arrows (when the point count matches). Elements that exist in only one slide fade out/in. Slides of different sizes interpolate their size.
 
-Rendering uses Excalidraw's own exporter at the target size (vector re-render, so Preview/Present/exports are sharp
-at any resolution). Hold frames are rendered once and reused.
+Rendering uses Excalidraw's own exporter at the target size (vector re-render, so Preview/Present/exports are sharp at any resolution). Hold frames are rendered once and reused.
 
 ## Export details
 
@@ -25,12 +22,10 @@ at any resolution). Hold frames are rendered once and reused.
 
 ## Limits
 
-- Interactive map embeds render as a placeholder (use *Copy image* in the map).
-- Matching is by `animKey`; slides not created with *Duplicate slide* animate only through elements you link manually (`customData.animKey`).
+- Interactive map embeds render as a placeholder (use _Copy image_ in the map).
+- Matching is by `animKey`; slides not created with _Duplicate slide_ animate only through elements you link manually (`customData.animKey`).
 - No audio yet — see [ROADMAP.md](ROADMAP.md) (narration/music, ideas inspired by HeyGen's Hyperframes).
 
 ## Inspiration
 
-Idea of "frames as slides + automatic interpolation" is inspired by *Excalidraw Smart Presentation*
-(MIT, https://github.com/excalidraw-smart-presentation). No code was copied: it is a fork of an older Excalidraw
-base with a fixed 300 ms linear transition and no export, so this module was implemented natively.
+Idea of "frames as slides + automatic interpolation" is inspired by _Excalidraw Smart Presentation_ (MIT, https://github.com/excalidraw-smart-presentation). No code was copied: it is a fork of an older Excalidraw base with a fixed 300 ms linear transition and no export, so this module was implemented natively.

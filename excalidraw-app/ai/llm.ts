@@ -7,20 +7,70 @@ import { RequestError } from "@excalidraw/excalidraw/errors";
 import type { TTTDDialog } from "@excalidraw/excalidraw/components/TTDDialog/types";
 
 export type LLMProvider = "off" | "openai" | "anthropic";
-export type LLMConfig = { provider: LLMProvider; baseUrl: string; model: string; apiKey: string };
+export type LLMConfig = {
+  provider: LLMProvider;
+  baseUrl: string;
+  model: string;
+  apiKey: string;
+};
 
 export const PRESETS: Record<string, { label: string; config: LLMConfig }> = {
-  ollama: { label: "Ollama (local)", config: { provider: "openai", baseUrl: "http://localhost:11434/v1", model: "llama3.1", apiKey: "" } },
+  ollama: {
+    label: "Ollama (local)",
+    config: {
+      provider: "openai",
+      baseUrl: "http://localhost:11434/v1",
+      model: "llama3.1",
+      apiKey: "",
+    },
+  },
   // Ollama Cloud (https://ollama.com): browsers cannot call it directly (no CORS), so the app's nginx forwards
   // /llm/ollama-cloud/* to ollama.com (deploy/nginx/app.conf). The API key (ollama.com/settings/keys) stays in the browser.
-  ollamacloud: { label: "Ollama Cloud (ollama.com)", config: { provider: "openai", baseUrl: "/llm/ollama-cloud/v1", model: "gpt-oss:120b", apiKey: "" } },
-  lmstudio: { label: "LM Studio (local)", config: { provider: "openai", baseUrl: "http://localhost:1234/v1", model: "", apiKey: "" } },
-  openai: { label: "OpenAI-compatible (custom URL)", config: { provider: "openai", baseUrl: "https://api.openai.com/v1", model: "", apiKey: "" } },
-  anthropic: { label: "Anthropic (Claude)", config: { provider: "anthropic", baseUrl: "https://api.anthropic.com", model: "claude-sonnet-5-5", apiKey: "" } },
+  ollamacloud: {
+    label: "Ollama Cloud (ollama.com)",
+    config: {
+      provider: "openai",
+      baseUrl: "/llm/ollama-cloud/v1",
+      model: "gpt-oss:120b",
+      apiKey: "",
+    },
+  },
+  lmstudio: {
+    label: "LM Studio (local)",
+    config: {
+      provider: "openai",
+      baseUrl: "http://localhost:1234/v1",
+      model: "",
+      apiKey: "",
+    },
+  },
+  openai: {
+    label: "OpenAI-compatible (custom URL)",
+    config: {
+      provider: "openai",
+      baseUrl: "https://api.openai.com/v1",
+      model: "",
+      apiKey: "",
+    },
+  },
+  anthropic: {
+    label: "Anthropic (Claude)",
+    config: {
+      provider: "anthropic",
+      baseUrl: "https://api.anthropic.com",
+      model: "claude-sonnet-5-5",
+      apiKey: "",
+    },
+  },
 };
 
 const KEY = "app-llm-config";
-export const OFF: LLMConfig = { provider: "off", baseUrl: "", model: "", apiKey: "" };
+export const OFF: LLMConfig = {
+  provider: "off",
+  baseUrl: "",
+  model: "",
+  apiKey: "",
+};
 
 export const loadLLMConfig = (): LLMConfig => {
   try {
@@ -64,15 +114,24 @@ Styling for flowcharts (rendered as hand-drawn shapes; only the styles below are
  */
 const unfence = (raw: string, final: boolean) => {
   const t = raw.replace(/^\s*```[a-zA-Z]*[ \t]*\n?/, "");
-  return final ? t.replace(/\n?```\s*$/, "").trim() : t.replace(/\n?`{0,3}$/, "");
+  return final
+    ? t.replace(/\n?```\s*$/, "").trim()
+    : t.replace(/\n?`{0,3}$/, "");
 };
 
 type Ret = TTTDDialog.OnTextSubmitRetValue;
 
-const fail = (message: string, status = 500): Ret => ({ error: new RequestError({ message, status }), generatedResponse: null });
+const fail = (message: string, status = 500): Ret => ({
+  error: new RequestError({ message, status }),
+  generatedResponse: null,
+});
 
 /** Reads an SSE response and calls `onData` with each `data:` payload. */
-async function readSSE(res: Response, onData: (data: string) => void, signal?: AbortSignal) {
+async function readSSE(
+  res: Response,
+  onData: (data: string) => void,
+  signal?: AbortSignal,
+) {
   const reader = res.body?.getReader();
   if (!reader) {
     throw new Error("The LLM server returned no stream.");
@@ -99,15 +158,22 @@ async function readSSE(res: Response, onData: (data: string) => void, signal?: A
   }
 }
 
-export const streamChat = async (props: TTTDDialog.OnTextSubmitProps): Promise<Ret> => {
+export const streamChat = async (
+  props: TTTDDialog.OnTextSubmitProps,
+): Promise<Ret> => {
   const cfg = loadLLMConfig();
   if (cfg.provider === "off" || !cfg.baseUrl) {
-    return fail("The AI assistant is off. Open the menu → “AI assistant settings” and connect your own LLM (for example Ollama, running locally).", 400);
+    return fail(
+      "The AI assistant is off. Open the menu → “AI assistant settings” and connect your own LLM (for example Ollama, running locally).",
+      400,
+    );
   }
   const base = cfg.baseUrl.replace(/\/+$/, "");
   const isClaude = cfg.provider === "anthropic";
   const url = isClaude ? `${base}/v1/messages` : `${base}/chat/completions`;
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
   if (isClaude) {
     headers["x-api-key"] = cfg.apiKey;
     headers["anthropic-version"] = "2023-06-01";
@@ -116,22 +182,50 @@ export const streamChat = async (props: TTTDDialog.OnTextSubmitProps): Promise<R
     headers.Authorization = `Bearer ${cfg.apiKey}`;
   }
   const body = isClaude
-    ? { model: cfg.model, max_tokens: 4096, system: SYSTEM_PROMPT, messages: props.messages, stream: true }
-    : { model: cfg.model, temperature: 0.2, stream: true, messages: [{ role: "system", content: SYSTEM_PROMPT }, ...props.messages] };
+    ? {
+        model: cfg.model,
+        max_tokens: 4096,
+        system: SYSTEM_PROMPT,
+        messages: props.messages,
+        stream: true,
+      }
+    : {
+        model: cfg.model,
+        temperature: 0.2,
+        stream: true,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          ...props.messages,
+        ],
+      };
 
   let res: Response;
   try {
-    res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body), signal: props.signal });
+    res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+      signal: props.signal,
+    });
   } catch (e: any) {
     if (e?.name === "AbortError") {
       return fail("Cancelled", 499);
     }
-    return fail(`Could not reach the LLM at ${base}. Is it running, and does it allow requests from ${location.origin} (CORS)? For Ollama start it with OLLAMA_ORIGINS=${location.origin}.`, 0);
+    return fail(
+      `Could not reach the LLM at ${base}. Is it running, and does it allow requests from ${location.origin} (CORS)? For Ollama start it with OLLAMA_ORIGINS=${location.origin}.`,
+      0,
+    );
   }
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    const hint = res.status === 401 || res.status === 403 ? " — the API key is missing or invalid." : "";
-    return fail(`LLM error ${res.status}${hint} ${text.slice(0, 300)}`, res.status);
+    const hint =
+      res.status === 401 || res.status === 403
+        ? " — the API key is missing or invalid."
+        : "";
+    return fail(
+      `LLM error ${res.status}${hint} ${text.slice(0, 300)}`,
+      res.status,
+    );
   }
 
   props.onStreamCreated?.();
@@ -170,7 +264,9 @@ export const streamChat = async (props: TTTDDialog.OnTextSubmitProps): Promise<R
   if (cleaned.length > emitted) {
     props.onChunk?.(cleaned.slice(emitted));
   }
-  return cleaned ? { generatedResponse: cleaned, error: null } : fail("The LLM returned an empty answer.", 502);
+  return cleaned
+    ? { generatedResponse: cleaned, error: null }
+    : fail("The LLM returned an empty answer.", 502);
 };
 
 /**
@@ -187,7 +283,10 @@ export const listModels = async (cfg: LLMConfig): Promise<string[]> => {
     [`${base}/models`, (j) => (j.data || []).map((m: any) => m.id)],
   ];
   if (base.endsWith("/v1")) {
-    attempts.push([`${base.slice(0, -3)}/api/tags`, (j) => (j.models || []).map((m: any) => m.name || m.model)]);
+    attempts.push([
+      `${base.slice(0, -3)}/api/tags`,
+      (j) => (j.models || []).map((m: any) => m.name || m.model),
+    ]);
   }
   let lastError = "";
   for (const [url, pick] of attempts) {
@@ -205,11 +304,17 @@ export const listModels = async (cfg: LLMConfig): Promise<string[]> => {
       lastError = e?.message || "network error";
     }
   }
-  throw new Error(`Could not list models (${lastError || "empty list"}). You can still type the model name.`);
+  throw new Error(
+    `Could not list models (${
+      lastError || "empty list"
+    }). You can still type the model name.`,
+  );
 };
 
 /** Quick connectivity check used by the settings dialog. */
 export const testConnection = async (): Promise<string> => {
-  const r = await streamChat({ messages: [{ role: "user", content: "flowchart with two nodes A to B" }] });
+  const r = await streamChat({
+    messages: [{ role: "user", content: "flowchart with two nodes A to B" }],
+  });
   return r.error ? r.error.message : "Connected ✔ — the model answered.";
 };

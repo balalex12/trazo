@@ -9,8 +9,12 @@ const root = createRoot(rootElement);
 
 // Local-first build: no service worker (avoids stale caches) and no telemetry. Remove any worker
 // registered by earlier versions.
-navigator.serviceWorker?.getRegistrations().then((regs) => regs.forEach((r) => r.unregister()));
-window.caches?.keys().then((keys) => keys.forEach((k) => window.caches.delete(k)));
+navigator.serviceWorker
+  ?.getRegistrations()
+  .then((regs) => regs.forEach((r) => r.unregister()));
+window.caches
+  ?.keys()
+  .then((keys) => keys.forEach((k) => window.caches.delete(k)));
 
 root.render(
   <StrictMode>

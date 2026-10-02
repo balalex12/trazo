@@ -5,7 +5,7 @@ Everything removed or changed so that the app is local-first. Base commit: see `
 ## Removed (no hosted service is contacted)
 
 | Removed | Where it was | Why |
-|---|---|---|
+| --- | --- | --- |
 | Simple Analytics script + legacy Google Analytics block | `excalidraw-app/index.html` | telemetry, even though `VITE_APP_ENABLE_TRACKING=false` |
 | Google Fonts `preconnect` | `index.html` | opens a connection to Google |
 | Redirect to `app.excalidraw.com` for Excalidraw+ users | `index.html` | hosted service |
@@ -26,15 +26,16 @@ Everything removed or changed so that the app is local-first. Base commit: see `
 
 ## Kept on purpose
 
+- **Dormant collaboration code** (`excalidraw-app/collab/`, `data/firebase.ts`, `share/`, the `firebase` and `socket.io-client` dependencies). It is the starting point of a possible future _self-hosted / local-network collaboration_ feature. In this build it is unreachable (`isCollabDisabled = true`, no UI entries, every server URL blank) and nothing is contacted. Its dependency advisories are explained in [MAINTAINING.md](MAINTAINING.md) §3.
+
 - **"Browse libraries"** link and the `#addLibrary=` import flow (`VITE_APP_LIBRARY_URL`): a user-initiated link to the community libraries site.
-- Upstream `lint`, `test`, `test-coverage-pr`, `semantic-pr-title`, `cancel`, `build-docker` workflows.
+- CI: upstream's `lint`, `test`, `test-coverage-pr`, `semantic-pr-title`, `cancel` and `build-docker` workflows were replaced by one least-privilege `.github/workflows/ci.yml` (typecheck, prettier, eslint, unit tests, Docker build) plus `codeql.yml`. Reasons: they targeted Excalidraw's `master`/`release` branches and workflow ids, required PR-title scopes that don't exist here, and wrote PR comments with a token that fork PRs cannot have.
 - `dev-docs/` and `examples/` (upstream documentation of the npm package; unused here).
 - Package names `@excalidraw/*` (internal monorepo workspaces; renaming them would make every merge painful).
 
 ## Added
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) §2. In short: ArcGIS viewer, ArcGIS library, animation + export, LLM connector,
-branding/About/AI settings dialogs, hardened Docker setup, tools.
+See [ARCHITECTURE.md](ARCHITECTURE.md) §2. In short: ArcGIS viewer, ArcGIS library, animation + export, LLM connector, branding/About/AI settings dialogs, hardened Docker setup, tools.
 
 ## Changed behaviour you might notice
 

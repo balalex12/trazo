@@ -1,0 +1,8 @@
+# Version updates only for GitHub Actions (small and safe). Dependabot *security* alerts/updates for npm are enabled in
+# the repository settings, which avoids a flood of version-bump PRs on Excalidraw's large dependency tree.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

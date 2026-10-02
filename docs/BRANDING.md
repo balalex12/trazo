@@ -5,7 +5,7 @@ Working name: **Trazo** ("stroke / trace" in Spanish). The name is centralised s
 ## Where the name lives
 
 | Place | What to change |
-|---|---|
+| --- | --- |
 | `excalidraw-app/branding.ts` | `BRAND.name`, `tagline`, `repoUrl` (currently https://github.com/balalex12/trazo) |
 | `excalidraw-app/index.html` | `<title>`, `<h1 class="visually-hidden">` |
 | `excalidraw-app/components/AppWelcomeScreen.tsx` | logo mark (inline SVG) |
@@ -21,6 +21,4 @@ Working name: **Trazo** ("stroke / trace" in Spanish). The name is centralised s
 
 ## Visual identity
 
-The mark (a stroke ending in a node) is original artwork. App icons (`public/favicon.*`, `android-chrome-*`,
-`apple-touch-icon.png`, `maskable_icon_*`) are generated from it by `tools/make-icons.cjs`; edit `MARK`/`BG` there to
-restyle and re-run (`npm i --no-save puppeteer-core`). Replace with a designer's artwork before a public 1.0.
+The mark (a stroke ending in a node) is original artwork. App icons (`public/favicon.*`, `android-chrome-*`, `apple-touch-icon.png`, `maskable_icon_*`) are generated from it by `tools/make-icons.cjs`; edit `MARK`/`BG` there to restyle and re-run (`npm i --no-save puppeteer-core`). Replace with a designer's artwork before a public 1.0.

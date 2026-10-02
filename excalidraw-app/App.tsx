@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars --
+ * Online collaboration, share links and Excalidraw+ entry points are disabled in this build
+ * (isCollabDisabled = true, no UI). Their imports/variables are kept on purpose: the collaboration
+ * code is the base of a possible future self-hosted / local-network feature and keeping upstream's
+ * structure keeps merges cheap. See docs/MAINTAINING.md section 3 and docs/LOCAL_FIRST_CHANGES.md. */
 import {
   Excalidraw,
   LiveCollaborationTrigger,
@@ -1042,8 +1047,16 @@ const ExcalidrawWrapper = () => {
               label: "AI assistant settings",
               category: DEFAULT_CATEGORIES.app,
               predicate: true,
-              keywords: ["llm", "ollama", "claude", "openai", "text to diagram", "ai"],
-              perform: () => window.dispatchEvent(new Event(EVENTS.openAISettings)),
+              keywords: [
+                "llm",
+                "ollama",
+                "claude",
+                "openai",
+                "text to diagram",
+                "ai",
+              ],
+              perform: () =>
+                window.dispatchEvent(new Event(EVENTS.openAISettings)),
             },
           ]}
         />

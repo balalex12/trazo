@@ -49,7 +49,11 @@ export const renderBlend = async (
     exportingFrame: frame,
     getDimensions: (w: number, h: number) => {
       const scale = Math.min(width / w, height / h);
-      return { width: Math.max(1, Math.round(w * scale)), height: Math.max(1, Math.round(h * scale)), scale };
+      return {
+        width: Math.max(1, Math.round(w * scale)),
+        height: Math.max(1, Math.round(h * scale)),
+        scale,
+      };
     },
   } as any);
 
@@ -63,7 +67,11 @@ export const renderBlend = async (
   return out;
 };
 
-export const renderAtTime = (opts: RenderOptions, timeMs: number, target?: HTMLCanvasElement) => {
+export const renderAtTime = (
+  opts: RenderOptions,
+  timeMs: number,
+  target?: HTMLCanvasElement,
+) => {
   const s = sampleAt(timeMs, opts.slides.length, opts.settings);
   return renderBlend(opts, s.a, s.b, s.t, target);
 };

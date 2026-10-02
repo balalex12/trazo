@@ -7,12 +7,26 @@ import { BRAND } from "../branding";
 // Simple original mark: a freehand stroke ending in a node (trace / path). Not derived from any other logo.
 const BrandLogo = () => (
   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden="true">
+    <svg
+      width="52"
+      height="52"
+      viewBox="0 0 52 52"
+      fill="none"
+      aria-hidden="true"
+    >
       <rect x="2" y="2" width="48" height="48" rx="12" fill="#6965db" />
-      <path d="M12 34 C 18 14, 26 40, 32 22 S 40 18, 41 16" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+      <path
+        d="M12 34 C 18 14, 26 40, 32 22 S 40 18, 41 16"
+        stroke="#fff"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        fill="none"
+      />
       <circle cx="41" cy="16" r="4.5" fill="#fff" />
     </svg>
-    <span style={{ fontSize: 40, fontWeight: 700, letterSpacing: 1 }}>{BRAND.name}</span>
+    <span style={{ fontSize: 40, fontWeight: 700, letterSpacing: 1 }}>
+      {BRAND.name}
+    </span>
   </div>
 );
 

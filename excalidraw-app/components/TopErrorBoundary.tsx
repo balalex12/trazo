@@ -1,8 +1,9 @@
-import { BRAND } from "../branding";
 import Trans from "@excalidraw/excalidraw/components/Trans";
 import { t } from "@excalidraw/excalidraw/i18n";
 import * as Sentry from "@sentry/browser";
 import React from "react";
+
+import { BRAND } from "../branding";
 
 interface TopErrorBoundaryState {
   hasError: boolean;
@@ -67,7 +68,7 @@ export class TopErrorBoundary extends React.Component<
     }
 
     window.open(
-      `${BRAND.repoUrl ? BRAND.repoUrl + "/issues/new?body=" + body : "#"}`,
+      `${BRAND.repoUrl ? `${BRAND.repoUrl}/issues/new?body=${body}` : "#"}`,
       "_blank",
       "noopener noreferrer",
     );

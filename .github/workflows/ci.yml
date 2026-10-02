@@ -1,0 +1,40 @@
+# One CI workflow for pull requests and pushes to main. Least privilege: read-only token, no secrets, no
+# pull_request_target. PRs from forks run with a read-only token and no access to repository secrets.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Typecheck, lint and unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20.x
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn test:typecheck
+      - run: yarn test:other
+      - run: yarn test:code
+      - run: yarn test:app --watch=false
+
+  docker:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - run: docker build -t trazo-app:ci .

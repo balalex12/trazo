@@ -9,3 +9,9 @@ packages/excalidraw/types
 examples/**/public
 dev-dist
 coverage
+
+# not part of the TypeScript app (static page, node scripts, converted icons, vendored minified libs)
+viewer/
+tools/
+assets/
+public/vendor/

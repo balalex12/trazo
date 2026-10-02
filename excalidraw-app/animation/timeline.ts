@@ -40,7 +40,8 @@ const EASE: Record<Easing, (t: number) => number> = {
   easeInOut: (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2),
   easeOut: (t) => 1 - Math.pow(1 - t, 3),
 };
-export const ease = (e: Easing, t: number) => EASE[e](Math.min(1, Math.max(0, t)));
+export const ease = (e: Easing, t: number) =>
+  EASE[e](Math.min(1, Math.max(0, t)));
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -95,7 +96,11 @@ const lerpColor = (a: string, b: string, t: number): string => {
 export const totalDurationMs = (n: number, s: TimelineSettings) =>
   n <= 0 ? 0 : n * s.holdMs + (n - 1) * s.transitionMs;
 
-export const sampleAt = (timeMs: number, n: number, s: TimelineSettings): Sample => {
+export const sampleAt = (
+  timeMs: number,
+  n: number,
+  s: TimelineSettings,
+): Sample => {
   let t = Math.max(0, timeMs);
   for (let i = 0; i < n; i++) {
     if (t <= s.holdMs || i === n - 1) {
@@ -114,7 +119,11 @@ export const sampleAt = (timeMs: number, n: number, s: TimelineSettings): Sample
  * Elements for the synthetic scene at transition progress `p` (already eased), in frame-relative
  * coordinates: frame at (0,0), every child has frameId "__anim_frame__".
  */
-export const buildScene = (A: Slide, B: Slide, p: number): { frame: El; elements: El[] } => {
+export const buildScene = (
+  A: Slide,
+  B: Slide,
+  p: number,
+): { frame: El; elements: El[] } => {
   const FRAME_ID = "__anim_frame__";
   const frame = {
     ...A.frame,
@@ -125,7 +134,11 @@ export const buildScene = (A: Slide, B: Slide, p: number): { frame: El; elements
     height: lerp(A.frame.height, B.frame.height, p),
     name: null,
   };
-  const rel = (s: Slide, e: El) => ({ ...e, x: e.x - s.frame.x, y: e.y - s.frame.y });
+  const rel = (s: Slide, e: El) => ({
+    ...e,
+    x: e.x - s.frame.x,
+    y: e.y - s.frame.y,
+  });
   const useB = p >= 0.5;
   const out: El[] = [];
 
@@ -162,7 +175,11 @@ export const buildScene = (A: Slide, B: Slide, p: number): { frame: El; elements
     if (typeof a.fontSize === "number" && typeof b.fontSize === "number") {
       next.fontSize = lerp(a.fontSize, b.fontSize, p);
     }
-    if (Array.isArray(a.points) && Array.isArray(b.points) && a.points.length === b.points.length) {
+    if (
+      Array.isArray(a.points) &&
+      Array.isArray(b.points) &&
+      a.points.length === b.points.length
+    ) {
       next.points = a.points.map((pt: number[], i: number) => [
         lerp(pt[0], b.points[i][0], p),
         lerp(pt[1], b.points[i][1], p),
