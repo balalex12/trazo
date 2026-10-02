@@ -6,7 +6,12 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 import { downloadBlob, exportAnimation } from "./exporter";
 import { outputSize, renderAtTime, renderBlend } from "./renderer";
-import { DEFAULT_SETTINGS, getSlides, totalDurationMs } from "./timeline";
+import {
+  DEFAULT_SETTINGS,
+  getSlides,
+  totalDurationMs,
+  transitionModeOf,
+} from "./timeline";
 
 import type { ExportFormat } from "./exporter";
 import type { Slide, TimelineSettings } from "./timeline";
@@ -88,7 +93,7 @@ const Player = ({
     };
 
     if (mode === "auto") {
-      const total = totalDurationMs(slides.length, settings);
+      const total = totalDurationMs(slides, settings);
       const start = performance.now();
       const tick = (now: number) => {
         if (!alive) {
@@ -225,6 +230,47 @@ const Player = ({
         ✕
       </button>
     </div>
+  );
+};
+
+/** Number field that keeps its own draft while typing and commits on blur/Enter (the slide list refreshes late). */
+const HoldInput = ({
+  value,
+  placeholder,
+  style,
+  onCommit,
+}: {
+  value: number | undefined;
+  placeholder: string;
+  style: React.CSSProperties;
+  onCommit: (v: string) => void;
+}) => {
+  const [draft, setDraft] = useState<string | null>(null);
+  const shown = draft ?? (value === undefined ? "" : String(value));
+  const commit = () => {
+    if (draft !== null) {
+      onCommit(draft);
+      setDraft(null);
+    }
+  };
+  return (
+    <input
+      type="number"
+      min={0}
+      step={500}
+      title="Hold for this slide (ms). Empty = default Hold."
+      placeholder={placeholder}
+      value={shown}
+      onClick={(e) => e.stopPropagation()}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          (e.target as HTMLInputElement).blur();
+        }
+      }}
+      style={style}
+    />
   );
 };
 
@@ -421,7 +467,35 @@ export const AnimationPanel = ({
 
   const num = (v: string, d: number) =>
     Number.isFinite(+v) && +v >= 0 ? +v : d;
-  const totalSec = (totalDurationMs(slides.length, settings) / 1000).toFixed(1);
+  const totalSec = (totalDurationMs(slides, settings) / 1000).toFixed(1);
+
+  // Per-slide settings live on the frame's customData (holdMs, transition); null/undefined = use the default.
+  const setSlideData = (frameId: string, key: string, value: unknown) => {
+    const all = excalidrawAPI.getSceneElementsIncludingDeleted() as any[];
+    excalidrawAPI.updateScene({
+      elements: all.map((e) => {
+        if (e.id !== frameId) {
+          return e;
+        }
+        const { [key]: _old, ...rest } = e.customData || {};
+        return {
+          ...e,
+          customData:
+            value === null || value === undefined
+              ? rest
+              : { ...rest, [key]: value },
+          version: e.version + 1,
+          versionNonce: Math.floor(Math.random() * 2 ** 31),
+        };
+      }) as any,
+    });
+  };
+  const setSlideHold = (frameId: string, value: string) => {
+    const v = value.trim() === "" ? null : Math.max(0, Math.round(+value));
+    if (v === null || Number.isFinite(v)) {
+      setSlideData(frameId, "holdMs", v);
+    }
+  };
 
   const card: React.CSSProperties = {
     position: "fixed",
@@ -429,32 +503,36 @@ export const AnimationPanel = ({
     left: "50%",
     transform: "translateX(-50%)",
     zIndex: 20,
-    width: 380,
-    background: "#fff",
-    border: "1px solid #ddd",
+    width: 420,
+    background: "var(--island-bg-color)",
+    border: "1px solid var(--default-border-color, #8884)",
     borderRadius: 10,
     boxShadow: "0 4px 18px #0003",
     padding: 12,
     font: "13px system-ui, sans-serif",
-    color: "#222",
+    color: "var(--text-primary-color)",
   };
   const btn: React.CSSProperties = {
     padding: "6px 10px",
-    border: "1px solid #6965db",
-    background: "#6965db",
-    color: "#fff",
+    border: "1px solid var(--color-primary)",
+    background: "var(--color-primary)",
+    color: "var(--color-icon-white, #fff)",
     borderRadius: 6,
     cursor: "pointer",
   };
   const ghost: React.CSSProperties = {
     ...btn,
-    background: "#fff",
-    color: "#6965db",
+    background: "transparent",
+    color: "var(--color-primary)",
   };
   const field: React.CSSProperties = {
     width: "100%",
     padding: 4,
     boxSizing: "border-box",
+    background: "var(--input-bg-color, var(--island-bg-color))",
+    color: "var(--text-primary-color)",
+    border: "1px solid var(--default-border-color, #8888)",
+    borderRadius: 4,
   };
 
   return (
@@ -477,16 +555,16 @@ export const AnimationPanel = ({
       {open && (
         <div style={card}>
           <b>Animation</b>
-          <div style={{ color: "#666", margin: "4px 0 8px" }}>
+          <div style={{ color: "#888", margin: "4px 0 8px" }}>
             Slides = frames (press <kbd>F</kbd>). “Duplicate slide” copies the
             selected one below it; changed elements animate between slides,
             new/removed ones fade.
           </div>
           <div
             style={{
-              maxHeight: 90,
+              maxHeight: 130,
               overflow: "auto",
-              background: "#f6f6f6",
+              background: "var(--color-surface-low, #f6f6f6)",
               padding: 6,
               borderRadius: 6,
             }}
@@ -501,12 +579,47 @@ export const AnimationPanel = ({
                     fit: "scale-down",
                   } as any)
                 }
-                style={{ cursor: "pointer" }}
+                style={{
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
               >
-                {i + 1}. {s.name}{" "}
-                <span style={{ color: "#888" }}>
-                  ({s.children.length} elements)
+                <span style={{ flex: 1 }}>
+                  {i + 1}. {s.name}{" "}
+                  <span style={{ color: "#888" }}>
+                    ({s.children.length} elements)
+                  </span>
                 </span>
+                {i > 0 && (
+                  <select
+                    title={
+                      "How this slide is entered.\nSmart: matching elements move, new ones fade in.\nFade: nothing moves, cross-fade (identical elements stay put).\nCut: instant."
+                    }
+                    value={transitionModeOf(s)}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) =>
+                      setSlideData(
+                        s.frame.id,
+                        "transition",
+                        e.target.value === "smart" ? null : e.target.value,
+                      )
+                    }
+                    style={{ ...field, width: 66 }}
+                  >
+                    <option value="smart">Smart</option>
+                    <option value="fade">Fade</option>
+                    <option value="cut">Cut</option>
+                  </select>
+                )}
+                <HoldInput
+                  value={s.frame.customData?.holdMs}
+                  placeholder={String(settings.holdMs)}
+                  onCommit={(v) => setSlideHold(s.frame.id, v)}
+                  style={{ ...field, width: 78 }}
+                />
+                <span style={{ color: "#888" }}>ms</span>
               </div>
             ))}
           </div>
@@ -543,7 +656,7 @@ export const AnimationPanel = ({
               />
             </label>
             <label>
-              Hold (ms)
+              Hold, default (ms)
               <input
                 style={field}
                 type="number"
@@ -594,7 +707,7 @@ export const AnimationPanel = ({
                 ))}
               </select>
             </label>
-            <div style={{ alignSelf: "end", color: "#666" }}>
+            <div style={{ alignSelf: "end", color: "#888" }}>
               {slides.length >= 2 ? `${totalSec}s total` : ""}
             </div>
           </div>
@@ -628,12 +741,18 @@ export const AnimationPanel = ({
           </div>
           {job && (
             <div style={{ marginTop: 6 }}>
-              <div style={{ height: 6, background: "#eee", borderRadius: 3 }}>
+              <div
+                style={{
+                  height: 6,
+                  background: "var(--color-surface-low, #eee)",
+                  borderRadius: 3,
+                }}
+              >
                 <div
                   style={{
                     height: 6,
                     width: `${(job.done / job.total) * 100}%`,
-                    background: "#6965db",
+                    background: "var(--color-primary)",
                     borderRadius: 3,
                   }}
                 />
@@ -645,7 +764,11 @@ export const AnimationPanel = ({
             </div>
           )}
           {error && (
-            <div style={{ color: "#c62828", marginTop: 6 }}>{error}</div>
+            <div
+              style={{ color: "var(--color-danger, #c62828)", marginTop: 6 }}
+            >
+              {error}
+            </div>
           )}
         </div>
       )}

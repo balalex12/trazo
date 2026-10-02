@@ -14,7 +14,15 @@ const BrandLogo = () => (
       fill="none"
       aria-hidden="true"
     >
-      <rect x="2" y="2" width="48" height="48" rx="12" fill="#6965db" />
+      <rect
+        x="2"
+        y="2"
+        width="48"
+        height="48"
+        rx="12"
+        fill="#cc440c"
+        style={{ fill: "var(--color-primary)" }}
+      />
       <path
         d="M12 34 C 18 14, 26 40, 32 22 S 40 18, 41 16"
         stroke="#fff"

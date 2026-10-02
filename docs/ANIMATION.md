@@ -6,7 +6,19 @@ Open **🎞 Animation** (bottom center of the editor).
 2. **Duplicate slide** copies the selected frame (or the last one) _below_ it and links every copy to its original with `customData.animKey`.
 3. Change things in the new slide: move, resize, recolour, change opacity or font size, add or delete elements.
 4. **▶ Preview** plays the whole animation; **⛶ Present** is manual (`→`/`Space`/click = next, `←` = previous, `Esc` = exit).
-5. **Export MP4** (H.264) or **Export GIF**. Settings: transition (ms), hold (ms), easing, FPS, width.
+5. **Export MP4** (H.264) or **Export GIF**. Settings: transition (ms), default hold (ms), easing, FPS, width. **Per-slide hold:** each row of the slide list has its own _ms_ field (type a value, press Enter). Empty = use the default hold. It is stored in the frame's `customData.holdMs`, so it is saved with the drawing and copied by _Duplicate slide_.
+
+## Transition type per slide
+
+Each slide (except the first) has a selector for **how it is entered** (stored in the frame's `customData.transition`):
+
+| Mode | What happens |
+| --- | --- |
+| **Smart** (default) | Matching elements move/morph, new ones fade in, removed ones fade out. |
+| **Fade** | Nothing moves: the previous slide cross-fades into this one. Elements that did not change stay perfectly still. |
+| **Cut** | Instant switch, no transition time. |
+
+Elements that are **identical in both slides** (same type, place inside the frame, colours, text…) never move or blink, even if they were copy/pasted and have no `animKey`. Only what actually changed is animated.
 
 ## How it animates
 

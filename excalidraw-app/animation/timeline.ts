@@ -92,27 +92,77 @@ const lerpColor = (a: string, b: string, t: number): string => {
 };
 
 // ---- sampling ---------------------------------------------------------
+/** A slide's own hold (stored on its frame as `customData.holdMs`) or the global default. */
+export const holdOf = (slide: Slide, s: TimelineSettings): number => {
+  const v = slide.frame.customData?.holdMs;
+  return typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : s.holdMs;
+};
+
+/**
+ * How a slide is entered (stored on its frame as `customData.transition`):
+ *  - smart: matching elements move/morph, new ones fade in, removed ones fade out (default)
+ *  - fade:  nothing moves; the previous slide cross-fades into this one (identical elements stay put)
+ *  - cut:   instant switch, no transition time
+ */
+export type TransitionMode = "smart" | "fade" | "cut";
+export const TRANSITION_MODES: TransitionMode[] = ["smart", "fade", "cut"];
+export const transitionModeOf = (slide: Slide): TransitionMode => {
+  const v = slide.frame.customData?.transition;
+  return v === "fade" || v === "cut" ? v : "smart";
+};
+/** Duration of the transition INTO `slide`. */
+const transitionInto = (slide: Slide, s: TimelineSettings) =>
+  transitionModeOf(slide) === "cut" ? 0 : s.transitionMs;
+
 /** Sequence: hold(0) → transition(0→1) → hold(1) → … → hold(n-1). */
-export const totalDurationMs = (n: number, s: TimelineSettings) =>
-  n <= 0 ? 0 : n * s.holdMs + (n - 1) * s.transitionMs;
+export const totalDurationMs = (slides: Slide[], s: TimelineSettings) =>
+  slides.reduce(
+    (sum, sl, i) => sum + holdOf(sl, s) + (i > 0 ? transitionInto(sl, s) : 0),
+    0,
+  );
 
 export const sampleAt = (
   timeMs: number,
-  n: number,
+  slides: Slide[],
   s: TimelineSettings,
 ): Sample => {
+  const n = slides.length;
   let t = Math.max(0, timeMs);
   for (let i = 0; i < n; i++) {
-    if (t <= s.holdMs || i === n - 1) {
+    const hold = holdOf(slides[i], s);
+    if (t <= hold || i === n - 1) {
       return { a: i, b: i, t: 0 };
     }
-    t -= s.holdMs;
-    if (t <= s.transitionMs) {
-      return { a: i, b: i + 1, t: t / s.transitionMs };
+    t -= hold;
+    const tr = transitionInto(slides[i + 1], s);
+    if (tr > 0 && t <= tr) {
+      return { a: i, b: i + 1, t: t / tr };
     }
-    t -= s.transitionMs;
+    t -= tr;
   }
   return { a: Math.max(0, n - 1), b: Math.max(0, n - 1), t: 0 };
+};
+
+/** Same look and place (frame-relative) → the element must not animate at all. */
+const signature = (e: El, frame: El): string => {
+  const r = (v: number) => (Math.round(v * 2) / 2).toString();
+  return [
+    e.type,
+    r(e.x - frame.x),
+    r(e.y - frame.y),
+    r(e.width),
+    r(e.height),
+    r(e.angle ?? 0),
+    e.strokeColor,
+    e.backgroundColor,
+    e.strokeWidth,
+    e.opacity,
+    e.text ?? "",
+    e.fontSize ?? "",
+    Array.isArray(e.points)
+      ? e.points.map((q: number[]) => `${r(q[0])},${r(q[1])}`).join(";")
+      : "",
+  ].join("|");
 };
 
 /**
@@ -141,23 +191,60 @@ export const buildScene = (
   });
   const useB = p >= 0.5;
   const out: El[] = [];
+  const mode = transitionModeOf(B);
 
-  const bByKey = new Map<string, El>();
-  B.children.forEach((e) => bByKey.set(animKey(e), e));
-  const matchedB = new Set<string>();
+  // 1) pair elements by animKey (set by "Duplicate slide")…
+  const pairs = new Map<El, El>();
+  const matchedB = new Set<El>();
+  const bByKey = new Map<string, El[]>();
+  B.children.forEach((e) => {
+    const k = animKey(e);
+    bByKey.set(k, [...(bByKey.get(k) || []), e]);
+  });
+  for (const ea of A.children) {
+    const eb = (bByKey.get(animKey(ea)) || []).find(
+      (e) => !matchedB.has(e) && e.type === ea.type,
+    );
+    if (eb) {
+      pairs.set(ea, eb);
+      matchedB.add(eb);
+    }
+  }
+  // 2) …then pair identical leftovers (copy/pasted content has no animKey) so they stay put instead of blinking
+  const bBySig = new Map<string, El[]>();
+  B.children
+    .filter((e) => !matchedB.has(e))
+    .forEach((e) => {
+      const k = signature(e, B.frame);
+      bBySig.set(k, [...(bBySig.get(k) || []), e]);
+    });
+  for (const ea of A.children) {
+    if (pairs.has(ea)) {
+      continue;
+    }
+    const eb = bBySig.get(signature(ea, A.frame))?.shift();
+    if (eb) {
+      pairs.set(ea, eb);
+      matchedB.add(eb);
+    }
+  }
 
   for (const ea of A.children) {
-    const k = animKey(ea);
-    const eb = bByKey.get(k);
-    if (!eb || eb.type !== ea.type) {
+    const eb = pairs.get(ea);
+    if (!eb) {
       // fades out
       const a = rel(A, ea);
       out.push({ ...a, frameId: FRAME_ID, opacity: a.opacity * (1 - p) });
       continue;
     }
-    matchedB.add(k);
     const a = rel(A, ea);
     const b = rel(B, eb);
+    if (mode === "fade" && signature(ea, A.frame) !== signature(eb, B.frame)) {
+      // "fade": never move, cross-fade the two versions in place
+      out.push({ ...a, frameId: FRAME_ID, opacity: a.opacity * (1 - p) });
+      out.push({ ...b, frameId: FRAME_ID, opacity: b.opacity * p });
+      continue;
+    }
     const base = useB ? b : a;
     const next: El = {
       ...base,
@@ -188,7 +275,7 @@ export const buildScene = (
     out.push(next);
   }
   for (const eb of B.children) {
-    if (matchedB.has(animKey(eb))) {
+    if (matchedB.has(eb)) {
       continue;
     }
     const b = rel(B, eb);

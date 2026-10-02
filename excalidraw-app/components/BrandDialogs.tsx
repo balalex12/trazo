@@ -36,19 +36,23 @@ const field: React.CSSProperties = {
   padding: 6,
   boxSizing: "border-box",
   margin: "4px 0 10px",
+  background: "var(--input-bg-color, var(--island-bg-color))",
+  color: "var(--text-primary-color)",
+  border: "1px solid var(--default-border-color, #8888)",
+  borderRadius: 4,
 };
 const btn: React.CSSProperties = {
   padding: "7px 12px",
-  border: "1px solid #6965db",
-  background: "#6965db",
-  color: "#fff",
+  border: "1px solid var(--color-primary)",
+  background: "var(--color-primary)",
+  color: "var(--color-icon-white, #fff)",
   borderRadius: 6,
   cursor: "pointer",
 };
 const ghost: React.CSSProperties = {
   ...btn,
   background: "transparent",
-  color: "#6965db",
+  color: "var(--color-primary)",
 };
 
 const useOpen = (event: string) => {
@@ -243,7 +247,8 @@ const AISettingsDialog = () => {
         {cfg.baseUrl.includes("/llm/ollama-cloud") && (
           <div
             style={{
-              background: "#6965db18",
+              background:
+                "color-mix(in srgb, var(--color-primary) 14%, transparent)",
               padding: 8,
               borderRadius: 6,
               fontSize: 12,

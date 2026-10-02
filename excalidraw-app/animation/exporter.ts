@@ -13,7 +13,7 @@ const vendor = (name: string) =>
   import(/* @vite-ignore */ `/vendor/${name}`) as Promise<any>;
 
 const frameKey = (opts: RenderOptions, timeMs: number) => {
-  const s = sampleAt(timeMs, opts.slides.length, opts.settings);
+  const s = sampleAt(timeMs, opts.slides, opts.settings);
   return s.a === s.b ? `h${s.a}` : `${s.a}-${s.b}-${s.t.toFixed(4)}`;
 };
 
@@ -26,9 +26,7 @@ export const exportAnimation = async (
 ): Promise<Blob> => {
   const total = Math.max(
     1,
-    Math.ceil(
-      (totalDurationMs(opts.slides.length, opts.settings) / 1000) * fps,
-    ),
+    Math.ceil((totalDurationMs(opts.slides, opts.settings) / 1000) * fps),
   );
   return format === "mp4"
     ? exportMp4(opts, fps, total, onProgress, signal)

@@ -22,3 +22,16 @@ Working name: **Trazo** ("stroke / trace" in Spanish). The name is centralised s
 ## Visual identity
 
 The mark (a stroke ending in a node) is original artwork. App icons (`public/favicon.*`, `android-chrome-*`, `apple-touch-icon.png`, `maskable_icon_*`) are generated from it by `tools/make-icons.cjs`; edit `MARK`/`BG` there to restyle and re-run (`npm i --no-save puppeteer-core`). Replace with a designer's artwork before a public 1.0.
+
+## Color
+
+The brand color is an **orange "ink"**, chosen to be distinct from Excalidraw's indigo and from Esri's blue (using Esri's blue as our own would suggest an affiliation).
+
+|  | Light mode | Dark mode | Contrast |
+| --- | --- | --- | --- |
+| Primary | `#cc440c` | `#ffa94d` | white text on it 4.8:1; dark text on the dark-mode orange 9:1 (WCAG AA) |
+
+- **Where it lives:** `excalidraw-app/brand.scss` overrides the editor's theme variables (`--color-primary`, `--color-selection`, `--color-brand-*`, surfaces…). It is imported _after_ the editor styles in `index.tsx`, so no Excalidraw CSS file is edited.
+- **Our own components** (Animation panel, About/AI dialogs, welcome logo) read those variables, so they follow light/dark mode.
+- **Not variables:** the app icons (`tools/make-icons.cjs`, `BG`) and one canvas highlight in `packages/excalidraw/renderer/interactiveScene.ts` (`highlightPoint`).
+- **To recolor:** edit `brand.scss` + `BG` in `make-icons.cjs`, run the icon tool, rebuild.
