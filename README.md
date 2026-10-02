@@ -5,7 +5,9 @@
 **A local-first diagram studio for architecture, data engineering, GIS and machine learning.**
 Hand-drawn whiteboard · live ArcGIS maps · animated slides → MP4/GIF · bring-your-own LLM · no telemetry.
 
-<img src="docs/media/welcome.png" alt="Trazo welcome screen" width="720">
+<img src="docs/media/animation-demo.gif" alt="An ArcGIS Enterprise architecture built step by step with Trazo: animated slides with official Esri icons, exported as a GIF" width="720">
+
+<sub>An ArcGIS Enterprise architecture built step by step — made and exported to GIF with Trazo itself (official Esri Architecture Center icons).</sub>
 
 *Built on [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Not affiliated with or endorsed by Excalidraw or Esri.*
 
@@ -37,7 +39,7 @@ teams keep asking for:
 </tr>
 <tr>
 <td><img src="docs/media/text-to-diagram.png" alt="Text to diagram with your own LLM"></td>
-<td><img src="docs/media/animation-demo.gif" alt="Animated slides exported as GIF"></td>
+<td><img src="docs/media/welcome.png" alt="Trazo welcome screen"></td>
 </tr>
 </table>
 
