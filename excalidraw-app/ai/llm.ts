@@ -43,7 +43,20 @@ Rules:
 - Choose the best type: flowchart (architecture, data pipelines, ETL, ML pipelines, GIS workflows),
   sequenceDiagram (interactions between systems), classDiagram (models), erDiagram (database / data models).
 - Prefer "flowchart LR" or "flowchart TD" with short, clear node labels and subgraphs for layers or tiers.
-- Use only syntax valid in Mermaid v10. Keep node ids simple (letters/digits).`;
+- Use only syntax valid in Mermaid v10. Keep node ids simple (letters/digits).
+
+Styling for flowcharts (rendered as hand-drawn shapes; only the styles below are honoured):
+- Define 3-6 classes with classDef using hex fill and stroke, and assign EVERY node with ":::class".
+  Palette (fill/stroke): green #d3f9d8/#2f9e44 (users, clients), blue #d0ebff/#1971c2 (gateways, edge, apps),
+  purple #e5dbff/#6741d9 (core services, compute), yellow #ffec99/#f08c00 (data stores),
+  red #ffe3e3/#e03131 (security, risks, alerts), gray #f1f3f5/#868e96 (external, optional),
+  teal #c3fae8/#0ca678 (analytics, ML).
+- Start node labels with one relevant emoji as a symbol: 👤 users, 🌐 web/gateway, 🖥️ servers, 🗄️ databases,
+  ☁️ cloud, 🔒 security, 📊 analytics, 🤖 ML, 🗺️ maps/GIS, 📡 sensors/streams, ⚙️ jobs.
+- Group layers with subgraph and style the group: style G fill:#f8f9fa,stroke:#868e96,stroke-dasharray:5 5
+- Use ==> for the main flow and -.-> for optional/async flows; label important edges: A -->|text| B
+- Do NOT use link colors, text colors, or cylinder/hexagon shapes (they are not rendered). Rounded ([ ]), ( ),
+  diamonds { } and circles (( )) are fine. Keep labels short.`;
 
 /**
  * LLMs often wrap code in ```mermaid fences despite instructions. Strip them from the raw text; while

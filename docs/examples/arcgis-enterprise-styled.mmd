@@ -1,0 +1,25 @@
+flowchart LR
+  classDef user fill:#d3f9d8,stroke:#2f9e44,color:#1e1e1e
+  classDef edge fill:#d0ebff,stroke:#1971c2,color:#1e1e1e
+  classDef core fill:#e5dbff,stroke:#6741d9,color:#1e1e1e
+  classDef data fill:#ffec99,stroke:#f08c00,color:#1e1e1e
+
+  U(["👤 GIS users"]):::user
+  LB{{"🔀 Load balancer"}}:::edge
+  subgraph DMZ["🛡️ DMZ"]
+    WA1["🌐 Web Adaptor /portal"]:::edge
+    WA2["🌐 Web Adaptor /server"]:::edge
+  end
+  subgraph PRIV["🔒 Private network"]
+    PT["🏛️ Portal for ArcGIS"]:::core
+    HS["🖥️ Hosting Server"]:::core
+    DS[("🗄️ Data Store")]:::data
+    GDB[("🌍 Enterprise GDB")]:::data
+  end
+  U --> LB
+  LB ==> WA1 & WA2
+  WA1 --> PT
+  WA2 --> HS
+  HS -. "feature layers" .-> DS
+  HS -->|"SDE connection"| GDB
+  linkStyle 2,3 stroke:#e03131,stroke-width:3px
