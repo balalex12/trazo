@@ -118,10 +118,12 @@ export default function LibraryMenuItems({
 
   // Items shipped by the local ArcGIS library (id "arcgis:*", name "Category / Name")
   // are grouped by category in their own sections, apart from external/personal items.
+  const isGroupedItem = (item: LibraryItem) =>
+    item.id.startsWith("arcgis:") || item.id.startsWith("lib:");
   const arcgisGroups = useMemo(() => {
     const groups = new Map<string, LibraryItem[]>();
     for (const item of libraryItems) {
-      if (item.id.startsWith("arcgis:")) {
+      if (isGroupedItem(item)) {
         const category = (item.name || "").split(" / ")[0] || "ArcGIS";
         groups.set(category, [...(groups.get(category) || []), item]);
       }
@@ -132,7 +134,7 @@ export default function LibraryMenuItems({
   const unpublishedItems = useMemo(
     () =>
       libraryItems.filter(
-        (item) => item.status !== "published" && !item.id.startsWith("arcgis:"),
+        (item) => item.status !== "published" && !isGroupedItem(item),
       ),
     [libraryItems],
   );
@@ -140,7 +142,7 @@ export default function LibraryMenuItems({
   const publishedItems = useMemo(
     () =>
       libraryItems.filter(
-        (item) => item.status === "published" && !item.id.startsWith("arcgis:"),
+        (item) => item.status === "published" && !isGroupedItem(item),
       ),
     [libraryItems],
   );

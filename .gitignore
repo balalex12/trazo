@@ -32,3 +32,5 @@ meta*.json
 assets/calcite/
 viewer/libraries/
 public/arcgis.excalidrawlib
+
+assets/community/

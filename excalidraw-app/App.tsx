@@ -145,6 +145,7 @@ import { AIComponents } from "./components/AI";
 import { AnimationPanel } from "./animation/AnimationPanel";
 import { BrandDialogs } from "./components/BrandDialogs";
 import { EVENTS } from "./branding";
+import { libraryItemFingerprint } from "./libraryFingerprint";
 import { ExcalidrawPlusIframeExport } from "./ExcalidrawPlusIframeExport";
 
 import "./index.scss";
@@ -586,6 +587,9 @@ const ExcalidrawWrapper = () => {
             excalidrawAPI.addFiles(Object.values(lib.files) as any);
           }
           const legacy = new Set<string>(lib.legacyNames || []);
+          // ids of community-library items that users imported earlier by hand: replaced by the sectioned copies
+          const communityOrig = new Set<string>(lib.communityOriginalIds || []);
+          const communityFp = new Set<string>(lib.communityFingerprints || []);
           // Replace our items (stable ids "arcgis:*") and drop copies from older
           // versions (random ids); external/personal items are left untouched.
           excalidrawAPI.updateLibrary({
@@ -594,6 +598,13 @@ const ExcalidrawWrapper = () => {
               ...current.filter(
                 (item) =>
                   !item.id.startsWith("arcgis:") &&
+                  !item.id.startsWith("lib:") &&
+                  !communityOrig.has(item.id) &&
+                  !communityFp.has(libraryItemFingerprint(item.elements)) &&
+                  // stale copies of earlier versions of our own sections (random ids, but our category names)
+                  !/^(Interactive ArcGIS Maps|Utility Network \(Esri|Esri Architecture Center|Services & SDKs|Community ·)[^/]* \/ /.test(
+                    item.name || "",
+                  ) &&
                   !(
                     legacy.has(item.name || "") &&
                     item.elements.some((el) => palette.has(el.strokeColor))

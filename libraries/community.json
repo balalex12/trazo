@@ -1,0 +1,268 @@
+{
+  "_comment": "Community libraries from https://libraries.excalidraw.com (repository excalidraw/excalidraw-libraries, MIT; authors accepted MIT on submission). They are NOT redistributed here: tools/fetch-community-libraries.mjs downloads them from the official repository at build time. 'brandLogos' = contains third-party brand logos/icons (trademarks are not covered by the library's MIT license): excluded from --profile=public builds.",
+  "catalog": "https://github.com/excalidraw/excalidraw-libraries",
+  "rawBase": "https://raw.githubusercontent.com/excalidraw/excalidraw-libraries/main/libraries/",
+  "license": "MIT (accepted by each author when submitting to the catalog)",
+  "libraries": [
+    {
+      "slug": "architecture-diagram-components",
+      "name": "Architecture diagram components",
+      "authors": [
+        {
+          "name": "Anna Pastushko",
+          "github": "",
+          "twitter": "",
+          "url": "https://www.linkedin.com/in/annpastushko"
+        }
+      ],
+      "source": "anna-pastushko/architecture-diagram-components.excalidrawlib",
+      "items": 11,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Architecture%20diagram%20components",
+      "description": "Collection of common components for architecture diagrams."
+    },
+    {
+      "slug": "charts",
+      "name": "Charts",
+      "authors": [
+        {
+          "name": "NicolasGoudry@G.Script",
+          "url": "https://github.com/g-script"
+        }
+      ],
+      "source": "g-script/charts.excalidrawlib",
+      "items": 4,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Charts",
+      "description": "Collection of charts: bar, column, line, pie."
+    },
+    {
+      "slug": "computers",
+      "name": "Computers",
+      "authors": [
+        {
+          "name": "EI d'AU",
+          "url": "https://github.com/ei-au"
+        }
+      ],
+      "source": "ei-au/computers.excalidrawlib",
+      "items": 4,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Computers",
+      "description": "A few schematic representations of computers"
+    },
+    {
+      "slug": "data-platform",
+      "name": "Data Platform",
+      "authors": [
+        {
+          "name": "Chu Quang Bach",
+          "github": "https://github.com/chuqbach",
+          "twitter": "",
+          "url": "https://github.com/chuqbach"
+        }
+      ],
+      "source": "chuqbach/data-platform.excalidrawlib",
+      "items": 33,
+      "brandLogos": true,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Data%20Platform",
+      "description": "Icon of Data Stack, following realistic + simplicity style. To be updated continously. Let me know if you want to add any icons."
+    },
+    {
+      "slug": "data-processing",
+      "name": "Data processing",
+      "authors": [
+        {
+          "name": "Erlina",
+          "github": "",
+          "twitter": "",
+          "url": ""
+        }
+      ],
+      "source": "erlina/data-processing.excalidrawlib",
+      "items": 8,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Data%20processing",
+      "description": "Items to visualize steps during data processing."
+    },
+    {
+      "slug": "data-science-logos",
+      "name": "Data Science logos",
+      "authors": [
+        {
+          "name": "Fares Hasan",
+          "url": "https://github.com/farisology"
+        },
+        {
+          "name": "Sarhan Samat",
+          "url": "https://github.com/SarhanAS"
+        }
+      ],
+      "source": "farisology/data-science.excalidrawlib",
+      "items": 7,
+      "brandLogos": true,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Data%20Science%20logos",
+      "description": "A collection of data science tool icons. Inlcuding: Airflow, Jupyter, Pandas, Numpy, Tensorflow, Scikit-learn, Keras."
+    },
+    {
+      "slug": "deep-learning",
+      "name": "Deep learning",
+      "authors": [
+        {
+          "name": "Yuelfei.wu",
+          "github": "https://github.com/yuelfei",
+          "twitter": "https://twitter.com/yuelfei",
+          "url": "https://github.com/yuelfei"
+        }
+      ],
+      "source": "yuelfei/deep-learning.excalidrawlib",
+      "items": 12,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Deep%20learning",
+      "description": "Deep learning"
+    },
+    {
+      "slug": "github-git-icons",
+      "name": "GitHub Git Icons",
+      "authors": [
+        {
+          "name": "marwinburesch",
+          "url": "https://github.com/marwinburesch"
+        }
+      ],
+      "source": "marwinburesch/github-icons.excalidrawlib",
+      "items": 7,
+      "brandLogos": true,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=GitHub%20Git%20Icons",
+      "description": "Basic GitHub Icons for educational purposes. The icons include git branch, git commit, compare, git merge, pull request, pull request closed, and pull request draft"
+    },
+    {
+      "slug": "math-teacher-library",
+      "name": "Math Teacher Library",
+      "authors": [
+        {
+          "name": "Yatrik Patel",
+          "github": "https://github.com/ytrkptl",
+          "twitter": "https://twitter.com/ytrkptl",
+          "url": "https://www.yatrik.dev/"
+        }
+      ],
+      "source": "https-github-com-ytrkptl/math-teacher-library.excalidrawlib",
+      "items": 12,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Math%20Teacher%20Library",
+      "description": "This library has been designed to include some of the common day-to-day diagrams that a math teacher would find helpful when using the Excalidraw site."
+    },
+    {
+      "slug": "microsoft-fabric-architecture-icons",
+      "name": "Microsoft Fabric Architecture Icons",
+      "authors": [
+        {
+          "name": "Miles Cole",
+          "github": "https://github.com/mwc360",
+          "twitter": "https://twitter.com/MilesCole19",
+          "url": "https://milescole.dev/"
+        }
+      ],
+      "source": "mwc360/microsoft-fabric-architecture-icons.excalidrawlib",
+      "items": 135,
+      "brandLogos": true,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Microsoft%20Fabric%20Architecture%20Icons",
+      "description": "Icons for Microsoft Fabric workloads, items, file types, and data sources. Not an official Microsoft library."
+    },
+    {
+      "slug": "network-topology-icons",
+      "name": "Network topology icons",
+      "authors": [
+        {
+          "name": "dwelle",
+          "github": "https://github.com/dwelle",
+          "twitter": "https://twitter.com/dluzar",
+          "url": "https://twitter.com/dluzar"
+        }
+      ],
+      "source": "dwelle/network-topology-icons.excalidrawlib",
+      "items": 10,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Network%20topology%20icons",
+      "description": "Several of the most common network topology icons."
+    },
+    {
+      "slug": "robots",
+      "name": "Robots",
+      "authors": [
+        {
+          "name": "Kaligule",
+          "url": "https://schauderbasis.de"
+        }
+      ],
+      "source": "kaligule/robots.excalidrawlib",
+      "items": 7,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Robots",
+      "description": "Collection of robots in different moods."
+    },
+    {
+      "slug": "shapes-for-uml-er-diagrams",
+      "name": "Shapes for UML & ER Diagrams",
+      "authors": [
+        {
+          "name": "BjoernKW",
+          "url": "https://github.com/BjoernKW"
+        }
+      ],
+      "source": "BjoernKW/UML-ER-library.excalidrawlib",
+      "items": 21,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Shapes%20for%20UML%20%26%20ER%20Diagrams",
+      "description": "An opinionated selection of shapes for UML & ER diagrams."
+    },
+    {
+      "slug": "software-architecture",
+      "name": "Software Architecture",
+      "authors": [
+        {
+          "name": "Youri Tjang",
+          "url": "https://github.com/youritjang"
+        }
+      ],
+      "source": "youritjang/software-architecture.excalidrawlib",
+      "items": 7,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Software%20Architecture",
+      "description": "Collection of software architecture components: microservice, database, cache, event bus or pipeline, documents or code, browser, and mobile device"
+    },
+    {
+      "slug": "stick-figures",
+      "name": "Stick Figures",
+      "authors": [
+        {
+          "name": "Youri Tjang",
+          "github": "https://github.com/youritjang",
+          "twitter": "https://twitter.com/YouriTjang",
+          "url": "https://github.com/youritjang"
+        }
+      ],
+      "source": "youritjang/stick-figures.excalidrawlib",
+      "items": 9,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=Stick%20Figures",
+      "description": "Collection of stick figures."
+    },
+    {
+      "slug": "system-design-components",
+      "name": "System Design Components",
+      "authors": [
+        {
+          "name": "Rohan Pithadiya",
+          "url": "https://github.com/Rohanpithadiya"
+        }
+      ],
+      "source": "rohanp/system-design.excalidrawlib",
+      "items": 24,
+      "brandLogos": false,
+      "catalogUrl": "https://libraries.excalidraw.com/?theme=light&sort=default&q=System%20Design%20Components",
+      "description": "Components useful in interviews and elsewhere to build high-level system diagrams."
+    }
+  ]
+}

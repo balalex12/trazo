@@ -164,6 +164,54 @@ container("Logical Grouping", "dotted", "#595959", glyph("group-layers"));
   ["Maps SDK for JavaScript", "code"], ["Experience Builder", "apps"],
 ].forEach(([n, f]) => calcite(CAT.services, n, f, BLUE));
 
+// Content fingerprint: MUST stay identical to excalidraw-app/libraryFingerprint.ts
+function fingerprint(elements) {
+  const str = JSON.stringify(elements.map((e) => [e.type, Math.round(e.width), Math.round(e.height), e.text || "", (e.points || []).length]));
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+// 5. Community libraries (libraries/community.json). Downloaded from the official catalog at build time, never
+//    committed. Each library becomes its own section "Community · <name> (<author>)" so sources never mix.
+//    --profile=public (or LIBRARY_PROFILE=public) skips libraries flagged brandLogos (third-party trademarks).
+const profile = process.env.LIBRARY_PROFILE || (process.argv.includes("--profile=public") ? "public" : "local");
+const communityOriginalIds = []; // ids of the same items as imported by users earlier: the app purges those copies
+const communityFingerprints = new Set(); // ...and copies recognised by content (their ids differ)
+let communityCount = 0;
+if (fs.existsSync("libraries/community.json")) {
+  const man = JSON.parse(fs.readFileSync("libraries/community.json", "utf-8"));
+  const wanted = man.libraries.filter((l) => !(profile === "public" && l.brandLogos));
+  if (wanted.some((l) => !fs.existsSync(`assets/community/${l.slug}.excalidrawlib`))) {
+    console.log("Downloading community libraries from the official catalog (not redistributed in this repo)...");
+    try {
+      execFileSync(process.execPath, ["tools/fetch-community-libraries.mjs"], { stdio: "inherit" });
+    } catch (e) {
+      console.warn("Some community libraries could not be downloaded; continuing with the ones available.");
+    }
+  }
+  for (const lib of wanted) {
+    const f = `assets/community/${lib.slug}.excalidrawlib`;
+    if (!fs.existsSync(f)) continue;
+    const json = JSON.parse(fs.readFileSync(f, "utf-8"));
+    const raw = json.libraryItems || json.library || [];
+    const cat = `Community · ${lib.name} (${lib.authors.map((a) => a.name).join(", ")})`;
+    raw.forEach((it, i) => {
+      const els = Array.isArray(it) ? it : it.elements;
+      if (!els || !els.length) return;
+      const origId = !Array.isArray(it) && it.id ? it.id : null;
+      if (origId) communityOriginalIds.push(origId);
+      communityFingerprints.add(fingerprint(els));
+      const name = (!Array.isArray(it) && it.name) || `Item ${i + 1}`;
+      items.push({ id: `lib:${lib.slug}:${origId || i}`, status: "published", created: CREATED, name: `${cat} / ${name}`, elements: els });
+      communityCount++;
+    });
+  }
+  console.log(`Community libraries (${profile} profile): ${communityCount} items from ${wanted.length} libraries`);
+}
+
 // Names of previous versions of this library (random ids) so the app can purge stale copies on load.
 const legacy = [
   "Portal for ArcGIS", "ArcGIS Online", "ArcGIS Server", "Data Store", "Enterprise Geodatabase",
@@ -178,6 +226,6 @@ const legacy = [
 ];
 
 const out = JSON.stringify({ type: "excalidrawlib", version: 2, source: "local-arcgis-lib",
-  legacyNames: legacy, libraryItems: items, files });
+  legacyNames: legacy, communityOriginalIds, communityFingerprints: [...communityFingerprints], libraryItems: items, files });
 fs.writeFileSync("public/arcgis.excalidrawlib", out);
 console.log("OK:", items.length, "items,", Object.keys(files).length, "image files,", (out.length / 1024).toFixed(0), "KB");
