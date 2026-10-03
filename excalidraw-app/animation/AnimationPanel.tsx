@@ -841,7 +841,7 @@ export const AnimationPanel = ({
           </div>
           <div
             style={{
-              maxHeight: 210,
+              maxHeight: 290, // room for about four slides before it scrolls
               overflow: "auto",
               background: "var(--color-surface-low, #f6f6f6)",
               padding: 6,
