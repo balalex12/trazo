@@ -54,10 +54,20 @@ const skipHeredoc = (s: string, i: number): number => {
   if (!m) {
     return -1;
   }
-  const end = new RegExp(`^[ \\t]*${m[1]}[ \\t]*$`, "m");
-  const rest = s.slice(i + m[0].length);
-  const e = end.exec(rest);
-  return e ? i + m[0].length + e.index + e[0].length : s.length;
+  // the heredoc ends on the first line that holds only the marker (no regex is built from the input)
+  let pos = i + m[0].length;
+  while (pos < s.length) {
+    let eol = s.indexOf("\n", pos);
+    if (eol < 0) {
+      eol = s.length;
+    }
+    const line = s.slice(pos, eol);
+    if (line.trim() === m[1]) {
+      return pos + line.trimEnd().length;
+    }
+    pos = eol + 1;
+  }
+  return s.length;
 };
 
 /** the text without # // and block comments (kept inside strings and heredocs), newlines preserved */
@@ -216,7 +226,27 @@ const label = (kind: string, labels: string[]) => {
   return `${labels[0]}.${labels[1]}`;
 };
 
-const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const isWordChar = (c: string | undefined) => !!c && /\w/.test(c);
+
+/** whether `address` appears in `body` as a whole reference, not as part of a longer name or attribute path */
+const mentions = (body: string, address: string): boolean => {
+  let from = 0;
+  for (;;) {
+    const at = body.indexOf(address, from);
+    if (at < 0) {
+      return false;
+    }
+    const before = body[at - 1];
+    const after = body[at + address.length];
+    if (
+      !(isWordChar(before) || before === "." || before === "-") &&
+      !(isWordChar(after) || after === "-")
+    ) {
+      return true;
+    }
+    from = at + 1;
+  }
+};
 
 export type TerraformOptions = {
   /** also draw network (VPC, subnets, security groups…) and IAM/KMS resources */
@@ -294,12 +324,9 @@ export const parseTerraform = (
 
   // an arrow from each block to every other block whose address appears in it
   const edges: GraphEdge[] = [];
-  const patterns = items.map(
-    (it) => new RegExp(`(?<![\\w.-])${escapeRe(it.address)}(?![\\w-])`),
-  );
   for (const a of items) {
-    items.forEach((b, j) => {
-      if (a !== b && patterns[j].test(a.block.body)) {
+    items.forEach((b) => {
+      if (a !== b && mentions(a.block.body, b.address)) {
         edges.push({
           id: `dep:${a.node.id}>${b.node.id}`,
           from: a.node.id,
