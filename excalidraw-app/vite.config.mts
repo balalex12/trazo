@@ -231,7 +231,7 @@ export default defineConfig(({ mode }) => {
           short_name: "Trazo",
           name: "Trazo",
           description:
-            "Local-first diagram studio for architecture, data, GIS and ML.",
+            "Hand-drawn diagrams that move. A local-first diagram studio.",
           icons: [
             {
               src: "android-chrome-192x192.png",

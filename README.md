@@ -2,11 +2,11 @@
 
 # Trazo
 
-**A local-first diagram studio for architecture, data engineering, GIS and machine learning.** Hand-drawn whiteboard · live ArcGIS maps · animated slides → MP4/GIF · bring-your-own LLM · no telemetry.
+**Hand-drawn diagrams that move.** A local-first diagram studio: animate your slides into MP4 or GIF, generate diagrams with your own LLM, and keep everything on your machine. No telemetry.
 
-<img src="docs/media/animation-demo.gif" alt="An ArcGIS Enterprise architecture built step by step with Trazo: animated slides with official Esri icons, exported as a GIF" width="720">
+<img src="docs/media/animation-demo.gif" alt="A data platform built step by step with Trazo: animated slides exported as a GIF" width="720">
 
-<sub>An ArcGIS Enterprise architecture built step by step, made and exported to GIF with Trazo itself (official Esri Architecture Center icons). Elements that do not change stay perfectly still; only what changes animates.</sub>
+<sub>A data platform built step by step, made and exported to GIF with Trazo itself. Elements that do not change stay perfectly still; only what changes animates.</sub>
 
 _Built on [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Not affiliated with or endorsed by Excalidraw or Esri._
 
@@ -24,26 +24,33 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 |  |  |
 | --- | --- |
-| 🗺️ **Live maps inside the canvas** | Embed interactive ArcGIS maps. Add layers by URL or item ID, browse _My content_ / search any portal, open Web Maps, sketch on top. Works with **ArcGIS Online and any number of ArcGIS Enterprise portals** at the same time. Optional Utility Network trace (needs a Web Map with a Utility Network). |
-| 🧩 **Architecture-ready library** | 450+ components grouped **by source**, never mixed: official **Esri Architecture Center** icons (Enterprise components, data stores, personas…), Utility Network concepts, services & SDKs, plus 16 curated **community libraries** (data platform, deep learning, system design, UML/ER, network topology, Microsoft Fabric…) downloaded from the official catalog at build time with their authors credited. |
-| 🎞️ **Animated slides** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). Preview, present with ← →, and **export MP4 or GIF**, rendered in your browser, nothing uploaded. |
+| 🎞️ **Diagrams that move** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). Each slide has its own timing and transition (smart, fade or cut), and unchanged elements stay still. Preview, present with ← →, and **export MP4 or GIF**, rendered in your browser, nothing uploaded. |
 | 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model: Ollama / LM Studio locally, **Ollama Cloud**, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes, colored by role with symbols (see [docs/AI.md](docs/AI.md#styling-diagrams-colors-symbols)). |
-| 🔒 **Local-first & hardened** | No analytics, no Sentry, no CDN, no service worker, no hosted collaboration. Strict Content-Security-Policy, read-only containers, ports bound to `127.0.0.1`. See [docs/SECURITY.md](docs/SECURITY.md), and verify it yourself. |
+| 🔒 **Local-first and hardened** | No analytics, no Sentry, no CDN, no service worker, no hosted collaboration. Strict Content-Security-Policy, read-only containers, ports bound to `127.0.0.1`. One `docker compose` and it runs on your machine. See [docs/SECURITY.md](docs/SECURITY.md), and verify it yourself. |
+| 🧩 **Icon packs by source** | 450+ components grouped **by source**, never mixed, each credited to its author: architecture and system design, data processing, deep learning, networking, UML/ER, Microsoft Fabric… from 16 curated **community libraries** (downloaded from the official catalog at build time), plus the **GIS pack** below. |
+| 🗺️ **GIS pack: live maps and Esri icons** | Embed interactive ArcGIS maps in the canvas: add layers by URL or item ID, browse _My content_ or search any portal, open Web Maps, sketch on top. Works with **ArcGIS Online and any number of ArcGIS Enterprise portals** at once. Official **Esri Architecture Center** icons and Utility Network concepts. Optional Utility Network trace (needs a Web Map with a Utility Network). |
 
 <table>
 <tr>
-<td><img src="docs/media/editor-light.png" alt="An ArcGIS Enterprise architecture in light mode"><br><sub><b>Light mode</b>: an ArcGIS Enterprise architecture with official Esri icons</sub></td>
-<td><img src="docs/media/editor-dark.png" alt="The same architecture in dark mode"><br><sub><b>Dark mode</b>: same drawing, theme-aware UI</sub></td>
+<td><img src="docs/media/editor-light.png" alt="A data platform diagram in light mode"><br><sub><b>Light mode</b>: a data platform from events to dashboards</sub></td>
+<td><img src="docs/media/editor-dark.png" alt="The same diagram in dark mode"><br><sub><b>Dark mode</b>: same drawing, theme-aware UI</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/map-embed.png" alt="Interactive ArcGIS map in the canvas"><br><sub><b>Live map</b> inside the canvas (ArcGIS Online or any Enterprise portal)</sub></td>
 <td><img src="docs/media/text-to-diagram.png" alt="Text to diagram with your own LLM"><br><sub><b>Text to diagram</b> with your own LLM: colors, symbols and groups</sub></td>
+<td><img src="docs/media/library.png" alt="Library grouped by source"><br><sub><b>Library</b> grouped by source, never mixed</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/library.png" alt="Library grouped by source"><br><sub><b>Library</b> grouped by source, never mixed</sub></td>
-<td><img src="docs/media/welcome.png" alt="Trazo welcome screen"><br><sub><b>Welcome screen</b>: local-first, nothing leaves your browser</sub></td>
+<td><img src="docs/media/map-embed.png" alt="Interactive ArcGIS map in the canvas"><br><sub><b>GIS pack</b>: a live map inside the canvas (ArcGIS Online or any Enterprise portal)</sub></td>
+<td><img src="docs/media/arcgis-architecture.png" alt="An ArcGIS Enterprise architecture with official Esri icons"><br><sub><b>GIS pack</b>: an ArcGIS Enterprise architecture with official Esri icons</sub></td>
 </tr>
 </table>
+
+<details>
+<summary>See the GIS pack animated</summary>
+
+<img src="docs/media/animation-arcgis.gif" alt="An ArcGIS Enterprise architecture built step by step with Trazo" width="720">
+
+</details>
 
 ### Quick start
 
@@ -109,13 +116,13 @@ Issues and PRs welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Security reports
 
 ### ¿Qué es Trazo?
 
-Un estudio de diagramas **local-first** para arquitectura, ingeniería de datos, GIS y ciencia de datos / ML, construido sobre [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Conserva su estilo dibujado a mano y añade:
+**Diagramas dibujados a mano que se mueven.** Un estudio de diagramas **local-first** construido sobre [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Conserva su estilo dibujado a mano y añade:
 
-- 🗺️ **Mapas ArcGIS vivos dentro del lienzo**, con capas por URL o ID, búsqueda en el portal, Web Maps y dibujo encima. Funciona con **ArcGIS Online y varios ArcGIS Enterprise a la vez**; trazado de Utility Network opcional.
-- 🧩 **Librería para arquitectura** con más de 150 componentes en inglés agrupados por fuente (íconos oficiales de Esri Architecture Center, Utility Network, servicios y SDK).
-- 🎞️ **Diapositivas animadas**: los elementos se animan entre diapositivas; exporta a **MP4 o GIF** sin salir de tu navegador.
+- 🎞️ **Diagramas que se mueven**: cada diapositiva tiene su propio tiempo y su tipo de transición (inteligente, fundido o corte); lo que no cambia se queda quieto. Exporta a **MP4 o GIF** sin salir de tu navegador.
 - 🤖 **Tu propio LLM** (Ollama, LM Studio, compatible con OpenAI, Claude) para pasar de texto a diagrama. Apagado por defecto.
-- 🔒 **Local y endurecido**: sin analítica, sin telemetría, sin CDN, sin colaboración alojada; política de seguridad estricta y contenedores de solo lectura.
+- 🔒 **Local y endurecido**: sin analítica, sin telemetría, sin CDN, sin colaboración alojada; política de seguridad estricta y contenedores de solo lectura. Un solo `docker compose`.
+- 🧩 **Paquetes de íconos por fuente**: más de 450 componentes agrupados por fuente y con sus autores acreditados (arquitectura y diseño de sistemas, procesamiento de datos, aprendizaje profundo, redes, UML/ER, Microsoft Fabric…).
+- 🗺️ **Paquete GIS**: mapas ArcGIS vivos dentro del lienzo, con capas por URL o ID, búsqueda en el portal, Web Maps y dibujo encima. Funciona con **ArcGIS Online y varios ArcGIS Enterprise a la vez**. Incluye los íconos oficiales de Esri Architecture Center y trazado de Utility Network opcional.
 
 ### Inicio rápido
 
