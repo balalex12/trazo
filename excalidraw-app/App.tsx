@@ -148,6 +148,7 @@ import DebugCanvas, {
 import { useSimulatedCollaborators } from "./debugCollaborators";
 import { AIComponents } from "./components/AI";
 import { AnimationPanel } from "./animation/AnimationPanel";
+import { RecorderPanel } from "./components/RecorderPanel";
 import { BrandDialogs } from "./components/BrandDialogs";
 import { InfraDialog } from "./components/InfraDialog";
 import { EVENTS } from "./branding";
@@ -1014,6 +1015,7 @@ const ExcalidrawWrapper = () => {
         <AppFooter onChange={() => excalidrawAPI?.refresh()} />
         <AIComponents />
         {excalidrawAPI && <AnimationPanel excalidrawAPI={excalidrawAPI} />}
+        {excalidrawAPI && <RecorderPanel />}
 
         <TTDDialogTrigger />
         {isCollaborating && isOffline && (
