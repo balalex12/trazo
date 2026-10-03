@@ -17,4 +17,5 @@ export const BRAND = {
 export const EVENTS = {
   openAbout: "brand:open-about",
   openAISettings: "brand:open-ai-settings",
+  openInfraImport: "brand:open-infra-import",
 } as const;
