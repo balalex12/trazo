@@ -20,7 +20,7 @@ Each slide (except the first) has a selector for **how it is entered** (stored i
 | **Build** | Like Smart, but the **new elements appear one after another** (in the order they are in the scene) and **arrows and lines draw themselves**. A group, or a text with its container, appears as one piece. The transition lasts as long as it has things to show (about 0.45 s per piece, at least the default transition time, at most 10 s). |
 | **Pan** | The **camera travels over the canvas** from the previous slide to this one, with a zoom out on long trips. Nothing morphs: elements stay where they are on the canvas and only the view moves. Good for slides placed far apart. |
 
-![A three slide animation: Smart, then Build (new boxes appear one by one and arrows draw themselves), then Pan (the camera travels to the last slide), with captions](media/animation-build.gif)
+![A three slide animation: Smart, then Build (new boxes appear one by one and arrows draw themselves), then Pan (the camera travels to the last slide), with captions and a closing title](media/v3-hero.gif)
 
 Elements that are **identical in both slides** (same type, place inside the frame, colours, text…) never move or blink, even if they were copy/pasted and have no `animKey`. Only what actually changed is animated.
 
@@ -42,10 +42,15 @@ Why it stays in sync: the voice is captured as raw samples and counted, and ever
 Details and limits:
 
 - The MP4 audio is mono, AAC (or Opus when the browser has no AAC encoder), 128 kbps. A **GIF has no sound**, so it ignores the narration and keeps the plain timing.
-- The clips are stored **in this browser** (IndexedDB), tied to the slide, and are **not** part of the `.excalidraw` file. Opening the drawing in another browser or profile will not bring them. Nothing is uploaded.
+- The clips are stored **in this browser** (IndexedDB), tied to the slide. Nothing is uploaded. To take them with the drawing, use **Save drawing with narration** (below).
+- The microphone is chosen in the list under the buttons (it remembers your choice on this device; if it is unplugged, the system default is used).
 - A recording only moves forward (no going back). A slide you pass in under 0.3 s keeps the narration it had.
 - It needs a browser with WebCodecs audio encoding for the MP4 (Chrome or Edge). If the browser cannot encode audio you get a clear message and can untick the narration.
 - Noise suppression, echo cancellation and automatic gain are on; use headphones if your speakers are playing.
+
+### Narration inside the drawing file
+
+**Save drawing with narration** downloads a normal `.excalidraw` file that also carries the narration of every slide, in one extra field (`trazoNarration`) that Excalidraw ignores, so the file still opens anywhere. **Open drawing with narration…** replaces the canvas with such a file (you can undo it) and puts the clips back, matched to the slides by their id. The audio is the same 16-bit mono WAV the app keeps, compressed with gzip when the browser can: about 5 MB per minute of speech, so a long narration makes a big file. Saving the drawing the usual way (Ctrl+S, or the Excalidraw menu) does not include narration, because Excalidraw does not know about it.
 
 ## Easing
 

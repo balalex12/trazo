@@ -184,8 +184,8 @@ resource "aws_sqs_queue" "jobs" {
 resource "aws_lambda_function" "worker" {
   environment {
     variables = {
-      QUEUE = aws_sqs_queue.jobs.url
-      DB    = aws_db_instance.main.address
+      QUEUE  = aws_sqs_queue.jobs.url
+      BUCKET = aws_s3_bucket.uploads.bucket
     }
   }
 }

@@ -49,7 +49,7 @@ This repository is a **derivative of Excalidraw** (MIT) published as an independ
 ## Where things are
 
 - `docs/`: ARCHITECTURE, SECURITY, UPDATING, LOCAL_FIRST_CHANGES, VIEWER, ANIMATION, AI, LIBRARIES, BRANDING, ROADMAP.
-- `viewer/` ArcGIS viewer (static, port 3001; no build step) · `excalidraw-app/animation/` slides + MP4/GIF · `excalidraw-app/infra/` compose, Kubernetes and Terraform to diagram · `excalidraw-app/recorder/` recorder (canvas, canvas + embeds, whole app) · `excalidraw-app/ai/llm.ts` LLM connector · `tools/` library builder, icon conversion, Calcite fetch, audit, icons.
+- `viewer/` ArcGIS viewer (static, port 3001; no build step) · `excalidraw-app/animation/` slides + MP4/GIF · `excalidraw-app/infra/` compose, Kubernetes, Terraform, OpenAPI, SQL, dbt and n8n to diagram · `excalidraw-app/recorder/` recorder (canvas, canvas + embeds, whole app) · `excalidraw-app/ai/llm.ts` LLM connector · `tools/` library builder, icon conversion, Calcite fetch, audit, icons.
 - `deploy/nginx/` configs · `scripts/csp-hashes.mjs` (build-time CSP from inline-script hashes; lives in upstream's `scripts/` because `.dockerignore` only includes that folder).
 
 ## How to build / run / test

@@ -68,6 +68,11 @@ export type Graph = {
   edges: GraphEdge[];
   /** things worth telling the user (what was left out) */
   notes?: string[];
+  /**
+   * A data flow (lineage, workflows): arrows go from upstream to downstream. Entry nodes then sit next to what they
+   * feed instead of all in the first column, and each column is ordered to keep arrows from crossing.
+   */
+  flow?: boolean;
 };
 
 export type LayoutNode = {
@@ -140,6 +145,21 @@ export const layoutGraph = (g: Graph): Layout => {
     return lvl;
   };
   main.forEach((n) => level(n.id, []));
+  if (g.flow) {
+    // an entry node moves up to just before the first thing it feeds
+    for (const n of main) {
+      if (dependents.has(n.id)) {
+        continue;
+      }
+      const targets = edges
+        .filter((e) => e.kind === "depends" && e.from === n.id)
+        .map((e) => memo.get(e.to))
+        .filter((l): l is number => l !== undefined);
+      if (targets.length) {
+        memo.set(n.id, Math.max(0, Math.min(...targets) - 1));
+      }
+    }
+  }
   const shift = externals.length ? 1 : 0;
 
   type Draft = Omit<LayoutNode, "x" | "y"> & { col: number };
@@ -178,6 +198,36 @@ export const layoutGraph = (g: Graph): Layout => {
 
   const cols = new Map<number, Draft[]>();
   drafts.forEach((d) => cols.set(d.col, [...(cols.get(d.col) || []), d]));
+  if (g.flow) {
+    // order each column by where its upstream nodes ended up, so arrows run roughly straight
+    const order = new Map<string, number>();
+    const colsSorted = [...cols.keys()].sort((a, b) => a - b);
+    for (const c of colsSorted) {
+      const items = cols.get(c)!;
+      const bary = (d: Draft) => {
+        const ups = edges
+          .filter((e) => e.kind === "depends" && e.to === d.id)
+          .map((e) => order.get(e.from))
+          .filter((v): v is number => v !== undefined);
+        return ups.length
+          ? ups.reduce((a, b) => a + b, 0) / ups.length
+          : Number.NaN;
+      };
+      const keyed = items.map((d, i) => ({ d, i, b: bary(d) }));
+      keyed.sort((x, y) => {
+        const bx = Number.isNaN(x.b) ? x.i : x.b;
+        const by = Number.isNaN(y.b) ? y.i : y.b;
+        return bx - by || x.i - y.i;
+      });
+      cols.set(
+        c,
+        keyed.map((k) => k.d),
+      );
+      keyed.forEach((k, i) =>
+        order.set(k.d.id, keyed.length > 1 ? i / (keyed.length - 1) : 0.5),
+      );
+    }
+  }
   const heightOf = (items: Draft[]) =>
     items.reduce((sum, d) => sum + d.height, 0) + (items.length - 1) * GAP_Y;
   const tallest = Math.max(0, ...[...cols.values()].map(heightOf));

@@ -178,5 +178,5 @@ export const parseDbt = (text: string): Graph => {
       } from installed packages`,
     );
   }
-  return { nodes, edges, ...(notes.length ? { notes } : {}) };
+  return { nodes, edges, flow: true, ...(notes.length ? { notes } : {}) };
 };

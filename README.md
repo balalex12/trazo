@@ -4,7 +4,7 @@
 
 **Hand-drawn diagrams that move.** A local-first diagram studio: animate your slides into MP4 or GIF, generate diagrams with your own LLM, and keep everything on your machine. No telemetry.
 
-<img src="docs/media/hero.gif" alt="A data platform built step by step with Trazo: new elements appear one by one, arrows draw themselves, captions, and a camera move to the last slide" width="720">
+<img src="docs/media/v3-hero.gif" alt="A data platform built step by step with Trazo: new elements appear one by one, arrows draw themselves, captions, and a camera move to the last slide" width="720">
 
 <sub>Made and exported to GIF with Trazo itself: new elements appear one by one, arrows draw themselves, captions fade in and the camera travels to the last slide. Elements that do not change stay perfectly still.</sub>
 
@@ -27,38 +27,50 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 | 🎞️ **Diagrams that move** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). You can **narrate it with your voice**: talk while it builds, press → for the next slide, and the MP4 keeps voice and picture in sync. Each slide has its own timing, transition (smart, fade, cut, **build** where elements appear one by one and arrows draw themselves, or **pan** where the camera travels over the canvas) and caption, and unchanged elements stay still. Preview, present with ← →, and **export MP4 or GIF**, rendered in your browser, nothing uploaded. |
 | 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model: Ollama / LM Studio locally, **Ollama Cloud**, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes, colored by role with symbols (see [docs/AI.md](docs/AI.md#styling-diagrams-colors-symbols)). |
 | 🎙️ **Record while you explain** | **⏺ Record** captures just the canvas, the canvas with live maps, or the whole app, with your microphone and a highlighted pointer, and gives you an MP4 or WebM. Made in your browser, nothing uploaded (see [docs/RECORDER.md](docs/RECORDER.md)). |
-| 🏗️ **Infrastructure to diagram** | Paste a `docker-compose.yml`, **Kubernetes manifests** or **Terraform files** and get the architecture drawn for you: workloads or resources by role, entry points, dependencies, volumes and config. Read in your browser, **no AI and no network**, so the same file always gives the same diagram (see [docs/INFRA.md](docs/INFRA.md)). |
+| 🏗️ **Import to diagram** | Paste a `docker-compose.yml`, **Kubernetes**, **Terraform** (`.tf` or JSON), an **OpenAPI** file, **SQL** `CREATE TABLE`s, a **dbt** `manifest.json` or an **n8n** workflow and get it drawn for you: architecture by role, API by tag, tables with their keys, lineage, workflow steps. Read in your browser, **no AI and no network**, so the same file always gives the same diagram (see [docs/IMPORT.md](docs/IMPORT.md)). |
 | 🔒 **Local-first and hardened** | No analytics, no Sentry, no CDN, no service worker, no hosted collaboration. Strict Content-Security-Policy, read-only containers, ports bound to `127.0.0.1`. One `docker compose` and it runs on your machine. See [docs/SECURITY.md](docs/SECURITY.md), and verify it yourself. |
 | 🧩 **Icon packs by source** | 450+ components grouped **by source**, never mixed, each credited to its author: architecture and system design, data processing, deep learning, networking, UML/ER, Microsoft Fabric… from 16 curated **community libraries** (downloaded from the official catalog at build time), plus the **GIS pack** below. |
 | 🗺️ **GIS pack: live maps and Esri icons** | Embed interactive ArcGIS maps in the canvas: add layers by URL or item ID, browse _My content_ or search any portal, open Web Maps, sketch on top. Works with **ArcGIS Online and any number of ArcGIS Enterprise portals** at once. Official **Esri Architecture Center** icons and Utility Network concepts. Optional Utility Network trace (needs a Web Map with a Utility Network). |
 
 <table>
 <tr>
-<td><img src="docs/media/editor-light-v2.png" alt="A data platform diagram in light mode"><br><sub><b>Light mode</b>: a data platform from events to dashboards</sub></td>
-<td><img src="docs/media/editor-dark-v2.png" alt="The same diagram in dark mode"><br><sub><b>Dark mode</b>: same drawing, theme-aware UI</sub></td>
+<td><img src="docs/media/v3-editor-light.png" alt="A data platform diagram in light mode"><br><sub><b>Light mode</b>: a data platform from events to dashboards</sub></td>
+<td><img src="docs/media/v3-editor-dark.png" alt="The same diagram in dark mode"><br><sub><b>Dark mode</b>: same drawing, theme-aware UI</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/text-to-diagram.png" alt="Text to diagram with your own LLM"><br><sub><b>Text to diagram</b> with your own LLM: colors, symbols and groups</sub></td>
-<td><img src="docs/media/library.png" alt="Library grouped by source"><br><sub><b>Library</b> grouped by source, never mixed</sub></td>
+<td><img src="docs/media/v3-text-to-diagram.png" alt="Text to diagram with your own LLM"><br><sub><b>Text to diagram</b> with your own LLM: colors, symbols and groups</sub></td>
+<td><img src="docs/media/v3-library.png" alt="Library grouped by source"><br><sub><b>Library</b> grouped by source, never mixed</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/animation-panel.png" alt="The animation panel: a transition, a caption and a narration clip for every slide"><br><sub><b>Animate and narrate</b>: a transition, a caption and your own voice for each slide</sub></td>
-<td><img src="docs/media/recorder-panel.png" alt="The recorder: canvas only, canvas with live maps, or the whole app"><br><sub><b>Record</b>: the canvas, the canvas with live maps, or the whole app, with your microphone</sub></td>
+<td><img src="docs/media/v3-animation-panel.png" alt="The animation panel: a transition, a caption and a narration clip for every slide"><br><sub><b>Animate and narrate</b>: a transition, a caption and your own voice for each slide</sub></td>
+<td><img src="docs/media/v3-recorder-panel.png" alt="The recorder: canvas only, canvas with live maps, or the whole app"><br><sub><b>Record</b>: the canvas, the canvas with live maps, or the whole app, with your microphone</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/infra-compose-light.png" alt="A docker-compose file turned into an architecture diagram"><br><sub><b>Infrastructure to diagram</b>: a docker-compose file, drawn for you</sub></td>
-<td><img src="docs/media/infra-compose-dark.png" alt="The same generated diagram in dark mode"><br><sub>Same diagram in dark mode: offline, no AI</sub></td>
+<td><img src="docs/media/v3-import-compose.png" alt="A docker-compose file turned into an architecture diagram"><br><sub><b>Docker Compose</b>: services by role, ports and volumes</sub></td>
+<td><img src="docs/media/v3-import-kubernetes.png" alt="Kubernetes manifests turned into an architecture diagram"><br><sub><b>Kubernetes</b>: ingress, services, workloads, config and claims</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/map-embed.png" alt="Interactive ArcGIS map in the canvas"><br><sub><b>GIS pack</b>: a live map inside the canvas (ArcGIS Online or any Enterprise portal)</sub></td>
-<td><img src="docs/media/arcgis-architecture.png" alt="An ArcGIS Enterprise architecture with official Esri icons"><br><sub><b>GIS pack</b>: an ArcGIS Enterprise architecture with official Esri icons</sub></td>
+<td><img src="docs/media/v3-import-terraform.png" alt="Terraform files turned into an architecture diagram"><br><sub><b>Terraform</b>: resources and the references between them (HCL or JSON)</sub></td>
+<td><img src="docs/media/v3-import-openapi.png" alt="An OpenAPI file turned into a diagram of endpoints by tag and schemas"><br><sub><b>OpenAPI</b>: endpoints by tag, schemas and security</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/v3-import-sql-dark.png" alt="SQL CREATE TABLE statements turned into an entity relationship diagram"><br><sub><b>SQL</b>: tables with their keys and foreign keys</sub></td>
+<td><img src="docs/media/v3-import-dbt.png" alt="A dbt manifest turned into a lineage graph"><br><sub><b>dbt</b>: lineage from sources to dashboards, colored by layer</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/v3-import-n8n.png" alt="An n8n workflow turned into a flow diagram"><br><sub><b>n8n</b>: the workflow, with true and false branches</sub></td>
+<td><img src="docs/media/v3-import-kubernetes-dark.png" alt="The Kubernetes diagram in dark mode"><br><sub>Dark mode too. All of it offline, no AI</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/v3-map-embed.png" alt="Interactive ArcGIS map in the canvas"><br><sub><b>GIS pack</b>: a live map inside the canvas (ArcGIS Online or any Enterprise portal)</sub></td>
+<td><img src="docs/media/v3-arcgis-architecture.png" alt="An ArcGIS Enterprise architecture with official Esri icons"><br><sub><b>GIS pack</b>: an ArcGIS Enterprise architecture with official Esri icons</sub></td>
 </tr>
 </table>
 
 <details>
 <summary>See the GIS pack animated</summary>
 
-<img src="docs/media/animation-arcgis.gif" alt="An ArcGIS Enterprise architecture built step by step with Trazo" width="720">
+<img src="docs/media/v3-animation-arcgis.gif" alt="An ArcGIS Enterprise architecture built step by step with Trazo" width="720">
 
 </details>
 
@@ -95,7 +107,7 @@ Stop with `docker compose down`. Everything listens on `127.0.0.1` only.
 | [docs/VIEWER.md](docs/VIEWER.md) | ArcGIS viewer: portals, sign-in, layers, Utility Network |
 | [docs/ANIMATION.md](docs/ANIMATION.md) | Slides, transitions, MP4/GIF export |
 | [docs/RECORDER.md](docs/RECORDER.md) | Recording the canvas with your voice |
-| [docs/INFRA.md](docs/INFRA.md) | docker-compose, Kubernetes and Terraform to architecture diagram |
+| [docs/IMPORT.md](docs/IMPORT.md) | docker-compose, Kubernetes, Terraform, OpenAPI, SQL, dbt and n8n to diagram |
 | [docs/AI.md](docs/AI.md) | Connecting Ollama / LM Studio / OpenAI-compatible / Claude |
 | [docs/LIBRARIES.md](docs/LIBRARIES.md) | Icon sources, adding your own libraries, licensing rules |
 | [docs/UPDATING.md](docs/UPDATING.md) | Staying in sync with Excalidraw upstream |

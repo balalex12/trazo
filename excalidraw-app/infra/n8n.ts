@@ -1,6 +1,6 @@
 // n8n workflow JSON (a workflow exported from n8n) to a flow graph: one box per node, one arrow per connection, in the
 // direction the data goes, so triggers are on the left. Pure and deterministic, nothing is executed.
-import { MAX_NODES, clip } from "./graph";
+import { MAX_NODES, ROLE_STYLE, clip } from "./graph";
 
 import type { Graph, GraphEdge, GraphNode, Role } from "./graph";
 
@@ -102,9 +102,7 @@ export const parseN8n = (text: string): Graph => {
       role,
       dashed: disabled,
       lines: [
-        `${
-          role === "trigger" ? "🚀" : role === "function" ? "🧩" : "▫️"
-        } ${clip(str(n.name), 26)}`,
+        `${ROLE_STYLE[role].emoji} ${clip(str(n.name), 26)}`,
         clip(`${words(shortType(type))}${disabled ? " (disabled)" : ""}`, 32),
       ],
     };
@@ -157,6 +155,7 @@ export const parseN8n = (text: string): Graph => {
   return {
     nodes,
     edges,
+    flow: true,
     ...(stickies
       ? {
           notes: [
