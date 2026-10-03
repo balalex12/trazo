@@ -4,9 +4,9 @@
 
 **Hand-drawn diagrams that move.** A local-first diagram studio: animate your slides into MP4 or GIF, generate diagrams with your own LLM, and keep everything on your machine. No telemetry.
 
-<img src="docs/media/animation-demo.gif" alt="A data platform built step by step with Trazo: animated slides exported as a GIF" width="720">
+<img src="docs/media/hero.gif" alt="A data platform built step by step with Trazo: new elements appear one by one, arrows draw themselves, captions, and a camera move to the last slide" width="720">
 
-<sub>A data platform built step by step, made and exported to GIF with Trazo itself. Elements that do not change stay perfectly still; only what changes animates.</sub>
+<sub>Made and exported to GIF with Trazo itself: new elements appear one by one, arrows draw themselves, captions fade in and the camera travels to the last slide. Elements that do not change stay perfectly still.</sub>
 
 _Built on [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Not affiliated with or endorsed by Excalidraw or Esri._
 
@@ -34,12 +34,16 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 <table>
 <tr>
-<td><img src="docs/media/editor-light.png" alt="A data platform diagram in light mode"><br><sub><b>Light mode</b>: a data platform from events to dashboards</sub></td>
-<td><img src="docs/media/editor-dark.png" alt="The same diagram in dark mode"><br><sub><b>Dark mode</b>: same drawing, theme-aware UI</sub></td>
+<td><img src="docs/media/editor-light-v2.png" alt="A data platform diagram in light mode"><br><sub><b>Light mode</b>: a data platform from events to dashboards</sub></td>
+<td><img src="docs/media/editor-dark-v2.png" alt="The same diagram in dark mode"><br><sub><b>Dark mode</b>: same drawing, theme-aware UI</sub></td>
 </tr>
 <tr>
 <td><img src="docs/media/text-to-diagram.png" alt="Text to diagram with your own LLM"><br><sub><b>Text to diagram</b> with your own LLM: colors, symbols and groups</sub></td>
 <td><img src="docs/media/library.png" alt="Library grouped by source"><br><sub><b>Library</b> grouped by source, never mixed</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/animation-panel.png" alt="The animation panel: a transition, a caption and a narration clip for every slide"><br><sub><b>Animate and narrate</b>: a transition, a caption and your own voice for each slide</sub></td>
+<td><img src="docs/media/recorder-panel.png" alt="The recorder: canvas only, canvas with live maps, or the whole app"><br><sub><b>Record</b>: the canvas, the canvas with live maps, or the whole app, with your microphone</sub></td>
 </tr>
 <tr>
 <td><img src="docs/media/infra-compose-light.png" alt="A docker-compose file turned into an architecture diagram"><br><sub><b>Infrastructure to diagram</b>: a docker-compose file, drawn for you</sub></td>
