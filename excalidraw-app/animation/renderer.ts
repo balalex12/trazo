@@ -1,6 +1,13 @@
 import { exportToCanvas } from "@excalidraw/excalidraw";
 
-import { buildScene, ease, sampleAt } from "./timeline";
+import {
+  buildScene,
+  captionAt,
+  captionOf,
+  ease,
+  sampleAt,
+  wrapText,
+} from "./timeline";
 
 import type { Slide, TimelineSettings } from "./timeline";
 
@@ -28,6 +35,45 @@ export const outputSize = (slides: Slide[], maxWidth: number) => {
   return { width: w - (w % 2), height: h - (h % 2) };
 };
 
+/** Burns a caption into the bottom of the frame: white text on a rounded dark bar, wrapped to a few lines. */
+const drawCaption = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  text: string,
+  alpha: number,
+) => {
+  if (!text || alpha <= 0) {
+    return;
+  }
+  const size = Math.max(14, Math.round(height * 0.04));
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, alpha);
+  ctx.font = `${size}px system-ui, "Segoe UI", Roboto, sans-serif`;
+  ctx.textBaseline = "top";
+  ctx.textAlign = "center";
+  const measure = (t: string) => ctx.measureText(t).width;
+  const lines = wrapText(text, width * 0.84, measure);
+  const lineH = Math.round(size * 1.3);
+  const padX = Math.round(size * 0.8);
+  const padY = Math.round(size * 0.5);
+  const boxW = Math.max(...lines.map(measure)) + padX * 2;
+  const boxH = lines.length * lineH + padY * 2 - (lineH - size);
+  const x = (width - boxW) / 2;
+  const y = height - boxH - height * 0.05;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.68)";
+  ctx.beginPath();
+  if (ctx.roundRect) {
+    ctx.roundRect(x, y, boxW, boxH, size * 0.4);
+  } else {
+    ctx.rect(x, y, boxW, boxH);
+  }
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  lines.forEach((l, i) => ctx.fillText(l, width / 2, y + padY + i * lineH));
+  ctx.restore();
+};
+
 /** Draws slide `a`→`b` at eased progress onto `target` (created if omitted). */
 export const renderBlend = async (
   opts: RenderOptions,
@@ -38,7 +84,12 @@ export const renderBlend = async (
 ): Promise<HTMLCanvasElement> => {
   const { slides, files, settings, width, height } = opts;
   const p = a === b ? 0 : ease(settings.easing, rawT);
-  const { frame, elements } = buildScene(slides[a], slides[b], p);
+  const { frame, elements } = buildScene(
+    slides[a],
+    slides[b],
+    p,
+    a === b ? 0 : rawT,
+  );
   const bg = opts.background ?? "#ffffff";
 
   const src = await exportToCanvas({
@@ -64,6 +115,11 @@ export const renderBlend = async (
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, width, height);
   ctx.drawImage(src, (width - src.width) / 2, (height - src.height) / 2);
+  const cap =
+    a === b
+      ? { text: captionOf(slides[a]), alpha: 1 }
+      : captionAt(slides[a], slides[b], rawT);
+  drawCaption(ctx, width, height, cap.text, cap.alpha);
   return out;
 };
 

@@ -10,6 +10,7 @@ import {
   DEFAULT_SETTINGS,
   getSlides,
   totalDurationMs,
+  transitionMs,
   transitionModeOf,
 } from "./timeline";
 
@@ -119,14 +120,24 @@ const Player = ({
         if (animating || target < 0 || target >= slides.length) {
           return;
         }
-        animating = true;
         const from = cur;
+        // each transition has its own length: a "cut" is instant, "build" lasts as long as it has things to show
+        const dur = transitionMs(slides[from], slides[target], settings);
+        if (dur <= 0) {
+          cur = target;
+          run(() => renderBlend(opts, target, target, 0, canvas));
+          setHud(
+            `${cur + 1} / ${slides.length}  ·  ← → to navigate · Esc to exit`,
+          );
+          return;
+        }
+        animating = true;
         const t0 = performance.now();
         const step = (now: number) => {
           if (!alive) {
             return;
           }
-          const t = Math.min(1, (now - t0) / settings.transitionMs);
+          const t = Math.min(1, (now - t0) / dur);
           run(() => renderBlend(opts, from, target, t, canvas));
           if (t < 1) {
             raf = requestAnimationFrame(step);
@@ -234,6 +245,41 @@ const Player = ({
 };
 
 /** Number field that keeps its own draft while typing and commits on blur/Enter (the slide list refreshes late). */
+const CaptionInput = ({
+  value,
+  style,
+  onCommit,
+}: {
+  value: string | undefined;
+  style: React.CSSProperties;
+  onCommit: (v: string) => void;
+}) => {
+  const [draft, setDraft] = useState<string | null>(null);
+  const commit = () => {
+    if (draft !== null) {
+      onCommit(draft);
+      setDraft(null);
+    }
+  };
+  return (
+    <input
+      type="text"
+      title="Caption shown at the bottom of this slide in the preview and in the exported video. Empty = none."
+      placeholder="Caption (optional)"
+      value={draft ?? value ?? ""}
+      onClick={(e) => e.stopPropagation()}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          (e.target as HTMLInputElement).blur();
+        }
+      }}
+      style={style}
+    />
+  );
+};
+
 const HoldInput = ({
   value,
   placeholder,
@@ -562,7 +608,7 @@ export const AnimationPanel = ({
           </div>
           <div
             style={{
-              maxHeight: 130,
+              maxHeight: 210,
               overflow: "auto",
               background: "var(--color-surface-low, #f6f6f6)",
               padding: 6,
@@ -571,55 +617,65 @@ export const AnimationPanel = ({
           >
             {slides.length === 0 && <i>No slides yet.</i>}
             {slides.map((s, i) => (
-              <div
-                key={s.frame.id}
-                onClick={() =>
-                  excalidrawAPI.setViewport({
-                    target: s.frame,
-                    fit: "scale-down",
-                  } as any)
-                }
-                style={{
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                }}
-              >
-                <span style={{ flex: 1 }}>
-                  {i + 1}. {s.name}{" "}
-                  <span style={{ color: "#888" }}>
-                    ({s.children.length} elements)
+              <div key={s.frame.id} style={{ marginBottom: 4 }}>
+                <div
+                  onClick={() =>
+                    excalidrawAPI.setViewport({
+                      target: s.frame,
+                      fit: "scale-down",
+                    } as any)
+                  }
+                  style={{
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <span style={{ flex: 1 }}>
+                    {i + 1}. {s.name}{" "}
+                    <span style={{ color: "#888" }}>
+                      ({s.children.length} elements)
+                    </span>
                   </span>
-                </span>
-                {i > 0 && (
-                  <select
-                    title={
-                      "How this slide is entered.\nSmart: matching elements move, new ones fade in.\nFade: nothing moves, cross-fade (identical elements stay put).\nCut: instant."
-                    }
-                    value={transitionModeOf(s)}
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={(e) =>
-                      setSlideData(
-                        s.frame.id,
-                        "transition",
-                        e.target.value === "smart" ? null : e.target.value,
-                      )
-                    }
-                    style={{ ...field, width: 66 }}
-                  >
-                    <option value="smart">Smart</option>
-                    <option value="fade">Fade</option>
-                    <option value="cut">Cut</option>
-                  </select>
-                )}
-                <HoldInput
-                  value={s.frame.customData?.holdMs}
-                  placeholder={String(settings.holdMs)}
-                  onCommit={(v) => setSlideHold(s.frame.id, v)}
-                  style={{ ...field, width: 78 }}
+                  {i > 0 && (
+                    <select
+                      title={
+                        "How this slide is entered.\nSmart: matching elements move, new ones fade in.\nFade: nothing moves, cross-fade (identical elements stay put).\nCut: instant.\nBuild: new elements appear one after another and arrows draw themselves.\nPan: the camera travels over the canvas to this slide."
+                      }
+                      value={transitionModeOf(s)}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        setSlideData(
+                          s.frame.id,
+                          "transition",
+                          e.target.value === "smart" ? null : e.target.value,
+                        )
+                      }
+                      style={{ ...field, width: 74 }}
+                    >
+                      <option value="smart">Smart</option>
+                      <option value="fade">Fade</option>
+                      <option value="cut">Cut</option>
+                      <option value="build">Build</option>
+                      <option value="pan">Pan</option>
+                    </select>
+                  )}
+                  <HoldInput
+                    value={s.frame.customData?.holdMs}
+                    placeholder={String(settings.holdMs)}
+                    onCommit={(v) => setSlideHold(s.frame.id, v)}
+                    style={{ ...field, width: 78 }}
+                  />
+                  <span style={{ color: "#888" }}>ms</span>
+                </div>
+                <CaptionInput
+                  value={s.frame.customData?.caption}
+                  onCommit={(v) =>
+                    setSlideData(s.frame.id, "caption", v.trim() || null)
+                  }
+                  style={{ ...field, marginTop: 2 }}
                 />
-                <span style={{ color: "#888" }}>ms</span>
               </div>
             ))}
           </div>
@@ -679,7 +735,10 @@ export const AnimationPanel = ({
                 }
               >
                 <option value="easeInOut">Ease in-out</option>
+                <option value="easeInOutCubic">Ease in-out (strong)</option>
                 <option value="easeOut">Ease out</option>
+                <option value="easeOutBack">Overshoot</option>
+                <option value="spring">Spring</option>
                 <option value="linear">Linear</option>
               </select>
             </label>

@@ -24,7 +24,7 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 |  |  |
 | --- | --- |
-| 🎞️ **Diagrams that move** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). Each slide has its own timing and transition (smart, fade or cut), and unchanged elements stay still. Preview, present with ← →, and **export MP4 or GIF**, rendered in your browser, nothing uploaded. |
+| 🎞️ **Diagrams that move** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). Each slide has its own timing, transition (smart, fade, cut, **build** where elements appear one by one and arrows draw themselves, or **pan** where the camera travels over the canvas) and caption, and unchanged elements stay still. Preview, present with ← →, and **export MP4 or GIF**, rendered in your browser, nothing uploaded. |
 | 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model: Ollama / LM Studio locally, **Ollama Cloud**, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes, colored by role with symbols (see [docs/AI.md](docs/AI.md#styling-diagrams-colors-symbols)). |
 | 🎙️ **Record while you explain** | **⏺ Record** captures just the canvas, the canvas with live maps, or the whole app, with your microphone and a highlighted pointer, and gives you an MP4 or WebM. Made in your browser, nothing uploaded (see [docs/RECORDER.md](docs/RECORDER.md)). |
 | 🏗️ **Infrastructure to diagram** | Paste a `docker-compose.yml` and get the architecture drawn for you: services by role, published ports, dependencies and volumes. Read in your browser, **no AI and no network**, so the same file always gives the same diagram (see [docs/INFRA.md](docs/INFRA.md)). |
@@ -126,7 +126,7 @@ Issues and PRs welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Security reports
 
 **Diagramas dibujados a mano que se mueven.** Un estudio de diagramas **local-first** construido sobre [Excalidraw](https://github.com/excalidraw/excalidraw) (MIT). Conserva su estilo dibujado a mano y añade:
 
-- 🎞️ **Diagramas que se mueven**: cada diapositiva tiene su propio tiempo y su tipo de transición (inteligente, fundido o corte); lo que no cambia se queda quieto. Exporta a **MP4 o GIF** sin salir de tu navegador.
+- 🎞️ **Diagramas que se mueven**: cada diapositiva tiene su propio tiempo, su transición (inteligente, fundido, corte, construcción con elementos que aparecen uno a uno y flechas que se dibujan solas, o cámara que viaja por el lienzo) y su subtítulo; lo que no cambia se queda quieto. Exporta a **MP4 o GIF** sin salir de tu navegador.
 - 🤖 **Tu propio LLM** (Ollama, LM Studio, compatible con OpenAI, Claude) para pasar de texto a diagrama. Apagado por defecto.
 - 🔒 **Local y endurecido**: sin analítica, sin telemetría, sin CDN, sin colaboración alojada; política de seguridad estricta y contenedores de solo lectura. Un solo `docker compose`.
 - 🧩 **Paquetes de íconos por fuente**: más de 450 componentes agrupados por fuente y con sus autores acreditados (arquitectura y diseño de sistemas, procesamiento de datos, aprendizaje profundo, redes, UML/ER, Microsoft Fabric…).
