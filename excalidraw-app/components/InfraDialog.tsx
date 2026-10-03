@@ -1,14 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   convertToExcalidrawElements,
   useExcalidrawAPI,
 } from "@excalidraw/excalidraw";
 
 import { EVENTS } from "../branding";
-import { parseCompose } from "../infra/compose";
-import { layoutCompose, layoutToSkeleton } from "../infra/layout";
+import { FORMAT_NAMES, detectFormat, importInfra } from "../infra/detect";
+import { layoutToSkeleton } from "../infra/graph";
 
-const EXAMPLE = `services:
+import type { InfraFormat } from "../infra/detect";
+
+const EXAMPLES: Record<InfraFormat, string> = {
+  compose: `services:
   proxy:
     image: nginx:alpine
     ports: ["80:80", "443:443"]
@@ -37,7 +40,157 @@ const EXAMPLE = `services:
 volumes:
   pgdata:
   uploads:
-`;
+`,
+  kubernetes: `apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: { name: shop }
+spec:
+  rules:
+    - host: shop.example.com
+      http:
+        paths:
+          - { path: /, backend: { service: { name: web, port: { number: 80 } } } }
+          - { path: /api, backend: { service: { name: api, port: { number: 8080 } } } }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: web }
+spec: { selector: { app: web }, ports: [{ port: 80 }] }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: web }
+spec:
+  replicas: 2
+  template:
+    metadata: { labels: { app: web } }
+    spec:
+      containers:
+        - { name: web, image: ghcr.io/acme/shop-web:2.1 }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: api }
+spec: { selector: { app: api }, ports: [{ port: 8080 }] }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: api }
+spec:
+  replicas: 3
+  template:
+    metadata: { labels: { app: api } }
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/acme/shop-api:2.1
+          env:
+            - { name: DB_HOST, value: postgres }
+            - { name: CACHE_HOST, value: redis }
+          envFrom:
+            - configMapRef: { name: api-config }
+            - secretRef: { name: api-secrets }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: api-config }
+data: { LOG_LEVEL: info }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: postgres }
+spec: { selector: { app: postgres }, ports: [{ port: 5432 }] }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: { name: postgres }
+spec:
+  replicas: 1
+  template:
+    metadata: { labels: { app: postgres } }
+    spec:
+      containers:
+        - { name: db, image: postgres:16 }
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec: { resources: { requests: { storage: 20Gi } } }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: redis }
+spec: { selector: { app: redis }, ports: [{ port: 6379 }] }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: redis }
+spec:
+  template:
+    metadata: { labels: { app: redis } }
+    spec:
+      containers:
+        - { name: redis, image: redis:7 }
+`,
+  terraform: `data "aws_ami" "ubuntu" {
+  most_recent = true
+}
+
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "public" {
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_lb" "app" {
+  subnets = [aws_subnet.public.id]
+}
+
+resource "aws_lb_target_group" "web" {
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.app.arn
+  default_action {
+    target_group_arn = aws_lb_target_group.web.arn
+  }
+}
+
+resource "aws_lb_target_group_attachment" "web" {
+  target_group_arn = aws_lb_target_group.web.arn
+  target_id        = aws_instance.web.id
+}
+
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t3.small"
+  subnet_id     = aws_subnet.public.id
+  user_data     = "DB=\${aws_db_instance.main.address} BUCKET=\${aws_s3_bucket.uploads.bucket}"
+}
+
+resource "aws_db_instance" "main" {
+  engine = "postgres"
+}
+
+resource "aws_s3_bucket" "uploads" {
+  bucket = "shop-uploads"
+}
+
+resource "aws_sqs_queue" "jobs" {
+  name = "jobs"
+}
+
+resource "aws_lambda_function" "worker" {
+  environment {
+    variables = {
+      QUEUE = aws_sqs_queue.jobs.url
+      DB    = aws_db_instance.main.address
+    }
+  }
+}
+`,
+};
 
 const overlay: React.CSSProperties = {
   position: "fixed",
@@ -53,7 +206,7 @@ const card: React.CSSProperties = {
   color: "var(--text-primary-color, #222)",
   borderRadius: 10,
   padding: 20,
-  width: "min(640px, 94vw)",
+  width: "min(660px, 94vw)",
   maxHeight: "90vh",
   overflow: "auto",
   font: "14px system-ui, sans-serif",
@@ -85,12 +238,22 @@ const ghost: React.CSSProperties = {
   background: "transparent",
   color: "var(--color-primary)",
 };
+const select: React.CSSProperties = {
+  padding: "5px 8px",
+  background: "var(--input-bg-color, var(--island-bg-color))",
+  color: "var(--text-primary-color)",
+  border: "1px solid var(--default-border-color, #8888)",
+  borderRadius: 6,
+};
 
 export const InfraDialog = () => {
   const api = useExcalidrawAPI();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
+  const [details, setDetails] = useState(false);
+  // what the pasted text looks like, updated a moment after you stop typing
+  const [summary, setSummary] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -102,6 +265,29 @@ export const InfraDialog = () => {
     return () => window.removeEventListener(EVENTS.openInfraImport, on);
   }, []);
 
+  const format = useMemo(() => detectFormat(text), [text]);
+
+  useEffect(() => {
+    if (!text.trim()) {
+      setSummary("");
+      return;
+    }
+    const t = setTimeout(() => {
+      try {
+        const { format: f, layout } = importInfra(text, { details });
+        const drawn = layout.nodes.length;
+        const boxes = `${drawn} box${drawn === 1 ? "" : "es"}`;
+        const notes = layout.notes?.length
+          ? `. ${layout.notes.join(". ")}`
+          : "";
+        setSummary(`Detected ${FORMAT_NAMES[f]}: ${boxes}${notes}`);
+      } catch (e) {
+        setSummary((e as Error).message);
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [text, details]);
+
   if (!open) {
     return null;
   }
@@ -111,7 +297,7 @@ export const InfraDialog = () => {
       if (!api) {
         throw new Error("The editor is not ready yet.");
       }
-      const layout = layoutCompose(parseCompose(text));
+      const { layout } = importInfra(text, { details });
       // drop the new diagram below whatever is already on the canvas
       const live = api.getSceneElements();
       const offset = live.length
@@ -143,16 +329,16 @@ export const InfraDialog = () => {
       <div style={card} onClick={(e) => e.stopPropagation()}>
         <h3 style={{ margin: "0 0 6px" }}>Import infrastructure</h3>
         <div style={{ color: "#888", marginBottom: 6 }}>
-          Paste a <code>docker-compose.yml</code> (or choose the file) and Trazo
-          draws the architecture: services by role, published ports,
-          dependencies and named volumes. It is read in your browser and nothing
-          is sent anywhere. No AI involved.
+          Paste a <code>docker-compose.yml</code>, Kubernetes manifests or
+          Terraform (<code>.tf</code>) files, or choose the files. Trazo works
+          out which it is and draws the architecture. It is read in your browser
+          and nothing is sent anywhere. No AI involved.
         </div>
         <textarea
           style={area}
           value={text}
           spellCheck={false}
-          placeholder="services:&#10;  web:&#10;    image: nginx&#10;    ports: ['80:80']"
+          placeholder="Paste here…"
           onChange={(e) => {
             setText(e.target.value);
             setError("");
@@ -161,17 +347,23 @@ export const InfraDialog = () => {
         <input
           ref={fileRef}
           type="file"
-          accept=".yml,.yaml,text/yaml,text/plain"
+          multiple
+          accept=".yml,.yaml,.tf,.json,text/yaml,text/plain"
           style={{ display: "none" }}
           onChange={async (e) => {
-            const f = e.target.files?.[0];
-            if (f) {
-              setText(await f.text());
+            const files = [...(e.target.files || [])];
+            if (files.length) {
+              // several files become one text (YAML documents and HCL blocks both read fine this way)
+              const texts = await Promise.all(files.map((f) => f.text()));
+              setText(texts.join("\n---\n"));
               setError("");
             }
             e.target.value = "";
           }}
         />
+        {summary && !error && (
+          <div style={{ color: "#888", marginBottom: 8 }}>{summary}</div>
+        )}
         {error && (
           <div
             style={{ color: "var(--color-danger, #c62828)", marginBottom: 8 }}
@@ -179,22 +371,53 @@ export const InfraDialog = () => {
             {error}
           </div>
         )}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {format === "terraform" && (
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              marginBottom: 8,
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={details}
+              onChange={(e) => setDetails(e.target.checked)}
+            />
+            Show network and IAM details (VPC, subnets, security groups, roles)
+          </label>
+        )}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+        >
           <button style={btn} onClick={generate} disabled={!text.trim()}>
             Generate diagram
           </button>
           <button style={ghost} onClick={() => fileRef.current?.click()}>
-            Choose file…
+            Choose files…
           </button>
-          <button
-            style={ghost}
-            onClick={() => {
-              setText(EXAMPLE);
-              setError("");
+          <select
+            style={select}
+            value=""
+            title="Fill the box with an example"
+            onChange={(e) => {
+              if (e.target.value) {
+                setText(EXAMPLES[e.target.value as InfraFormat]);
+                setError("");
+              }
             }}
           >
-            Load example
-          </button>
+            <option value="">Load an example…</option>
+            <option value="compose">Docker Compose</option>
+            <option value="kubernetes">Kubernetes</option>
+            <option value="terraform">Terraform</option>
+          </select>
           <button style={ghost} onClick={() => setOpen(false)}>
             Close
           </button>

@@ -1048,10 +1048,19 @@ const ExcalidrawWrapper = () => {
               perform: () => window.dispatchEvent(new Event(EVENTS.openAbout)),
             },
             {
-              label: "Import infrastructure (docker-compose)",
+              label: "Import infrastructure (compose, Kubernetes, Terraform)",
               category: DEFAULT_CATEGORIES.app,
               predicate: true,
-              keywords: ["docker", "compose", "yaml", "architecture", "import"],
+              keywords: [
+                "docker",
+                "compose",
+                "kubernetes",
+                "k8s",
+                "terraform",
+                "yaml",
+                "architecture",
+                "import",
+              ],
               perform: () =>
                 window.dispatchEvent(new Event(EVENTS.openInfraImport)),
             },

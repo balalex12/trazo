@@ -156,7 +156,7 @@ describe("layoutCompose", () => {
       layout.edges.filter((e) => e.kind === k).length;
     expect(kinds("ingress")).toBe(1); // only the proxy publishes ports
     expect(kinds("depends")).toBe(3); // proxy->api, api->db, api->cache
-    expect(kinds("volume")).toBe(3); // api->uploads, api->logs, db->pgdata
+    expect(kinds("attach")).toBe(3); // api->uploads, api->logs, db->pgdata
     expect(layout.edges.find((e) => e.kind === "ingress")!.label).toBe(
       "80→80, 8443→443",
     );
@@ -198,9 +198,12 @@ describe("layoutToSkeleton", () => {
     const near = (v: number, target: number, tol: number) =>
       Math.abs(v - target) <= tol;
     for (const e of layout.edges) {
-      const a = layout.nodes.find((n) => n.id === e.from)!;
-      const b = layout.nodes.find((n) => n.id === e.to)!;
       const arrow = sk.find((s) => s.id === e.id)!;
+      // a dashed line to a second box under the same owner starts at the box above it
+      const a = layout.nodes.find(
+        (n) => n.id === (arrow.start as { id: string }).id,
+      )!;
+      const b = layout.nodes.find((n) => n.id === e.to)!;
       const pts = arrow.points as number[][];
       const start = [(arrow.x as number) - 100, (arrow.y as number) - 200];
       const end = [start[0] + pts[1][0], start[1] + pts[1][1]];
