@@ -2,7 +2,7 @@
 // (and docs/BRANDING.md lists the other places: README, package names, Docker image name).
 export const BRAND = {
   name: "Trazo",
-  tagline: "Local-first diagram studio for architecture, data, GIS and ML",
+  tagline: "Hand-drawn diagrams that move. A local-first diagram studio.",
   /** Repository URL shown in the About dialog and error reports; empty hides the link. */
   repoUrl: "https://github.com/balalex12/trazo",
   upstream: {

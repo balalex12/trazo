@@ -2,18 +2,21 @@
 
 Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 next · 💡 idea
 
+## Direction
+
+Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, export it, all on your own machine. GIS is one icon and map pack among others, not the identity of the project. Features are picked by one question: does it help someone explain a technical system with a diagram?
+
 ## Done
 
 - ✅ Local-first: no telemetry/CDN/hosted services, strict CSP, hardened containers, network audit script
-- ✅ ArcGIS viewer: items/layers/services, any-host URL recognition, portal browser, sketch, multi-portal UI
-- ✅ Library: 150+ English ArcGIS components grouped by source (official Esri icons), plus the community libraries below
 - ✅ Animated slides, Preview/Present, MP4 + GIF export (browser-only)
 - ✅ Animation timing per slide (own hold time) and a transition type per slide (Smart, Fade, Cut); identical elements never move or blink
-- ✅ Brand color (orange ink) with light and dark themes, including our own panels and dialogs
-- ✅ Per-font license audit (see `THIRD_PARTY_NOTICES.md`)
 - ✅ Opt-in LLM connector (OpenAI-compatible, Ollama Cloud via local pass-through, Anthropic) for Text to diagram
-- ✅ Own identity (name, welcome mark, app icons, PWA manifest), About & credits
-- ✅ Community libraries as per-source sections (16 libraries, 311 items; downloaded at build time, public profile without brand-logo libraries)
+- ✅ Library grouped by source: 150+ English ArcGIS components (official Esri icons) plus 16 community libraries (311 items; downloaded at build time, public profile without brand-logo libraries)
+- ✅ GIS pack: ArcGIS viewer (items/layers/services, any-host URL recognition, portal browser, sketch, multi-portal UI)
+- ✅ Brand color (orange ink) with light and dark themes, including our own panels and dialogs
+- ✅ Own identity (name, welcome mark, app icons, PWA manifest), About and credits
+- ✅ Per-font license audit (see `THIRD_PARTY_NOTICES.md`)
 
 ## Needs real-world validation 🧪
 
@@ -24,21 +27,31 @@ Status legend: ✅ done · 🧪 done but needs real-world validation · 🔜 nex
 
 ## Next 🔜
 
+Ordered by value for the direction above. Each item ships as its own pull request, with a short demo GIF.
+
+1. **Infrastructure to diagram, no LLM needed.** Paste a `docker-compose.yml`, Kubernetes manifests or Terraform plan JSON and get an architecture diagram with icons. Deterministic parsers (the file is read, nothing is invented), fully offline. Later: OpenAPI, SQL DDL to ER, dbt lineage.
+2. **Canvas recorder with narration.** Record the **canvas, not the screen**, with microphone audio, at the size you choose: a live walk-through (pointer, drawing, slide changes) or a played animation, exported as MP4/WebM. Plan: render the scene at the target size with the existing animation renderer, add the microphone track (`getUserMedia` + WebCodecs audio encoder, muxed with the vendored mp4-muxer). Everything stays in the browser; the microphone is requested only when you press record.
+3. **Deeper animation.** Arrows that draw themselves, reveal-in-order, camera moves between regions, captions, richer easing, and a self-contained HTML player as an alternative to video.
+4. **LLM that edits and explains the diagram you already have** ("add a cache between the API and the database", "explain this flow"), with your own model.
+5. **More packs.** GIS tools (FME, GeoPandas, GDAL/OGR, PostGIS, QGIS), data engineering (Spark, Airflow, dbt, Kafka-style streams), ML and deep learning (scikit-learn, PyTorch, TensorFlow, MLflow). Public packs use **original neutral icons labelled with the tool name**, never vendor logos; logos can be added in a local profile under each vendor's brand guidelines. Packs live in a manifest per pack so anyone can contribute one with a pull request, and the build can include only the packs you want (`--packs=...`).
+6. **Python notebooks, in two steps.** First, an embedded **JupyterLite** (Python running in the browser through WebAssembly): no server, no code executed on the host, nothing leaves the page. Which GIS and ML libraries are available there has to be checked before promising any. Second, optionally, a separate Jupyter container for the full Python environment. It means running arbitrary code, so it would be off by default, bound to `127.0.0.1` with a token, in its own service, and documented in `SECURITY.md` before it ships.
+
+Housekeeping:
+
 - Replace Liberation Sans 1.05 (GPL v2 with font exception) with Liberation Sans 2.x (OFL), and ship the OFL 1.1 text next to the fonts
 - Committed browser test suite (the checks used during development, as Playwright tests) + CI
 - Self-hosted ArcGIS SDK option (fully offline except for map data)
 - Source releases with a changelog and versioning; pin the viewer's nginx image by digest. **No prebuilt Docker image is published on purpose:** everyone builds locally, which keeps the Esri Calcite icons (Esri MLA) out of anything we redistribute. If a public image is ever wanted, build it with `--profile=public` and without the Calcite sections (see [LIBRARIES.md](LIBRARIES.md))
 - Replace the remaining upstream docs (`dev-docs/`, `examples/`) or move them out of the root
 - Spanish/English UI strings for the new dialogs (i18n)
-- Animation: audio narration / music; richer easing; animate map viewpoints between slides
 
 ## Ideas 💡
 
 - **Self-hosted / local-network collaboration**: reuse the dormant collab code (socket.io + storage) against a server you run yourself (never a third-party service by default), documented in SECURITY.md before it ships
 - Export slides to a HyperFrames composition for narration/overlays (Apache-2.0 tool by HeyGen)
-- Diagram-to-code and "explain this architecture" with a vision-capable model
-- ArcGIS-aware templates: Enterprise deployment topologies, Utility Network data models, ML/data platform reference architectures
-- Mermaid/diagram import from ArcGIS Architecture Center reference architectures
+- Animate map viewpoints between slides, and capture the real map into exported video
+- Templates: Enterprise deployment topologies, Utility Network data models, cloud, data platform and ML reference architectures
+- Import from Mermaid, PlantUML and draw.io files
 - Optional encrypted sync to a self-hosted store (never a hosted service by default)
 
 ## Known limits
