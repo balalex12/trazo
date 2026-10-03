@@ -11,6 +11,7 @@ Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, e
 - ✅ Local-first: no telemetry/CDN/hosted services, strict CSP, hardened containers, network audit script
 - ✅ Animated slides, Preview/Present, MP4 + GIF export (browser-only)
 - ✅ Animation timing per slide (own hold time) and a transition type per slide (Smart, Fade, Cut); identical elements never move or blink
+- ✅ Narration: record your voice per slide while presenting; slides follow the clips; the MP4 carries the audio
 - ✅ Recorder: the canvas, the canvas with live maps, or the whole app, plus your microphone, to MP4/WebM, in the browser
 - ✅ Deeper animation: Build (reveal in order, arrows draw themselves) and Pan (camera) transitions, captions, more easings
 - ✅ Infrastructure to diagram: `docker-compose.yml` to an architecture diagram, offline and deterministic
@@ -33,7 +34,7 @@ Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, e
 Ordered by value for the direction above. Each item ships as its own pull request, with a short demo GIF.
 
 1. **Infrastructure to diagram, no LLM needed.** `docker-compose.yml` is done (see [INFRA.md](INFRA.md)). Next: Kubernetes manifests and Terraform plan JSON, with the same deterministic, offline approach. Later: OpenAPI, SQL DDL to ER, dbt lineage.
-2. **Recorder with narration**, done (see [RECORDER.md](RECORDER.md)): canvas only, canvas with live maps, or the whole app, with the microphone, in the browser. Next: choose the microphone device, record a played slide animation with narration, and a crisper "re-render at a larger size" mode.
+2. **Recorder and narration**, done: the [recorder](RECORDER.md) (canvas only, canvas with live maps, or the whole app, with the microphone) and [animation narration](ANIMATION.md#narration-your-voice-in-sync-with-the-animation) (your voice per slide, in the MP4). Next: choose the microphone device, keep narration inside the saved drawing file, trim silences, and a crisper "re-render at a larger size" mode.
 3. **Deeper animation**, mostly done (see [ANIMATION.md](ANIMATION.md)): arrows that draw themselves and reveal in order (_Build_), camera moves between regions (_Pan_), captions, richer easings. Still to do: a self-contained HTML player as an alternative to video, choosing the reveal order by hand, text that types itself.
 4. **LLM that edits and explains the diagram you already have** ("add a cache between the API and the database", "explain this flow"), with your own model.
 5. **More packs.** GIS tools (FME, GeoPandas, GDAL/OGR, PostGIS, QGIS), data engineering (Spark, Airflow, dbt, Kafka-style streams), ML and deep learning (scikit-learn, PyTorch, TensorFlow, MLflow). Public packs use **original neutral icons labelled with the tool name**, never vendor logos; logos can be added in a local profile under each vendor's brand guidelines. Packs live in a manifest per pack so anyone can contribute one with a pull request, and the build can include only the packs you want (`--packs=...`).

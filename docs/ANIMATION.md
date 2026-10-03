@@ -28,6 +28,25 @@ Elements that are **identical in both slides** (same type, place inside the fram
 
 Under each slide in the list there is a **Caption (optional)** field. The text is drawn at the bottom of the video (white on a dark bar, wrapped to up to three lines) in the Preview, in Present mode and in the exported MP4/GIF. Between two slides the old caption fades out and the new one fades in. It is stored in the frame's `customData.caption`, so it is saved with the drawing. Leave some empty room at the bottom of your slides, because the caption is drawn over the picture.
 
+## Narration (your voice, in sync with the animation)
+
+Record your voice while you present, and the MP4 comes out with it, perfectly in step with the picture.
+
+1. Press **🎙 Narrate** (or the 🎙 next to a slide to start from that slide). The browser asks for the microphone, and after a 3 second countdown the recording starts.
+2. **Talk while the slide builds, and press `→` (or `Space`, or click) when you want the next slide.** The transition into the next slide starts at that moment. `Esc`, the ✕, or `→` on the last slide finish and save. The bar at the bottom shows the time, the slide and your microphone level.
+3. Each slide now has its own clip (the length appears next to it, with ✕ to delete it). Re-record any slide by pressing the 🎙 next to it: it records that slide and the ones after it.
+4. **Preview** plays the animation with your voice, and **Export MP4** includes it. Untick **Use my narration** to go back to the plain timing.
+
+Why it stays in sync: the voice is captured as raw samples and counted, and every "next" is a position in that count, not a guess of when a recorder started. Each clip begins where the transition into its slide begins. A slide then lasts at least as long as its clip plus 0.4 s of silence, so the length of every slide follows what you said and the voice can never drift or overlap the next slide. A clip never makes a slide shorter than its normal hold.
+
+Details and limits:
+
+- The MP4 audio is mono, AAC (or Opus when the browser has no AAC encoder), 128 kbps. A **GIF has no sound**, so it ignores the narration and keeps the plain timing.
+- The clips are stored **in this browser** (IndexedDB), tied to the slide, and are **not** part of the `.excalidraw` file. Opening the drawing in another browser or profile will not bring them. Nothing is uploaded.
+- A recording only moves forward (no going back). A slide you pass in under 0.3 s keeps the narration it had.
+- It needs a browser with WebCodecs audio encoding for the MP4 (Chrome or Edge). If the browser cannot encode audio you get a clear message and can untick the narration.
+- Noise suppression, echo cancellation and automatic gain are on; use headphones if your speakers are playing.
+
 ## Easing
 
 The **Easing** setting shapes every transition: _Ease in-out_ (default), _Ease in-out (strong)_, _Ease out_, _Linear_, and two playful ones, _Overshoot_ (goes a little past the end and settles) and _Spring_ (a damped bounce). Colors and opacity are kept in range, so overshooting never breaks the picture.

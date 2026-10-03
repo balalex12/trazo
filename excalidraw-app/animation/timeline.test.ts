@@ -1,9 +1,12 @@
 import {
   DEFAULT_SETTINGS,
   buildScene,
+  NARRATION_TAIL_MS,
   captionAt,
   ease,
+  effectiveHold,
   holdOf,
+  narrationStarts,
   panViewport,
   revealUnits,
   sampleAt,
@@ -389,5 +392,54 @@ describe("captions", () => {
     expect(cut).toHaveLength(2);
     expect(cut[1].endsWith("…")).toBe(true);
     expect(wrapText("", 100, measure)).toEqual([]);
+  });
+});
+
+describe("narration timing", () => {
+  const cfg = { ...DEFAULT_SETTINGS, transitionMs: 500, holdMs: 1000 };
+  const slides = [slide("a", 0, []), slide("b", 400, []), slide("c", 800, [])];
+  const withNarration = (narrationMs: Record<string, number>) => ({
+    ...cfg,
+    narrationMs,
+  });
+
+  it("changes nothing without narration", () => {
+    expect(effectiveHold(slides, 1, cfg)).toBe(1000);
+    expect(totalDurationMs(slides, cfg)).toBe(1000 + 500 + 1000 + 500 + 1000);
+    expect(narrationStarts(slides, cfg)).toEqual([0, 1000, 2500]);
+  });
+
+  it("keeps a slide as long as its narration (counted from where the transition into it starts) plus a tail", () => {
+    const s = withNarration({ b: 3000 });
+    // clip starts with the transition (500 ms), so the hold covers the other 2500 ms plus the tail
+    expect(effectiveHold(slides, 1, s)).toBe(3000 + NARRATION_TAIL_MS - 500);
+    expect(totalDurationMs(slides, s)).toBe(1000 + 500 + 2900 + 500 + 1000);
+  });
+
+  it("places each clip where the transition into its slide begins", () => {
+    const s = withNarration({ a: 2000, b: 3000 });
+    // a: hold = max(1000, 2000 + 400) = 2400; b starts at 2400, c at 2400 + 500 + 2900
+    expect(narrationStarts(slides, s)).toEqual([0, 2400, 5800]);
+  });
+
+  it("never makes a slide shorter than its normal hold", () => {
+    expect(effectiveHold(slides, 1, withNarration({ b: 100 }))).toBe(1000);
+  });
+
+  it("sampling follows the longer slides", () => {
+    const s = withNarration({ b: 3000 });
+    expect(sampleAt(1250, slides, s)).toEqual({ a: 0, b: 1, t: 0.5 });
+    expect(sampleAt(4000, slides, s)).toEqual({ a: 1, b: 1, t: 0 }); // still on slide b (it lasts until 4400)
+    expect(sampleAt(4650, slides, s)).toEqual({ a: 1, b: 2, t: 0.5 });
+  });
+
+  it("clips never overlap the next one", () => {
+    const s = withNarration({ a: 5000, b: 4000, c: 2000 });
+    const starts = narrationStarts(slides, s);
+    const clips = [5000, 4000, 2000];
+    for (let i = 0; i < 2; i++) {
+      expect(starts[i] + clips[i]).toBeLessThan(starts[i + 1]);
+    }
+    expect(starts[2] + 2000).toBeLessThanOrEqual(totalDurationMs(slides, s));
   });
 });
