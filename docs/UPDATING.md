@@ -30,7 +30,7 @@ git diff HEAD~1 -- . ':!yarn.lock' | grep -n "^+.*https\?://" | grep -v -E "w3.o
 
 | File | Our change |
 | --- | --- |
-| `excalidraw-app/App.tsx` | collab off, Plus/Share/AI backends removed, command palette, mounts `AnimationPanel`, `BrandDialogs`, library preload, `eid` handling is in the package App (below) |
+| `excalidraw-app/App.tsx` | collab off, Plus/Share/AI backends removed, command palette, mounts `AnimationPanel`, `BrandDialogs`, `InfraDialog`, library preload, `eid` handling is in the package App (below) |
 | `excalidraw-app/index.html`, `index.tsx`, `sentry.ts`, `vite.config.mts` | no analytics/redirect/preconnect, local fonts, no service worker |
 | `excalidraw-app/components/{AppMainMenu,AppWelcomeScreen,AppFooter,AI,TopErrorBoundary}.tsx` | rewritten / trimmed |
 | `packages/excalidraw/components/App.tsx` | adds `eid` to viewer iframes |

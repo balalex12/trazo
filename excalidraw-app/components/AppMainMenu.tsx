@@ -28,6 +28,9 @@ export const AppMainMenu: React.FC<{
       <MainMenu.DefaultItems.Help />
       <MainMenu.DefaultItems.ClearCanvas />
       <MainMenu.Separator />
+      <MainMenu.Item onSelect={() => openDialog(EVENTS.openInfraImport)}>
+        Import infrastructure…
+      </MainMenu.Item>
       <MainMenu.Item onSelect={() => openDialog(EVENTS.openAISettings)}>
         AI assistant settings…
       </MainMenu.Item>

@@ -11,6 +11,7 @@ Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, e
 - ✅ Local-first: no telemetry/CDN/hosted services, strict CSP, hardened containers, network audit script
 - ✅ Animated slides, Preview/Present, MP4 + GIF export (browser-only)
 - ✅ Animation timing per slide (own hold time) and a transition type per slide (Smart, Fade, Cut); identical elements never move or blink
+- ✅ Infrastructure to diagram: `docker-compose.yml` to an architecture diagram, offline and deterministic
 - ✅ Opt-in LLM connector (OpenAI-compatible, Ollama Cloud via local pass-through, Anthropic) for Text to diagram
 - ✅ Library grouped by source: 150+ English ArcGIS components (official Esri icons) plus 16 community libraries (311 items; downloaded at build time, public profile without brand-logo libraries)
 - ✅ GIS pack: ArcGIS viewer (items/layers/services, any-host URL recognition, portal browser, sketch, multi-portal UI)
@@ -29,7 +30,7 @@ Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, e
 
 Ordered by value for the direction above. Each item ships as its own pull request, with a short demo GIF.
 
-1. **Infrastructure to diagram, no LLM needed.** Paste a `docker-compose.yml`, Kubernetes manifests or Terraform plan JSON and get an architecture diagram with icons. Deterministic parsers (the file is read, nothing is invented), fully offline. Later: OpenAPI, SQL DDL to ER, dbt lineage.
+1. **Infrastructure to diagram, no LLM needed.** `docker-compose.yml` is done (see [INFRA.md](INFRA.md)). Next: Kubernetes manifests and Terraform plan JSON, with the same deterministic, offline approach. Later: OpenAPI, SQL DDL to ER, dbt lineage.
 2. **Canvas recorder with narration.** Record the **canvas, not the screen**, with microphone audio, at the size you choose: a live walk-through (pointer, drawing, slide changes) or a played animation, exported as MP4/WebM. Plan: render the scene at the target size with the existing animation renderer, add the microphone track (`getUserMedia` + WebCodecs audio encoder, muxed with the vendored mp4-muxer). Everything stays in the browser; the microphone is requested only when you press record.
 3. **Deeper animation.** Arrows that draw themselves, reveal-in-order, camera moves between regions, captions, richer easing, and a self-contained HTML player as an alternative to video.
 4. **LLM that edits and explains the diagram you already have** ("add a cache between the API and the database", "explain this flow"), with your own model.

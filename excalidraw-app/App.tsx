@@ -149,6 +149,7 @@ import { useSimulatedCollaborators } from "./debugCollaborators";
 import { AIComponents } from "./components/AI";
 import { AnimationPanel } from "./animation/AnimationPanel";
 import { BrandDialogs } from "./components/BrandDialogs";
+import { InfraDialog } from "./components/InfraDialog";
 import { EVENTS } from "./branding";
 import { libraryItemFingerprint } from "./libraryFingerprint";
 import { ExcalidrawPlusIframeExport } from "./ExcalidrawPlusIframeExport";
@@ -1005,6 +1006,7 @@ const ExcalidrawWrapper = () => {
         />
         <AppWelcomeScreen />
         <BrandDialogs />
+        <InfraDialog />
         <OverwriteConfirmDialog>
           <OverwriteConfirmDialog.Actions.ExportToImage />
           <OverwriteConfirmDialog.Actions.SaveToDisk />
@@ -1042,6 +1044,14 @@ const ExcalidrawWrapper = () => {
               predicate: true,
               keywords: ["credits", "license", "excalidraw", "esri", "about"],
               perform: () => window.dispatchEvent(new Event(EVENTS.openAbout)),
+            },
+            {
+              label: "Import infrastructure (docker-compose)",
+              category: DEFAULT_CATEGORIES.app,
+              predicate: true,
+              keywords: ["docker", "compose", "yaml", "architecture", "import"],
+              perform: () =>
+                window.dispatchEvent(new Event(EVENTS.openInfraImport)),
             },
             {
               label: "AI assistant settings",
