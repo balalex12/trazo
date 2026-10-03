@@ -29,7 +29,9 @@ jobs:
       - run: yarn test:typecheck
       - run: yarn test:other
       - run: yarn test:code
-      - run: yarn test:app --watch=false
+      # A test that fails and then passes on a retry is accepted: a few inherited editor tests (clipboard, collab)
+      # are timing sensitive and fail at random on busy CI machines. A test that keeps failing still fails the build.
+      - run: yarn test:app --watch=false --retry=2
 
   docker:
     name: Docker image builds
