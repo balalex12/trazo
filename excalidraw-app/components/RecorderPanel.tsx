@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 
 import {
+  acquireStreams,
   canRecord,
   formatElapsed,
   humanSize,
   recordingFileName,
+  releaseStreams,
   startRecorder,
 } from "../recorder/recorder";
 
 import type {
+  CaptureMode,
   QualityPreset,
   RecorderHandle,
   Recording,
+  Streams,
 } from "../recorder/recorder";
 
 type Phase = "idle" | "countdown" | "recording" | "review";
@@ -62,9 +66,77 @@ const row: React.CSSProperties = {
   margin: "8px 0",
 };
 
+const MODE_HELP: Record<CaptureMode, string> = {
+  canvas:
+    "Only the canvas: no menus, panels or other windows. The sharpest option. No extra permission needed (maps and embedded pages appear as an empty box).",
+  "canvas-embeds":
+    "The canvas plus the live image of maps and embedded pages. Your browser will ask which tab to share: choose this tab.",
+  app: "The whole tab as you see it, with menus and panels. Your browser will ask which tab to share: choose this tab.",
+};
+
+/** Orange ring that follows the pointer. In "whole app" mode the page itself is captured, so the page draws it. */
+const PointerRing = () => {
+  const ring = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let downAt = -1e9;
+    let raf = 0;
+    const move = (e: PointerEvent) => {
+      if (ring.current) {
+        ring.current.style.transform = `translate(${e.clientX - 16}px, ${
+          e.clientY - 16
+        }px)`;
+        ring.current.style.opacity = "1";
+      }
+    };
+    const down = (e: PointerEvent) => {
+      move(e);
+      downAt = performance.now();
+    };
+    const animate = () => {
+      const t = (performance.now() - downAt) / 450;
+      if (ring.current) {
+        ring.current.style.boxShadow =
+          t < 1
+            ? `0 0 0 ${4 + 30 * t}px rgba(204, 68, 12, ${0.5 * (1 - t)})`
+            : "none";
+      }
+      raf = requestAnimationFrame(animate);
+    };
+    animate();
+    window.addEventListener("pointermove", move, true);
+    window.addEventListener("pointerdown", down, true);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("pointermove", move, true);
+      window.removeEventListener("pointerdown", down, true);
+    };
+  }, []);
+  return (
+    <div
+      ref={ring}
+      style={{
+        position: "fixed",
+        left: 0,
+        top: 0,
+        width: 32,
+        height: 32,
+        borderRadius: "50%",
+        background: "rgba(204, 68, 12, 0.28)",
+        border: "2px solid rgba(204, 68, 12, 0.9)",
+        boxSizing: "border-box",
+        pointerEvents: "none",
+        opacity: 0,
+        zIndex: 1300,
+      }}
+    />
+  );
+};
+
 export const RecorderPanel = () => {
   const [phase, setPhase] = useState<Phase>("idle");
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<CaptureMode>("canvas");
+  const [hideBar, setHideBar] = useState(false);
   const [preset, setPreset] = useState<QualityPreset>("native");
   const [mic, setMic] = useState(true);
   const [showPointer, setShowPointer] = useState(true);
@@ -78,6 +150,7 @@ export const RecorderPanel = () => {
   );
   const handle = useRef<RecorderHandle | null>(null);
   const cancelled = useRef(false);
+  const stopRef = useRef<() => void>(() => {});
 
   // refresh the timer and the microphone meter while recording
   useEffect(() => {
@@ -106,24 +179,38 @@ export const RecorderPanel = () => {
       return;
     }
     cancelled.current = false;
+    // permissions first, while the click is fresh (screen sharing needs a user gesture)
+    let streams: Streams;
+    try {
+      streams = await acquireStreams({ mode, mic });
+    } catch (e) {
+      setError((e as Error).message);
+      return;
+    }
     setOpen(false);
     setPhase("countdown");
     for (let n = 3; n > 0; n--) {
       setCount(n);
       await new Promise((r) => setTimeout(r, 1000));
       if (cancelled.current) {
+        releaseStreams(streams);
         setPhase("idle");
         return;
       }
     }
     try {
-      handle.current = await startRecorder({
-        root,
-        preset,
-        mic,
-        showPointer,
-        showHandles,
-      });
+      handle.current = await startRecorder(
+        {
+          root,
+          mode,
+          preset,
+          mic,
+          showPointer,
+          showHandles,
+          onEnded: () => stopRef.current(),
+        },
+        streams,
+      );
       setPaused(false);
       setPhase("recording");
     } catch (e) {
@@ -149,6 +236,25 @@ export const RecorderPanel = () => {
       setOpen(true);
     }
   };
+
+  stopRef.current = () => {
+    void stop();
+  };
+
+  // stop from the keyboard (the bar can be hidden in "whole app" mode)
+  useEffect(() => {
+    if (phase !== "recording") {
+      return;
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey && e.shiftKey && e.code === "KeyR") {
+        e.preventDefault();
+        stopRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [phase]);
 
   const download = () => {
     if (!result) {
@@ -193,15 +299,38 @@ export const RecorderPanel = () => {
 
       {phase === "idle" && open && (
         <div style={card}>
-          <b>Record the canvas</b>
+          <b>Record</b>
           <div style={{ color: "#888", margin: "4px 0 8px" }}>
-            Records only the canvas, not the screen, with your microphone. The
+            Records the canvas, or the whole app, with your microphone. The
             video is made in your browser and never leaves it.
+          </div>
+          <label style={{ display: "block", margin: "8px 0" }}>
+            What to record
+            <select
+              style={field}
+              value={mode}
+              onChange={(e) => setMode(e.target.value as CaptureMode)}
+            >
+              <option value="canvas">Canvas only</option>
+              <option value="canvas-embeds">
+                Canvas and embedded pages (maps)
+              </option>
+              <option value="app">Whole app (menus and panels too)</option>
+            </select>
+          </label>
+          <div style={{ color: "#888", margin: "-2px 0 8px" }}>
+            {MODE_HELP[mode]}
           </div>
           <label style={{ display: "block", margin: "8px 0" }}>
             Quality
             <select
               style={field}
+              disabled={mode === "app"}
+              title={
+                mode === "app"
+                  ? "The whole app is recorded at the tab's own size"
+                  : undefined
+              }
               value={preset}
               onChange={(e) => setPreset(e.target.value as QualityPreset)}
             >
@@ -228,14 +357,26 @@ export const RecorderPanel = () => {
             />
             Highlight the pointer and clicks
           </label>
-          <label style={row}>
-            <input
-              type="checkbox"
-              checked={showHandles}
-              onChange={(e) => setShowHandles(e.target.checked)}
-            />
-            Show selection boxes and handles
-          </label>
+          {mode !== "app" && (
+            <label style={row}>
+              <input
+                type="checkbox"
+                checked={showHandles}
+                onChange={(e) => setShowHandles(e.target.checked)}
+              />
+              Show selection boxes and handles
+            </label>
+          )}
+          {mode === "app" && (
+            <label style={row}>
+              <input
+                type="checkbox"
+                checked={hideBar}
+                onChange={(e) => setHideBar(e.target.checked)}
+              />
+              Hide the recording bar (stop with Alt+Shift+R)
+            </label>
+          )}
           <div style={{ color: "#888" }}>
             Tip: for the sharpest video use a big window or full screen, and
             keep this tab visible while recording.
@@ -290,7 +431,11 @@ export const RecorderPanel = () => {
         </div>
       )}
 
-      {phase === "recording" && h && (
+      {phase === "recording" && mode === "app" && showPointer && (
+        <PointerRing />
+      )}
+
+      {phase === "recording" && h && !(mode === "app" && hideBar) && (
         <div
           style={{
             position: "fixed",

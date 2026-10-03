@@ -1,5 +1,6 @@
 import {
   bitrateFor,
+  embedPlacement,
   extensionFor,
   formatElapsed,
   humanSize,
@@ -102,5 +103,69 @@ describe("formatting", () => {
     expect(humanSize(500)).toBe("1 KB");
     expect(humanSize(2048)).toBe("2 KB");
     expect(humanSize(5 * 1024 * 1024)).toBe("5.0 MB");
+  });
+});
+
+describe("embedPlacement", () => {
+  // canvas fills a 1000x600 area at (0,0) and is drawn 1:1 into a 1000x600 output;
+  // the captured tab video is 2000x1200 for a 1000x600 viewport (device pixel ratio 2)
+  const canvas = { left: 0, top: 0, width: 1000, height: 600 };
+  const dest = { x: 0, y: 0, w: 1000, h: 600 };
+  const tab = { videoW: 2000, videoH: 1200, viewportW: 1000, viewportH: 600 };
+
+  it("copies the iframe area from the tab video and puts it where the iframe is", () => {
+    const p = embedPlacement(
+      { left: 100, top: 50, width: 400, height: 300 },
+      canvas,
+      dest,
+      tab,
+    )!;
+    expect(p).toEqual({
+      sx: 200,
+      sy: 100,
+      sw: 800,
+      sh: 600,
+      dx: 100,
+      dy: 50,
+      dw: 400,
+      dh: 300,
+    });
+  });
+
+  it("scales into a differently sized output and offsets by the letterbox", () => {
+    const p = embedPlacement(
+      { left: 100, top: 50, width: 400, height: 300 },
+      canvas,
+      { x: 20, y: 10, w: 500, h: 300 },
+      tab,
+    )!;
+    expect(p.dx).toBe(20 + 100 * 0.5);
+    expect(p.dy).toBe(10 + 50 * 0.5);
+    expect(p.dw).toBe(200);
+    expect(p.dh).toBe(150);
+  });
+
+  it("clips the part of an iframe that sticks out of the canvas", () => {
+    const p = embedPlacement(
+      { left: -100, top: 500, width: 300, height: 300 },
+      canvas,
+      dest,
+      tab,
+    )!;
+    expect(p.dx).toBe(0);
+    expect(p.dw).toBe(200);
+    expect(p.dy).toBe(500);
+    expect(p.dh).toBe(100);
+  });
+
+  it("ignores an iframe that is not over the canvas", () => {
+    expect(
+      embedPlacement(
+        { left: 1200, top: 0, width: 100, height: 100 },
+        canvas,
+        dest,
+        tab,
+      ),
+    ).toBeNull();
   });
 });
