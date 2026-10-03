@@ -6,6 +6,8 @@ import type { RenderOptions } from "./renderer";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export type ExportFormat = "mp4" | "gif";
+/** Mono narration track as long as the whole animation (MP4 only: a GIF cannot carry sound). */
+export type ExportAudio = { samples: Float32Array; sampleRate: number };
 export type ExportProgress = (done: number, total: number) => void;
 
 // Muxer libraries are vendored in /public/vendor (no yarn.lock changes needed).
@@ -23,13 +25,14 @@ export const exportAnimation = async (
   fps: number,
   onProgress: ExportProgress,
   signal: { cancelled: boolean },
+  audio?: ExportAudio | null,
 ): Promise<Blob> => {
   const total = Math.max(
     1,
     Math.ceil((totalDurationMs(opts.slides, opts.settings) / 1000) * fps),
   );
   return format === "mp4"
-    ? exportMp4(opts, fps, total, onProgress, signal)
+    ? exportMp4(opts, fps, total, onProgress, signal, audio)
     : exportGif(opts, fps, total, onProgress, signal);
 };
 
@@ -40,6 +43,7 @@ async function exportMp4(
   total: number,
   onProgress: ExportProgress,
   signal: { cancelled: boolean },
+  audio?: ExportAudio | null,
 ) {
   const VE = (window as any).VideoEncoder;
   const VF = (window as any).VideoFrame;
@@ -67,10 +71,54 @@ async function exportMp4(
     );
   }
 
+  // narration: AAC when the browser has it, otherwise Opus
+  let audioConfig: any = null;
+  if (audio) {
+    const AE = (window as any).AudioEncoder;
+    if (!AE || !(window as any).AudioData) {
+      throw new Error(
+        "This browser cannot encode audio (WebCodecs AudioEncoder). Export without narration, or use Chrome/Edge.",
+      );
+    }
+    for (const [codec, muxCodec] of [
+      ["mp4a.40.2", "aac"],
+      ["opus", "opus"],
+    ]) {
+      const c = {
+        codec,
+        sampleRate: audio.sampleRate,
+        numberOfChannels: 1,
+        bitrate: 128_000,
+      };
+      try {
+        if ((await AE.isConfigSupported(c)).supported) {
+          audioConfig = { ...c, muxCodec };
+          break;
+        }
+      } catch (e) {
+        /* try next */
+      }
+    }
+    if (!audioConfig) {
+      throw new Error(
+        "No audio codec (AAC or Opus) is available for MP4 in this browser. Export without narration.",
+      );
+    }
+  }
+
   const { Muxer, ArrayBufferTarget } = await vendor("mp4-muxer.js");
   const muxer = new Muxer({
     target: new ArrayBufferTarget(),
     video: { codec: "avc", width, height },
+    ...(audioConfig
+      ? {
+          audio: {
+            codec: audioConfig.muxCodec,
+            numberOfChannels: 1,
+            sampleRate: audio!.sampleRate,
+          },
+        }
+      : {}),
     fastStart: "in-memory",
   });
   let encError: any = null;
@@ -82,15 +130,54 @@ async function exportMp4(
   });
   encoder.configure(config);
 
+  // audio is fed in step with the video so both tracks are interleaved in the file
+  let audioEncoder: any = null;
+  let audioError: any = null;
+  let audioPos = 0;
+  if (audio && audioConfig) {
+    const { muxCodec: _m, ...cfg } = audioConfig;
+    audioEncoder = new (window as any).AudioEncoder({
+      output: (chunk: any, meta: any) => muxer.addAudioChunk(chunk, meta),
+      error: (e: any) => {
+        audioError = e;
+      },
+    });
+    audioEncoder.configure(cfg);
+  }
+  const feedAudio = (untilSample: number) => {
+    if (!audio || !audioEncoder) {
+      return;
+    }
+    const end = Math.min(untilSample, audio.samples.length);
+    while (audioPos < end) {
+      const n = Math.min(4096, end - audioPos);
+      const data = new Float32Array(
+        audio.samples.subarray(audioPos, audioPos + n),
+      );
+      const chunk = new (window as any).AudioData({
+        format: "f32",
+        sampleRate: audio.sampleRate,
+        numberOfFrames: n,
+        numberOfChannels: 1,
+        timestamp: Math.round((audioPos / audio.sampleRate) * 1e6),
+        data,
+      });
+      audioEncoder.encode(chunk);
+      chunk.close();
+      audioPos += n;
+    }
+  };
+
   const canvas = document.createElement("canvas");
   let lastKey = "";
   for (let i = 0; i < total; i++) {
     if (signal.cancelled) {
       encoder.close();
+      audioEncoder?.close();
       throw new Error("Export cancelled");
     }
-    if (encError) {
-      throw encError;
+    if (encError || audioError) {
+      throw encError || audioError;
     }
     const timeMs = (i / fps) * 1000;
     const key = frameKey(opts, timeMs);
@@ -104,12 +191,23 @@ async function exportMp4(
     });
     encoder.encode(frame, { keyFrame: i % (fps * 2) === 0 });
     frame.close();
+    if (audio) {
+      feedAudio(Math.round(((i + 1) / fps) * audio.sampleRate));
+    }
     while (encoder.encodeQueueSize > 8) {
       await new Promise((r) => setTimeout(r, 4)); // backpressure
     }
     if (i % 3 === 0) {
       onProgress(i + 1, total);
       await new Promise((r) => setTimeout(r, 0)); // keep the UI responsive
+    }
+  }
+  if (audio && audioEncoder) {
+    feedAudio(audio.samples.length);
+    await audioEncoder.flush();
+    audioEncoder.close();
+    if (audioError) {
+      throw audioError;
     }
   }
   await encoder.flush();

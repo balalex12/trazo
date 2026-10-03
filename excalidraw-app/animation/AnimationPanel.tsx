@@ -5,6 +5,16 @@ import { CaptureUpdateAction, restoreElements } from "@excalidraw/excalidraw";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 import { downloadBlob, exportAnimation } from "./exporter";
+import {
+  buildNarrationTrack,
+  deleteClip,
+  loadNarrationMs,
+  micError,
+  openMic,
+  saveClip,
+  splitNarration,
+  startMicCapture,
+} from "./narration";
 import { outputSize, renderAtTime, renderBlend } from "./renderer";
 import {
   DEFAULT_SETTINGS,
@@ -14,7 +24,8 @@ import {
   transitionModeOf,
 } from "./timeline";
 
-import type { ExportFormat } from "./exporter";
+import type { ExportAudio, ExportFormat } from "./exporter";
+import type { MicCapture } from "./narration";
 import type { Slide, TimelineSettings } from "./timeline";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -35,25 +46,53 @@ const loadSettings = (): TimelineSettings => {
   }
 };
 
+/** What a narration session recorded: the raw samples and the moment (s) each slide's clip began. */
+type Narrated = {
+  samples: Float32Array;
+  sampleRate: number;
+  endSec: number;
+  /** starts[k] is when the clip of slide startIndex + k begins */
+  starts: number[];
+  startIndex: number;
+};
+
 // ---- Player (full screen) ------------------------------------------------
+// auto: plays the animation (with the narration when there is one). manual: you move with the keys.
+// narrate: like manual, but your voice is recorded and every "next" marks where a slide's clip begins.
 const Player = ({
   slides,
   files,
   settings,
   mode,
+  audio,
+  mic,
+  startIndex = 0,
+  onNarrated,
   onClose,
 }: {
   slides: Slide[];
   files: any;
   settings: TimelineSettings;
-  mode: "auto" | "manual";
+  mode: "auto" | "manual" | "narrate";
+  audio?: ExportAudio | null;
+  mic?: MediaStream;
+  startIndex?: number;
+  onNarrated?: (r: Narrated) => void;
   onClose: () => void;
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hud, setHud] = useState("");
-  // keep the latest onClose without restarting the playback effect on every parent render
+  // keep the latest callbacks and inputs without restarting the playback effect on every parent render
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const onNarratedRef = useRef(onNarrated);
+  onNarratedRef.current = onNarrated;
+  const audioRef = useRef(audio);
+  audioRef.current = audio;
+  const micRef = useRef(mic);
+  micRef.current = mic;
+  const startIndexRef = useRef(startIndex);
+  startIndexRef.current = startIndex;
   const dims = useMemo(() => {
     const f = slides[0].frame;
     const aspect = f.width / f.height;
@@ -93,8 +132,33 @@ const Player = ({
       })();
     };
 
+    let cleanupAudio: (() => void) | null = null;
+    let cleanupNarration: (() => void) | null = null;
+
     if (mode === "auto") {
       const total = totalDurationMs(slides, settings);
+      const track = audioRef.current;
+      if (track) {
+        const ctx = new AudioContext();
+        const buffer = ctx.createBuffer(
+          1,
+          track.samples.length,
+          track.sampleRate,
+        );
+        buffer.copyToChannel(new Float32Array(track.samples), 0);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        source.start();
+        cleanupAudio = () => {
+          try {
+            source.stop();
+          } catch (e) {
+            /* already stopped */
+          }
+          void ctx.close();
+        };
+      }
       const start = performance.now();
       const tick = (now: number) => {
         if (!alive) {
@@ -111,14 +175,91 @@ const Player = ({
       };
       raf = requestAnimationFrame(tick);
     } else {
-      let cur = 0;
+      const narrate = mode === "narrate";
+      const n = slides.length;
+      let cur =
+        narrate && startIndexRef.current > 0 ? startIndexRef.current - 1 : 0;
       let animating = false;
-      run(() => renderBlend(opts, 0, 0, 0, canvas));
-      setHud(`1 / ${slides.length}  ·  ← → to navigate · Esc to exit`);
-      const go = (delta: number) => {
-        const target = cur + delta;
-        if (animating || target < 0 || target >= slides.length) {
+      let capture: MicCapture | null = null;
+      let finished = false;
+      let timer: any = null;
+      // starts[k]: when the clip of slide startIndex + k begins (slide 0 begins with the recording)
+      const starts: number[] =
+        narrate && startIndexRef.current === 0 ? [0] : [];
+      const status = () => {
+        if (!narrate) {
+          return `${cur + 1} / ${n}  ·  ← → to navigate · Esc to exit`;
+        }
+        const level = capture ? Math.round(capture.level() * 8) : 0;
+        const meter = `${"|".repeat(level)}${"·".repeat(8 - level)}`;
+        const secs = Math.floor(capture ? capture.nowSec() : 0);
+        return `● REC ${secs} s  ·  slide ${
+          cur + 1
+        } / ${n}  ·  mic ${meter}  ·  → next slide  ·  Esc to finish and save`;
+      };
+      run(() => renderBlend(opts, cur, cur, 0, canvas));
+      setHud(status());
+
+      const finish = () => {
+        if (finished) {
           return;
+        }
+        finished = true;
+        clearInterval(timer);
+        if (capture) {
+          const r = capture.stop();
+          capture = null;
+          onNarratedRef.current?.({
+            ...r,
+            starts,
+            startIndex: startIndexRef.current,
+          });
+        } else {
+          micRef.current?.getTracks().forEach((t) => t.stop());
+        }
+        onCloseRef.current();
+      };
+      if (narrate) {
+        (canvas as any).__finish = finish;
+        cleanupNarration = () => {
+          clearInterval(timer);
+          if (!finished) {
+            capture?.stop();
+            micRef.current?.getTracks().forEach((t) => t.stop());
+          }
+        };
+        (async () => {
+          for (let k = 3; k > 0; k--) {
+            setHud(
+              `Narration starts in ${k}…  speak, and press → whenever you want the next slide`,
+            );
+            await new Promise((r) => setTimeout(r, 1000));
+            if (!alive) {
+              return;
+            }
+          }
+          capture = startMicCapture(micRef.current!);
+          timer = setInterval(() => setHud(status()), 150);
+        })();
+      }
+
+      const go = (delta: number) => {
+        if (narrate && (!capture || delta < 0)) {
+          return; // not recording yet, or going back (a recording only moves forward)
+        }
+        const target = cur + delta;
+        if (animating) {
+          return;
+        }
+        if (narrate && target >= n) {
+          finish(); // "next" on the last slide ends the narration
+          return;
+        }
+        if (target < 0 || target >= n) {
+          return;
+        }
+        if (narrate) {
+          starts.push(capture!.nowSec()); // the clip of the slide we are entering starts right now
         }
         const from = cur;
         // each transition has its own length: a "cut" is instant, "build" lasts as long as it has things to show
@@ -126,9 +267,7 @@ const Player = ({
         if (dur <= 0) {
           cur = target;
           run(() => renderBlend(opts, target, target, 0, canvas));
-          setHud(
-            `${cur + 1} / ${slides.length}  ·  ← → to navigate · Esc to exit`,
-          );
+          setHud(status());
           return;
         }
         animating = true;
@@ -144,9 +283,7 @@ const Player = ({
           } else {
             cur = target;
             animating = false;
-            setHud(
-              `${cur + 1} / ${slides.length}  ·  ← → to navigate · Esc to exit`,
-            );
+            setHud(status());
           }
         };
         raf = requestAnimationFrame(step);
@@ -158,10 +295,14 @@ const Player = ({
       if (e.key === "Escape") {
         e.stopPropagation();
         e.preventDefault();
-        onCloseRef.current();
+        if (mode === "narrate") {
+          (canvas as any).__finish?.(); // saves what was recorded
+        } else {
+          onCloseRef.current();
+        }
         return;
       }
-      if (mode !== "manual") {
+      if (mode === "auto") {
         return;
       }
       const go = (canvas as any).__go as (d: number) => void;
@@ -183,6 +324,8 @@ const Player = ({
     return () => {
       alive = false;
       cancelAnimationFrame(raf);
+      cleanupAudio?.();
+      cleanupNarration?.();
       window.removeEventListener("keydown", onKey, true);
     };
   }, [mode, opts, slides, settings]);
@@ -199,7 +342,7 @@ const Player = ({
         justifyContent: "center",
       }}
       onClick={() => {
-        if (mode === "manual") {
+        if (mode !== "auto") {
           (canvasRef.current as any)?.__go?.(1);
         }
       }}
@@ -208,28 +351,41 @@ const Player = ({
         ref={canvasRef}
         style={{ width: dims.cssW, height: dims.cssH, background: "#fff" }}
       />
-      <div
-        style={{
-          position: "absolute",
-          bottom: 10,
-          left: 0,
-          right: 0,
-          textAlign: "center",
-          color: "#aaa",
-          font: "12px system-ui",
-        }}
-      >
-        {hud}
-      </div>
+      {hud && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            maxWidth: "92%",
+            textAlign: "center",
+            color: "#fff",
+            background: "rgba(0, 0, 0, 0.75)",
+            padding: "6px 14px",
+            borderRadius: 999,
+            font: mode === "narrate" ? "15px system-ui" : "12px system-ui",
+            pointerEvents: "none",
+            zIndex: 2, // above the canvas (the editor styles give every canvas its own stacking level)
+          }}
+        >
+          {hud}
+        </div>
+      )}
       <button
         onClick={(e) => {
           e.stopPropagation();
-          onClose();
+          if (mode === "narrate") {
+            (canvasRef.current as any)?.__finish?.();
+          } else {
+            onClose();
+          }
         }}
         style={{
           position: "absolute",
           top: 12,
           right: 12,
+          zIndex: 2,
           background: "#333",
           color: "#fff",
           border: 0,
@@ -332,9 +488,12 @@ export const AnimationPanel = ({
   const [fps, setFps] = useState(30);
   const [width, setWidth] = useState(1280);
   const [player, setPlayer] = useState<null | {
-    mode: "auto" | "manual";
+    mode: "auto" | "manual" | "narrate";
     slides: Slide[];
     files: any;
+    audio?: ExportAudio | null;
+    mic?: MediaStream;
+    startIndex?: number;
   }>(null);
   const [job, setJob] = useState<null | {
     format: ExportFormat;
@@ -343,6 +502,9 @@ export const AnimationPanel = ({
   }>(null);
   const [error, setError] = useState("");
   const cancel = useRef({ cancelled: false });
+  // narration: length (ms) of the stored clip of each slide, and whether to use it
+  const [clips, setClips] = useState<Record<string, number>>({});
+  const [withNarration, setWithNarration] = useState(true);
 
   useEffect(() => {
     try {
@@ -369,6 +531,23 @@ export const AnimationPanel = ({
       off();
     };
   }, [excalidrawAPI]);
+
+  const slideIds = slides.map((sl) => sl.frame.id).join(",");
+  const refreshClips = useCallback(async (ids: string[]) => {
+    try {
+      setClips(await loadNarrationMs(ids));
+    } catch (e) {
+      setClips({});
+    }
+  }, []);
+  useEffect(() => {
+    void refreshClips(slideIds ? slideIds.split(",") : []);
+  }, [slideIds, refreshClips]);
+  // the timeline the player and the exports use: slides last at least as long as their narration
+  const timeline = useMemo<TimelineSettings>(
+    () => ({ ...settings, narrationMs: withNarration ? clips : undefined }),
+    [settings, clips, withNarration],
+  );
 
   const snapshot = useCallback(
     () => getSlides(excalidrawAPI.getSceneElementsIncludingDeleted() as any),
@@ -463,7 +642,7 @@ export const AnimationPanel = ({
     setError("");
   };
 
-  const play = (mode: "auto" | "manual") => {
+  const play = async (mode: "auto" | "manual") => {
     const s = snapshot();
     if (s.length < 2) {
       setError(
@@ -472,7 +651,54 @@ export const AnimationPanel = ({
       return;
     }
     setError("");
-    setPlayer({ mode, slides: s, files: excalidrawAPI.getFiles() });
+    const audio =
+      mode === "auto" && withNarration && Object.keys(clips).length
+        ? await buildNarrationTrack(s, timeline)
+        : null;
+    setPlayer({ mode, slides: s, files: excalidrawAPI.getFiles(), audio });
+  };
+
+  // record your voice while you present: "next" marks where each slide's clip begins
+  const narrate = async (startIndex: number) => {
+    const s = snapshot();
+    if (s.length < 2) {
+      setError(
+        "You need at least 2 slides (frames). Use “Duplicate slide” to create the next one.",
+      );
+      return;
+    }
+    setError("");
+    let mic: MediaStream;
+    try {
+      mic = await openMic();
+    } catch (e) {
+      setError(micError(e));
+      return;
+    }
+    setPlayer({
+      mode: "narrate",
+      slides: s,
+      files: excalidrawAPI.getFiles(),
+      startIndex,
+      mic,
+    });
+  };
+
+  const saveNarration = async (r: Narrated, list: Slide[]) => {
+    const parts = splitNarration(r.samples, r.sampleRate, r.starts, r.endSec);
+    for (let k = 0; k < parts.length; k++) {
+      const slide = list[r.startIndex + k];
+      // a slide passed in a blink (an accidental double press) keeps whatever narration it had
+      if (slide && parts[k].length >= r.sampleRate * 0.3) {
+        await saveClip(slide.frame.id, parts[k], r.sampleRate);
+      }
+    }
+    await refreshClips(list.map((sl) => sl.frame.id));
+  };
+
+  const removeNarration = async (frameId: string) => {
+    await deleteClip(frameId);
+    await refreshClips(slides.map((sl) => sl.frame.id));
   };
 
   const doExport = async (format: ExportFormat) => {
@@ -485,21 +711,28 @@ export const AnimationPanel = ({
     cancel.current = { cancelled: false };
     const fpsUsed = format === "gif" ? Math.min(fps, 15) : fps;
     const px = outputSize(s, format === "gif" ? Math.min(width, 800) : width);
+    // a GIF cannot carry sound, so it keeps the plain timing; the MP4 follows the narration
+    const useNarration =
+      format === "mp4" && withNarration && Object.keys(clips).length > 0;
     const opts = {
       slides: s,
       files: excalidrawAPI.getFiles(),
-      settings,
+      settings: useNarration ? timeline : settings,
       width: px.width,
       height: px.height,
     };
     setJob({ format, done: 0, total: 1 });
     try {
+      const audio = useNarration
+        ? await buildNarrationTrack(s, timeline)
+        : null;
       const blob = await exportAnimation(
         format,
         opts,
         fpsUsed,
         (done, total) => setJob({ format, done, total }),
         cancel.current,
+        audio,
       );
       downloadBlob(blob, `animation.${format}`);
     } catch (e: any) {
@@ -513,7 +746,7 @@ export const AnimationPanel = ({
 
   const num = (v: string, d: number) =>
     Number.isFinite(+v) && +v >= 0 ? +v : d;
-  const totalSec = (totalDurationMs(slides, settings) / 1000).toFixed(1);
+  const totalSec = (totalDurationMs(slides, timeline) / 1000).toFixed(1);
 
   // Per-slide settings live on the frame's customData (holdMs, transition); null/undefined = use the default.
   const setSlideData = (frameId: string, key: string, value: unknown) => {
@@ -669,13 +902,49 @@ export const AnimationPanel = ({
                   />
                   <span style={{ color: "#888" }}>ms</span>
                 </div>
-                <CaptionInput
-                  value={s.frame.customData?.caption}
-                  onCommit={(v) =>
-                    setSlideData(s.frame.id, "caption", v.trim() || null)
-                  }
-                  style={{ ...field, marginTop: 2 }}
-                />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                    marginTop: 2,
+                  }}
+                >
+                  <CaptionInput
+                    value={s.frame.customData?.caption}
+                    onCommit={(v) =>
+                      setSlideData(s.frame.id, "caption", v.trim() || null)
+                    }
+                    style={{ ...field, width: "auto", flex: 1 }}
+                  />
+                  <button
+                    style={{ ...ghost, padding: "2px 6px" }}
+                    title="Record your narration from this slide on (you present, and → moves to the next slide)"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void narrate(i);
+                    }}
+                  >
+                    🎙
+                  </button>
+                  {clips[s.frame.id] && (
+                    <>
+                      <span style={{ color: "#888", whiteSpace: "nowrap" }}>
+                        {(clips[s.frame.id] / 1000).toFixed(1)} s
+                      </span>
+                      <button
+                        style={{ ...ghost, padding: "2px 6px" }}
+                        title="Delete the narration of this slide"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void removeNarration(s.frame.id);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -688,6 +957,13 @@ export const AnimationPanel = ({
             </button>
             <button style={ghost} onClick={() => play("manual")}>
               ⛶ Present
+            </button>
+            <button
+              style={ghost}
+              title="Present and record your voice: each slide gets its own narration clip"
+              onClick={() => narrate(0)}
+            >
+              🎙 Narrate
             </button>
           </div>
           <div
@@ -794,6 +1070,23 @@ export const AnimationPanel = ({
               </button>
             )}
           </div>
+          {Object.keys(clips).length > 0 && (
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginTop: 6,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={withNarration}
+                onChange={(e) => setWithNarration(e.target.checked)}
+              />
+              Use my narration (Preview and MP4; a GIF has no sound)
+            </label>
+          )}
           <div style={{ color: "#888", marginTop: 4 }}>
             GIF is capped at 15 fps / 800 px. Interactive maps are exported as a
             placeholder (use “Copy image” in the map).
@@ -834,7 +1127,10 @@ export const AnimationPanel = ({
       {player && (
         <Player
           {...player}
-          settings={settings}
+          settings={timeline}
+          onNarrated={(r) => {
+            void saveNarration(r, player.slides);
+          }}
           onClose={() => setPlayer(null)}
         />
       )}

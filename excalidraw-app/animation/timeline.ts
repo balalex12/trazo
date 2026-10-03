@@ -18,6 +18,11 @@ export type TimelineSettings = {
   transitionMs: number;
   holdMs: number;
   easing: Easing;
+  /**
+   * Length of the recorded narration of each slide, by frame id. Not a user setting (never saved with them):
+   * the panel fills it from the stored clips. A slide stays at least as long as its narration.
+   */
+  narrationMs?: Record<string, number>;
 };
 export type Sample = { a: number; b: number; t: number };
 
@@ -263,13 +268,51 @@ export const transitionMs = (
   return s.transitionMs;
 };
 
+/** Silence kept after the last word of a narration before the next slide starts. */
+export const NARRATION_TAIL_MS = 400;
+
+/**
+ * How long slide `i` stays on screen once entered. The narration of a slide starts when the transition INTO it
+ * starts, so the slide (transition + hold) must last as long as the clip plus a short tail.
+ */
+export const effectiveHold = (
+  slides: Slide[],
+  i: number,
+  s: TimelineSettings,
+): number => {
+  const base = holdOf(slides[i], s);
+  const narration = s.narrationMs?.[slides[i].frame.id];
+  if (!narration) {
+    return base;
+  }
+  const trans = i > 0 ? transitionMs(slides[i - 1], slides[i], s) : 0;
+  return Math.max(base, narration + NARRATION_TAIL_MS - trans);
+};
+
 /** Sequence: hold(0) → transition(0→1) → hold(1) → … → hold(n-1). */
 export const totalDurationMs = (slides: Slide[], s: TimelineSettings) =>
   slides.reduce(
     (sum, sl, i) =>
-      sum + holdOf(sl, s) + (i > 0 ? transitionMs(slides[i - 1], sl, s) : 0),
+      sum +
+      effectiveHold(slides, i, s) +
+      (i > 0 ? transitionMs(slides[i - 1], sl, s) : 0),
     0,
   );
+
+/** Time (ms) at which the transition into each slide starts: where that slide's narration clip is placed. */
+export const narrationStarts = (
+  slides: Slide[],
+  s: TimelineSettings,
+): number[] => {
+  const out: number[] = [];
+  let t = 0;
+  for (let i = 0; i < slides.length; i++) {
+    out.push(t);
+    const trans = i > 0 ? transitionMs(slides[i - 1], slides[i], s) : 0;
+    t += trans + effectiveHold(slides, i, s);
+  }
+  return out;
+};
 
 export const sampleAt = (
   timeMs: number,
@@ -279,7 +322,7 @@ export const sampleAt = (
   const n = slides.length;
   let t = Math.max(0, timeMs);
   for (let i = 0; i < n; i++) {
-    const hold = holdOf(slides[i], s);
+    const hold = effectiveHold(slides, i, s);
     if (t <= hold || i === n - 1) {
       return { a: i, b: i, t: 0 };
     }
