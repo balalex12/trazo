@@ -26,6 +26,7 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 | --- | --- |
 | 🎞️ **Diagrams that move** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). Each slide has its own timing and transition (smart, fade or cut), and unchanged elements stay still. Preview, present with ← →, and **export MP4 or GIF**, rendered in your browser, nothing uploaded. |
 | 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model: Ollama / LM Studio locally, **Ollama Cloud**, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes, colored by role with symbols (see [docs/AI.md](docs/AI.md#styling-diagrams-colors-symbols)). |
+| 🎙️ **Record while you explain** | **⏺ Record** captures just the canvas, the canvas with live maps, or the whole app, with your microphone and a highlighted pointer, and gives you an MP4 or WebM. Made in your browser, nothing uploaded (see [docs/RECORDER.md](docs/RECORDER.md)). |
 | 🏗️ **Infrastructure to diagram** | Paste a `docker-compose.yml` and get the architecture drawn for you: services by role, published ports, dependencies and volumes. Read in your browser, **no AI and no network**, so the same file always gives the same diagram (see [docs/INFRA.md](docs/INFRA.md)). |
 | 🔒 **Local-first and hardened** | No analytics, no Sentry, no CDN, no service worker, no hosted collaboration. Strict Content-Security-Policy, read-only containers, ports bound to `127.0.0.1`. One `docker compose` and it runs on your machine. See [docs/SECURITY.md](docs/SECURITY.md), and verify it yourself. |
 | 🧩 **Icon packs by source** | 450+ components grouped **by source**, never mixed, each credited to its author: architecture and system design, data processing, deep learning, networking, UML/ER, Microsoft Fabric… from 16 curated **community libraries** (downloaded from the official catalog at build time), plus the **GIS pack** below. |
@@ -89,6 +90,7 @@ Stop with `docker compose down`. Everything listens on `127.0.0.1` only.
 | [docs/SECURITY.md](docs/SECURITY.md) | Threat model, hardening, how to verify |
 | [docs/VIEWER.md](docs/VIEWER.md) | ArcGIS viewer: portals, sign-in, layers, Utility Network |
 | [docs/ANIMATION.md](docs/ANIMATION.md) | Slides, transitions, MP4/GIF export |
+| [docs/RECORDER.md](docs/RECORDER.md) | Recording the canvas with your voice |
 | [docs/INFRA.md](docs/INFRA.md) | docker-compose to architecture diagram |
 | [docs/AI.md](docs/AI.md) | Connecting Ollama / LM Studio / OpenAI-compatible / Claude |
 | [docs/LIBRARIES.md](docs/LIBRARIES.md) | Icon sources, adding your own libraries, licensing rules |
