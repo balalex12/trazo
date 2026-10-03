@@ -15,7 +15,9 @@ export type Role =
   | "auth"
   | "storage"
   | "network"
-  | "function";
+  | "function"
+  | "trigger"
+  | "schema";
 
 export const ROLE_STYLE: Record<
   Role,
@@ -31,7 +33,12 @@ export const ROLE_STYLE: Record<
   storage: { emoji: "💾", fill: "#f1f3f5", stroke: "#495057" },
   network: { emoji: "🧱", fill: "#dbe4ff", stroke: "#364fc8" },
   function: { emoji: "🧩", fill: "#ffdeeb", stroke: "#c2255c" },
+  trigger: { emoji: "🚀", fill: "#c5f6fa", stroke: "#1098ad" },
+  schema: { emoji: "📐", fill: "#f3d9fa", stroke: "#9c36b5" },
 };
+
+/** most boxes one diagram may hold: beyond this it is unreadable and slow */
+export const MAX_NODES = 150;
 
 export const clip = (s: string, n: number) =>
   s.length > n ? `${s.slice(0, n - 1)}…` : s;
@@ -88,6 +95,15 @@ const H = 96;
 const GAP_X = 150;
 const GAP_Y = 44;
 
+/** a box big enough for its text: wider for long lines, taller for many lines */
+const sizeOf = (lines: string[]) => {
+  const longest = Math.max(0, ...lines.map((l) => l.length));
+  return {
+    width: Math.min(380, Math.max(W, Math.round(longest * 8.6 + 34))),
+    height: Math.max(H, 28 + lines.length * 21),
+  };
+};
+
 export const layoutGraph = (g: Graph): Layout => {
   const byId = new Map(g.nodes.map((n) => [n.id, n]));
   const edges = g.edges.filter((e) => byId.has(e.from) && byId.has(e.to));
@@ -143,8 +159,7 @@ export const layoutGraph = (g: Graph): Layout => {
       role: n.role,
       dashed: n.dashed,
       lines: n.lines,
-      width: W,
-      height: H,
+      ...sizeOf(n.lines),
       col,
     });
     for (const a of g.nodes) {
@@ -168,13 +183,16 @@ export const layoutGraph = (g: Graph): Layout => {
   const tallest = Math.max(0, ...[...cols.values()].map(heightOf));
 
   const nodes: LayoutNode[] = [];
-  for (const [col, items] of [...cols.entries()].sort((a, b) => a[0] - b[0])) {
+  let colX = 0;
+  for (const [, items] of [...cols.entries()].sort((a, b) => a[0] - b[0])) {
     let y = (tallest - heightOf(items)) / 2;
+    const colWidth = Math.max(...items.map((d) => d.width));
     for (const d of items) {
       const { col: _c, ...rest } = d;
-      nodes.push({ ...rest, x: col * (W + GAP_X) + (W - d.width) / 2, y });
+      nodes.push({ ...rest, x: colX + (colWidth - d.width) / 2, y });
       y += d.height + GAP_Y;
     }
+    colX += colWidth + GAP_X;
   }
 
   const xs = nodes.flatMap((n) => [n.x, n.x + n.width]);

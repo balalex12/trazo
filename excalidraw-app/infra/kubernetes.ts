@@ -4,7 +4,7 @@
 import { loadAll } from "js-yaml";
 
 import { detectRole } from "./compose";
-import { ROLE_STYLE, clip } from "./graph";
+import { MAX_NODES, ROLE_STYLE, clip } from "./graph";
 
 import type { Graph, GraphEdge, GraphNode, Role } from "./graph";
 
@@ -18,7 +18,6 @@ const get = (o: unknown, ...path: string[]): unknown =>
   path.reduce<unknown>((acc, k) => (isDict(acc) ? acc[k] : undefined), o);
 const dict = (v: unknown): Dict => (isDict(v) ? v : {});
 
-const MAX_NODES = 150;
 const WORKLOADS = new Set([
   "Deployment",
   "StatefulSet",

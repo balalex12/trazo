@@ -2,11 +2,9 @@
 // reads the files. Every resource, data source and module is a box; an arrow goes from a block to every other block
 // whose address (aws_db_instance.main, module.vpc, data.aws_ami.ubuntu…) appears in it, which is exactly how Terraform
 // itself builds its dependency graph, plus `depends_on`. Comments are ignored.
-import { ROLE_STYLE, clip } from "./graph";
+import { MAX_NODES, ROLE_STYLE, clip } from "./graph";
 
 import type { Graph, GraphEdge, GraphNode, Role } from "./graph";
-
-const MAX_NODES = 150;
 
 // ---- scanning HCL ---------------------------------------------------------------------------------------------
 
@@ -253,63 +251,57 @@ export type TerraformOptions = {
   details?: boolean;
 };
 
-export const parseTerraform = (
-  text: string,
+/** one resource, data source or module, however it was read (HCL text or plan/state JSON) */
+export type TfEntry = {
+  kind: "resource" | "data" | "module";
+  address: string;
+  /** the resource type, or "module" */
+  type: string;
+  name: string;
+  /** modules: where the code comes from */
+  source?: string;
+  /** whether this entry refers to the thing at `address` */
+  refersTo: (address: string) => boolean;
+};
+
+/** the filtering, naming and arrows that are the same for every way of reading Terraform */
+export const entriesToGraph = (
+  entries: TfEntry[],
   options: TerraformOptions = {},
 ): Graph => {
-  if (!text.trim()) {
-    throw new Error("Paste Terraform files (.tf) first.");
-  }
-  const src = stripComments(text);
-  const blocks = scanBlocks(src).filter((b) =>
-    (b.kind === "resource" || b.kind === "data") && b.labels.length >= 2
-      ? true
-      : b.kind === "module" && b.labels.length >= 1,
-  );
-  if (!blocks.length) {
-    throw new Error(
-      "No Terraform resources, data sources or modules found. Paste .tf files with `resource` blocks.",
-    );
-  }
-
-  type Item = { block: Block; address: string; node: GraphNode; role: Role };
+  type Item = { entry: TfEntry; node: GraphNode };
   const items: Item[] = [];
   const omitted: string[] = [];
-  for (const b of blocks) {
-    const address = label(b.kind, b.labels);
-    const type = b.kind === "module" ? "module" : b.labels[0];
+  for (const e of entries) {
     if (
-      b.kind !== "module" &&
-      (NOISE_TYPE.test(type) || (b.kind === "data" && NOISE_DATA.test(type)))
+      e.kind !== "module" &&
+      (NOISE_TYPE.test(e.type) ||
+        (e.kind === "data" && NOISE_DATA.test(e.type)))
     ) {
       continue;
     }
-    const role: Role = b.kind === "module" ? "app" : terraformRole(type);
+    const role: Role = e.kind === "module" ? "app" : terraformRole(e.type);
     if (!options.details && (role === "network" || role === "auth")) {
-      omitted.push(address);
+      omitted.push(e.address);
       continue;
     }
-    const name = b.labels[b.kind === "module" ? 0 : 1];
-    const source = /\bsource\s*=\s*"([^"]+)"/.exec(b.body)?.[1];
     items.push({
-      block: b,
-      address,
-      role,
+      entry: e,
       node: {
-        id: `tf:${address}`,
+        id: `tf:${e.address}`,
         role,
-        dashed: b.kind === "data",
+        dashed: e.kind === "data",
         lines: [
-          `${b.kind === "module" ? "📦" : ROLE_STYLE[role].emoji} ${clip(
-            name,
+          `${e.kind === "module" ? "📦" : ROLE_STYLE[role].emoji} ${clip(
+            e.name,
             24,
           )}`,
           clip(
-            b.kind === "module"
-              ? `module · ${source ?? ""}`
-              : b.kind === "data"
-              ? `data · ${type}`
-              : type,
+            e.kind === "module"
+              ? `module · ${e.source ?? ""}`
+              : e.kind === "data"
+              ? `data · ${e.type}`
+              : e.type,
             30,
           ),
         ],
@@ -318,15 +310,15 @@ export const parseTerraform = (
   }
   if (!items.length) {
     throw new Error(
-      "Everything in those files is network or IAM plumbing. Tick “Show network and IAM details” to draw it.",
+      "Everything in there is network or IAM plumbing. Tick “Show network and IAM details” to draw it.",
     );
   }
 
-  // an arrow from each block to every other block whose address appears in it
+  // an arrow from each entry to every other entry it refers to
   const edges: GraphEdge[] = [];
   for (const a of items) {
-    items.forEach((b) => {
-      if (a !== b && mentions(a.block.body, b.address)) {
+    for (const b of items) {
+      if (a !== b && a.entry.refersTo(b.entry.address)) {
         edges.push({
           id: `dep:${a.node.id}>${b.node.id}`,
           from: a.node.id,
@@ -334,7 +326,7 @@ export const parseTerraform = (
           kind: "depends",
         });
       }
-    });
+    }
   }
 
   if (items.length > MAX_NODES) {
@@ -355,4 +347,36 @@ export const parseTerraform = (
         }
       : {}),
   };
+};
+
+export const parseTerraform = (
+  text: string,
+  options: TerraformOptions = {},
+): Graph => {
+  if (!text.trim()) {
+    throw new Error("Paste Terraform files (.tf) first.");
+  }
+  const src = stripComments(text);
+  const blocks = scanBlocks(src).filter((b) =>
+    (b.kind === "resource" || b.kind === "data") && b.labels.length >= 2
+      ? true
+      : b.kind === "module" && b.labels.length >= 1,
+  );
+  if (!blocks.length) {
+    throw new Error(
+      "No Terraform resources, data sources or modules found. Paste .tf files with `resource` blocks.",
+    );
+  }
+  const entries: TfEntry[] = blocks.map((b) => ({
+    kind: b.kind as TfEntry["kind"],
+    address: label(b.kind, b.labels),
+    type: b.kind === "module" ? "module" : b.labels[0],
+    name: b.labels[b.kind === "module" ? 0 : 1],
+    source:
+      b.kind === "module"
+        ? /\bsource\s*=\s*"([^"]+)"/.exec(b.body)?.[1]
+        : undefined,
+    refersTo: (address) => mentions(b.body, address),
+  }));
+  return entriesToGraph(entries, options);
 };

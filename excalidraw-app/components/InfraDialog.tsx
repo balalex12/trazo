@@ -190,6 +190,203 @@ resource "aws_lambda_function" "worker" {
   }
 }
 `,
+  openapi: `openapi: 3.0.3
+info: { title: Pet Store, version: 1.0.0 }
+servers: [{ url: https://api.example.com/v1 }]
+paths:
+  /pets:
+    get:
+      tags: [pets]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Pet" } }
+    post:
+      tags: [pets]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NewPet" }
+  /pets/{id}:
+    get: { tags: [pets] }
+    delete: { tags: [pets] }
+  /orders:
+    get: { tags: [orders] }
+    post:
+      tags: [orders]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Order" }
+  /health:
+    get: {}
+components:
+  securitySchemes:
+    oauth: { type: oauth2 }
+  schemas:
+    Pet:
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        owner: { $ref: "#/components/schemas/Owner" }
+    NewPet:
+      properties:
+        name: { type: string }
+    Owner:
+      properties:
+        name: { type: string }
+        email: { type: string }
+    Order:
+      properties:
+        petId: { type: integer }
+        quantity: { type: integer }
+`,
+  sql: `CREATE TABLE customers (
+  id serial PRIMARY KEY,
+  email varchar(255) NOT NULL UNIQUE,
+  full_name text
+);
+
+CREATE TABLE products (
+  id serial PRIMARY KEY,
+  name text NOT NULL,
+  price numeric(10, 2)
+);
+
+CREATE TABLE orders (
+  id serial PRIMARY KEY,
+  customer_id int NOT NULL REFERENCES customers (id),
+  placed_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE order_items (
+  order_id int REFERENCES orders (id),
+  product_id int REFERENCES products (id),
+  quantity int NOT NULL,
+  PRIMARY KEY (order_id, product_id)
+);
+
+CREATE TABLE payments (
+  id serial PRIMARY KEY,
+  order_id int NOT NULL,
+  amount numeric(10, 2)
+);
+ALTER TABLE payments ADD CONSTRAINT fk_pay_order FOREIGN KEY (order_id) REFERENCES orders (id);
+`,
+  dbt: JSON.stringify(
+    {
+      metadata: { dbt_schema_version: "manifest", project_name: "shop" },
+      nodes: {
+        "model.shop.stg_orders": {
+          resource_type: "model",
+          name: "stg_orders",
+          package_name: "shop",
+          schema: "analytics",
+          config: { materialized: "view" },
+          depends_on: { nodes: ["source.shop.raw.orders"] },
+        },
+        "model.shop.stg_customers": {
+          resource_type: "model",
+          name: "stg_customers",
+          package_name: "shop",
+          schema: "analytics",
+          config: { materialized: "view" },
+          depends_on: { nodes: ["source.shop.raw.customers"] },
+        },
+        "model.shop.int_orders_enriched": {
+          resource_type: "model",
+          name: "int_orders_enriched",
+          package_name: "shop",
+          config: { materialized: "ephemeral" },
+          depends_on: {
+            nodes: ["model.shop.stg_orders", "seed.shop.countries"],
+          },
+        },
+        "model.shop.fct_orders": {
+          resource_type: "model",
+          name: "fct_orders",
+          package_name: "shop",
+          schema: "marts",
+          config: { materialized: "table" },
+          depends_on: { nodes: ["model.shop.int_orders_enriched"] },
+        },
+        "model.shop.dim_customers": {
+          resource_type: "model",
+          name: "dim_customers",
+          package_name: "shop",
+          schema: "marts",
+          config: { materialized: "table" },
+          depends_on: { nodes: ["model.shop.stg_customers"] },
+        },
+        "seed.shop.countries": {
+          resource_type: "seed",
+          name: "countries",
+          package_name: "shop",
+          depends_on: { nodes: [] },
+        },
+      },
+      sources: {
+        "source.shop.raw.orders": {
+          resource_type: "source",
+          source_name: "raw",
+          name: "orders",
+          package_name: "shop",
+        },
+        "source.shop.raw.customers": {
+          resource_type: "source",
+          source_name: "raw",
+          name: "customers",
+          package_name: "shop",
+        },
+      },
+      exposures: {
+        "exposure.shop.sales": {
+          resource_type: "exposure",
+          name: "sales_dashboard",
+          package_name: "shop",
+          depends_on: {
+            nodes: ["model.shop.fct_orders", "model.shop.dim_customers"],
+          },
+        },
+      },
+    },
+    null,
+    2,
+  ),
+  n8n: JSON.stringify(
+    {
+      name: "Lead intake",
+      nodes: [
+        { name: "Webhook", type: "n8n-nodes-base.webhook" },
+        { name: "Valid?", type: "n8n-nodes-base.if" },
+        { name: "Save lead", type: "n8n-nodes-base.postgres" },
+        { name: "Tell sales", type: "n8n-nodes-base.slack" },
+        { name: "Reject", type: "n8n-nodes-base.set" },
+        { name: "Reply", type: "n8n-nodes-base.respondToWebhook" },
+      ],
+      connections: {
+        Webhook: { main: [[{ node: "Valid?", type: "main", index: 0 }]] },
+        "Valid?": {
+          main: [
+            [{ node: "Save lead", type: "main", index: 0 }],
+            [{ node: "Reject", type: "main", index: 0 }],
+          ],
+        },
+        "Save lead": {
+          main: [
+            [
+              { node: "Tell sales", type: "main", index: 0 },
+              { node: "Reply", type: "main", index: 0 },
+            ],
+          ],
+        },
+        Reject: { main: [[{ node: "Reply", type: "main", index: 0 }]] },
+      },
+    },
+    null,
+    2,
+  ),
 };
 
 const overlay: React.CSSProperties = {
@@ -327,12 +524,14 @@ export const InfraDialog = () => {
   return (
     <div style={overlay} onClick={() => setOpen(false)}>
       <div style={card} onClick={(e) => e.stopPropagation()}>
-        <h3 style={{ margin: "0 0 6px" }}>Import infrastructure</h3>
+        <h3 style={{ margin: "0 0 6px" }}>Import to diagram</h3>
         <div style={{ color: "#888", marginBottom: 6 }}>
-          Paste a <code>docker-compose.yml</code>, Kubernetes manifests or
-          Terraform (<code>.tf</code>) files, or choose the files. Trazo works
-          out which it is and draws the architecture. It is read in your browser
-          and nothing is sent anywhere. No AI involved.
+          Paste a <code>docker-compose.yml</code>, Kubernetes manifests,
+          Terraform (<code>.tf</code> or JSON), an OpenAPI file, SQL{" "}
+          <code>CREATE TABLE</code> statements, a dbt <code>manifest.json</code>{" "}
+          or an n8n workflow, or choose the files. Trazo works out which it is
+          and draws it. It is read in your browser and nothing is sent anywhere.
+          No AI involved.
         </div>
         <textarea
           style={area}
@@ -348,7 +547,7 @@ export const InfraDialog = () => {
           ref={fileRef}
           type="file"
           multiple
-          accept=".yml,.yaml,.tf,.json,text/yaml,text/plain"
+          accept=".yml,.yaml,.tf,.json,.sql,.ddl,text/yaml,text/plain"
           style={{ display: "none" }}
           onChange={async (e) => {
             const files = [...(e.target.files || [])];
@@ -417,6 +616,10 @@ export const InfraDialog = () => {
             <option value="compose">Docker Compose</option>
             <option value="kubernetes">Kubernetes</option>
             <option value="terraform">Terraform</option>
+            <option value="openapi">OpenAPI</option>
+            <option value="sql">SQL schema</option>
+            <option value="dbt">dbt lineage (manifest.json)</option>
+            <option value="n8n">n8n workflow</option>
           </select>
           <button style={ghost} onClick={() => setOpen(false)}>
             Close
