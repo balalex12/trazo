@@ -1,16 +1,12 @@
 // docker-compose.yml -> a small model of the architecture (pure, no DOM). Deterministic: the file is read, nothing is
-// guessed by a model. Layout and drawing live in layout.ts.
+// guessed by a model. Layout and drawing live in graph.ts.
 import { load } from "js-yaml";
 
-export type Role =
-  | "proxy"
-  | "app"
-  | "database"
-  | "cache"
-  | "queue"
-  | "monitoring"
-  | "auth"
-  | "storage";
+import { ROLE_STYLE, clip } from "./graph";
+
+import type { Graph, GraphEdge, GraphNode, Role } from "./graph";
+
+export type { Role };
 
 export type PortMapping = { host: string; container: string };
 
@@ -174,4 +170,71 @@ export const parseCompose = (text: string): ComposeModel => {
     ...[...usedVolumes].filter((v) => !declaredVolumes.includes(v)),
   ];
   return { services, volumes };
+};
+
+const serviceLines = (s: ComposeService): string[] => {
+  const lines = [`${ROLE_STYLE[s.role].emoji} ${clip(s.name, 24)}`];
+  if (s.image) {
+    lines.push(clip(s.image, 30));
+  }
+  if (s.ports.length) {
+    lines.push(
+      clip(s.ports.map((p) => `${p.host}→${p.container}`).join(", "), 30),
+    );
+  }
+  return lines;
+};
+
+/** The compose file as a graph: services, the Internet when ports are published, volumes under their first user. */
+export const composeToGraph = (model: ComposeModel): Graph => {
+  const sorted = [...model.services].sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
+  const nodes: GraphNode[] = [];
+  const edges: GraphEdge[] = [];
+  if (sorted.some((s) => s.ports.length)) {
+    nodes.push({ id: "internet", lines: ["🌐 Internet"], external: true });
+  }
+  for (const s of sorted) {
+    nodes.push({ id: `svc:${s.name}`, role: s.role, lines: serviceLines(s) });
+  }
+  for (const v of model.volumes) {
+    const owner = sorted.find((o) => o.volumes.includes(v));
+    nodes.push({
+      id: `vol:${v}`,
+      lines: [`💾 ${clip(v, 22)}`],
+      attachedTo: owner ? `svc:${owner.name}` : undefined,
+    });
+  }
+  for (const s of sorted) {
+    if (s.ports.length) {
+      edges.push({
+        id: `in:${s.name}`,
+        from: "internet",
+        to: `svc:${s.name}`,
+        kind: "ingress",
+        label: clip(
+          s.ports.map((p) => `${p.host}→${p.container}`).join(", "),
+          24,
+        ),
+      });
+    }
+    for (const d of s.dependsOn) {
+      edges.push({
+        id: `dep:${s.name}>${d}`,
+        from: `svc:${s.name}`,
+        to: `svc:${d}`,
+        kind: "depends",
+      });
+    }
+    for (const v of s.volumes) {
+      edges.push({
+        id: `vol:${s.name}>${v}`,
+        from: `svc:${s.name}`,
+        to: `vol:${v}`,
+        kind: "attach",
+      });
+    }
+  }
+  return { nodes, edges };
 };
