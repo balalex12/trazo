@@ -4,6 +4,8 @@
 // voice and picture cannot drift apart.
 import { createStore, del, getMany, set } from "idb-keyval";
 
+import { openMicStream } from "../recorder/micDevices";
+
 import { narrationStarts, totalDurationMs } from "./timeline";
 
 import type { Slide, TimelineSettings } from "./timeline";
@@ -165,15 +167,7 @@ export const micError = (e: unknown) => {
   return `Could not open the microphone: ${(e as Error)?.message ?? e}`;
 };
 
-export const openMic = () =>
-  navigator.mediaDevices.getUserMedia({
-    audio: {
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-    },
-    video: false,
-  });
+export const openMic = (deviceId?: string) => openMicStream(deviceId);
 
 /**
  * Captures raw samples (no lossy encoding in between) and counts them, so a moment is a sample position:
