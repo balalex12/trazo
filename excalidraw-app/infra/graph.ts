@@ -15,7 +15,9 @@ export type Role =
   | "auth"
   | "storage"
   | "network"
-  | "function";
+  | "function"
+  | "trigger"
+  | "schema";
 
 export const ROLE_STYLE: Record<
   Role,
@@ -31,7 +33,12 @@ export const ROLE_STYLE: Record<
   storage: { emoji: "💾", fill: "#f1f3f5", stroke: "#495057" },
   network: { emoji: "🧱", fill: "#dbe4ff", stroke: "#364fc8" },
   function: { emoji: "🧩", fill: "#ffdeeb", stroke: "#c2255c" },
+  trigger: { emoji: "🚀", fill: "#c5f6fa", stroke: "#1098ad" },
+  schema: { emoji: "📐", fill: "#f3d9fa", stroke: "#9c36b5" },
 };
+
+/** most boxes one diagram may hold: beyond this it is unreadable and slow */
+export const MAX_NODES = 150;
 
 export const clip = (s: string, n: number) =>
   s.length > n ? `${s.slice(0, n - 1)}…` : s;
@@ -61,6 +68,11 @@ export type Graph = {
   edges: GraphEdge[];
   /** things worth telling the user (what was left out) */
   notes?: string[];
+  /**
+   * A data flow (lineage, workflows): arrows go from upstream to downstream. Entry nodes then sit next to what they
+   * feed instead of all in the first column, and each column is ordered to keep arrows from crossing.
+   */
+  flow?: boolean;
 };
 
 export type LayoutNode = {
@@ -87,6 +99,15 @@ const W = 230;
 const H = 96;
 const GAP_X = 150;
 const GAP_Y = 44;
+
+/** a box big enough for its text: wider for long lines, taller for many lines */
+const sizeOf = (lines: string[]) => {
+  const longest = Math.max(0, ...lines.map((l) => l.length));
+  return {
+    width: Math.min(380, Math.max(W, Math.round(longest * 8.6 + 34))),
+    height: Math.max(H, 28 + lines.length * 21),
+  };
+};
 
 export const layoutGraph = (g: Graph): Layout => {
   const byId = new Map(g.nodes.map((n) => [n.id, n]));
@@ -124,6 +145,21 @@ export const layoutGraph = (g: Graph): Layout => {
     return lvl;
   };
   main.forEach((n) => level(n.id, []));
+  if (g.flow) {
+    // an entry node moves up to just before the first thing it feeds
+    for (const n of main) {
+      if (dependents.has(n.id)) {
+        continue;
+      }
+      const targets = edges
+        .filter((e) => e.kind === "depends" && e.from === n.id)
+        .map((e) => memo.get(e.to))
+        .filter((l): l is number => l !== undefined);
+      if (targets.length) {
+        memo.set(n.id, Math.max(0, Math.min(...targets) - 1));
+      }
+    }
+  }
   const shift = externals.length ? 1 : 0;
 
   type Draft = Omit<LayoutNode, "x" | "y"> & { col: number };
@@ -143,8 +179,7 @@ export const layoutGraph = (g: Graph): Layout => {
       role: n.role,
       dashed: n.dashed,
       lines: n.lines,
-      width: W,
-      height: H,
+      ...sizeOf(n.lines),
       col,
     });
     for (const a of g.nodes) {
@@ -163,18 +198,51 @@ export const layoutGraph = (g: Graph): Layout => {
 
   const cols = new Map<number, Draft[]>();
   drafts.forEach((d) => cols.set(d.col, [...(cols.get(d.col) || []), d]));
+  if (g.flow) {
+    // order each column by where its upstream nodes ended up, so arrows run roughly straight
+    const order = new Map<string, number>();
+    const colsSorted = [...cols.keys()].sort((a, b) => a - b);
+    for (const c of colsSorted) {
+      const items = cols.get(c)!;
+      const bary = (d: Draft) => {
+        const ups = edges
+          .filter((e) => e.kind === "depends" && e.to === d.id)
+          .map((e) => order.get(e.from))
+          .filter((v): v is number => v !== undefined);
+        return ups.length
+          ? ups.reduce((a, b) => a + b, 0) / ups.length
+          : Number.NaN;
+      };
+      const keyed = items.map((d, i) => ({ d, i, b: bary(d) }));
+      keyed.sort((x, y) => {
+        const bx = Number.isNaN(x.b) ? x.i : x.b;
+        const by = Number.isNaN(y.b) ? y.i : y.b;
+        return bx - by || x.i - y.i;
+      });
+      cols.set(
+        c,
+        keyed.map((k) => k.d),
+      );
+      keyed.forEach((k, i) =>
+        order.set(k.d.id, keyed.length > 1 ? i / (keyed.length - 1) : 0.5),
+      );
+    }
+  }
   const heightOf = (items: Draft[]) =>
     items.reduce((sum, d) => sum + d.height, 0) + (items.length - 1) * GAP_Y;
   const tallest = Math.max(0, ...[...cols.values()].map(heightOf));
 
   const nodes: LayoutNode[] = [];
-  for (const [col, items] of [...cols.entries()].sort((a, b) => a[0] - b[0])) {
+  let colX = 0;
+  for (const [, items] of [...cols.entries()].sort((a, b) => a[0] - b[0])) {
     let y = (tallest - heightOf(items)) / 2;
+    const colWidth = Math.max(...items.map((d) => d.width));
     for (const d of items) {
       const { col: _c, ...rest } = d;
-      nodes.push({ ...rest, x: col * (W + GAP_X) + (W - d.width) / 2, y });
+      nodes.push({ ...rest, x: colX + (colWidth - d.width) / 2, y });
       y += d.height + GAP_Y;
     }
+    colX += colWidth + GAP_X;
   }
 
   const xs = nodes.flatMap((n) => [n.x, n.x + n.width]);

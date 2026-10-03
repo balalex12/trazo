@@ -2,7 +2,7 @@
 
 **⏺ Record** (next to the Animation button) records the canvas, or the whole app, together with your microphone, so you can draw and explain at the same time. The video is made in your browser and **never leaves it**.
 
-![The recording bar with the time, the microphone level, Pause and Stop](media/recorder-bar.png)
+![The recording bar with the time, the microphone level, Pause and Stop](media/v3-recorder-bar.png)
 
 ## How to use it
 
@@ -26,7 +26,7 @@ Common to all modes:
 
 - A highlight that follows your pointer, with a ripple on every click (option).
 - Selection boxes and handles in the canvas modes only if you tick **Show selection boxes and handles**.
-- Your microphone with echo cancellation and noise suppression (option). Unticking it gives a silent video.
+- Your microphone with echo cancellation and noise suppression (option). Pick which one in the list under the checkbox; the choice is remembered on this device, and if that microphone is unplugged the system default is used. Unticking the checkbox gives a silent video.
 
 ## Quality
 

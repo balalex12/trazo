@@ -1048,7 +1048,7 @@ const ExcalidrawWrapper = () => {
               perform: () => window.dispatchEvent(new Event(EVENTS.openAbout)),
             },
             {
-              label: "Import infrastructure (compose, Kubernetes, Terraform)",
+              label: "Import to diagram (infrastructure, API, SQL, dbt, n8n)",
               category: DEFAULT_CATEGORIES.app,
               predicate: true,
               keywords: [
@@ -1057,6 +1057,12 @@ const ExcalidrawWrapper = () => {
                 "kubernetes",
                 "k8s",
                 "terraform",
+                "openapi",
+                "swagger",
+                "sql",
+                "dbt",
+                "n8n",
+                "json",
                 "yaml",
                 "architecture",
                 "import",

@@ -10,6 +10,8 @@ import {
   startRecorder,
 } from "../recorder/recorder";
 
+import { MicSelect, useMics } from "./MicSelect";
+
 import type {
   CaptureMode,
   QualityPreset,
@@ -139,6 +141,7 @@ export const RecorderPanel = () => {
   const [hideBar, setHideBar] = useState(false);
   const [preset, setPreset] = useState<QualityPreset>("native");
   const [mic, setMic] = useState(true);
+  const micChoice = useMics();
   const [showPointer, setShowPointer] = useState(true);
   const [showHandles, setShowHandles] = useState(false);
   const [error, setError] = useState("");
@@ -182,7 +185,13 @@ export const RecorderPanel = () => {
     // permissions first, while the click is fresh (screen sharing needs a user gesture)
     let streams: Streams;
     try {
-      streams = await acquireStreams({ mode, mic });
+      streams = await acquireStreams({
+        mode,
+        mic,
+        micDeviceId: micChoice.deviceId || undefined,
+      });
+      // device names are only available once the microphone has been allowed
+      micChoice.refresh();
     } catch (e) {
       setError((e as Error).message);
       return;
@@ -349,6 +358,14 @@ export const RecorderPanel = () => {
             />
             Record microphone
           </label>
+          {mic && (
+            <MicSelect
+              style={{ ...field, marginBottom: 6 }}
+              mics={micChoice.mics}
+              deviceId={micChoice.deviceId}
+              onChange={micChoice.choose}
+            />
+          )}
           <label style={row}>
             <input
               type="checkbox"

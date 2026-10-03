@@ -7,6 +7,8 @@
 //  - "app": the whole tab as you see it, menus and panels included.
 // MediaRecorder encodes the result together with the microphone into one file.
 
+import { openMicStream } from "./micDevices";
+
 export type QualityPreset = "native" | "720p" | "1080p";
 export type CaptureMode = "canvas" | "canvas-embeds" | "app";
 
@@ -195,15 +197,7 @@ export const acquireStreams = async (
   const streams: Streams = { mic: null, display: null };
   if (opts.mic) {
     try {
-      streams.mic = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          deviceId: opts.micDeviceId ? { exact: opts.micDeviceId } : undefined,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-        video: false,
-      });
+      streams.mic = await openMicStream(opts.micDeviceId);
     } catch (e) {
       throw micError(e);
     }

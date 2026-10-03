@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { CaptureUpdateAction, restoreElements } from "@excalidraw/excalidraw";
+import {
+  CaptureUpdateAction,
+  loadFromBlob,
+  restoreElements,
+  serializeAsJSON,
+} from "@excalidraw/excalidraw";
 
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
+
+import { MicSelect, useMics } from "../components/MicSelect";
 
 import { downloadBlob, exportAnimation } from "./exporter";
 import {
@@ -15,6 +22,11 @@ import {
   splitNarration,
   startMicCapture,
 } from "./narration";
+import {
+  addNarrationToJson,
+  readBundle,
+  restoreNarration,
+} from "./narrationFile";
 import { outputSize, renderAtTime, renderBlend } from "./renderer";
 import {
   DEFAULT_SETTINGS,
@@ -505,6 +517,9 @@ export const AnimationPanel = ({
   // narration: length (ms) of the stored clip of each slide, and whether to use it
   const [clips, setClips] = useState<Record<string, number>>({});
   const [withNarration, setWithNarration] = useState(true);
+  const micChoice = useMics();
+  const [note, setNote] = useState("");
+  const openRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     try {
@@ -670,7 +685,9 @@ export const AnimationPanel = ({
     setError("");
     let mic: MediaStream;
     try {
-      mic = await openMic();
+      mic = await openMic(micChoice.deviceId || undefined);
+      // device names are only available once the microphone has been allowed
+      micChoice.refresh();
     } catch (e) {
       setError(micError(e));
       return;
@@ -699,6 +716,69 @@ export const AnimationPanel = ({
   const removeNarration = async (frameId: string) => {
     await deleteClip(frameId);
     await refreshClips(slides.map((sl) => sl.frame.id));
+  };
+
+  // the drawing as a normal .excalidraw file, with the narration of every slide inside
+  const saveWithNarration = async () => {
+    setError("");
+    setNote("");
+    try {
+      const plain = serializeAsJSON(
+        excalidrawAPI.getSceneElements(),
+        excalidrawAPI.getAppState(),
+        excalidrawAPI.getFiles(),
+        "local",
+      );
+      const { json, clips: n } = await addNarrationToJson(
+        plain,
+        snapshot().map((sl) => sl.frame.id),
+      );
+      downloadBlob(
+        new Blob([json], { type: "application/json" }),
+        "drawing-with-narration.excalidraw",
+      );
+      setNote(
+        n
+          ? `Saved the drawing with ${n} narration clip${n === 1 ? "" : "s"}.`
+          : "Saved the drawing. There is no narration to include yet.",
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+
+  // replaces the canvas with a saved drawing and puts its narration back
+  const openWithNarration = async (file: File) => {
+    setError("");
+    setNote("");
+    try {
+      const bundle = readBundle(await file.text());
+      const loaded = await loadFromBlob(file, null, null);
+      excalidrawAPI.updateScene({
+        elements: loaded.elements,
+        appState: { viewBackgroundColor: loaded.appState.viewBackgroundColor },
+        captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+      });
+      excalidrawAPI.addFiles(Object.values(loaded.files));
+      excalidrawAPI.setViewport({
+        target: loaded.elements.filter((el) => !el.isDeleted),
+        fit: "scale-down",
+      } as any);
+      const ids = getSlides(loaded.elements as any).map((sl) => sl.frame.id);
+      if (!bundle) {
+        setNote("Opened the drawing. The file has no narration.");
+        return;
+      }
+      const { restored, unmatched } = await restoreNarration(bundle, ids);
+      await refreshClips(ids);
+      setNote(
+        `Opened the drawing and restored ${restored} narration clip${
+          restored === 1 ? "" : "s"
+        }${unmatched ? ` (${unmatched} had no matching slide)` : ""}.`,
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    }
   };
 
   const doExport = async (format: ExportFormat) => {
@@ -966,6 +1046,12 @@ export const AnimationPanel = ({
               🎙 Narrate
             </button>
           </div>
+          <MicSelect
+            style={{ ...field, marginBottom: 8 }}
+            mics={micChoice.mics}
+            deviceId={micChoice.deviceId}
+            onChange={micChoice.choose}
+          />
           <div
             style={{
               display: "grid",
@@ -1091,6 +1177,36 @@ export const AnimationPanel = ({
             GIF is capped at 15 fps / 800 px. Interactive maps are exported as a
             placeholder (use “Copy image” in the map).
           </div>
+          <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+            <button
+              style={ghost}
+              title="Save a .excalidraw file that also holds your narration, so it travels with the drawing"
+              onClick={saveWithNarration}
+            >
+              Save drawing with narration
+            </button>
+            <button
+              style={ghost}
+              title="Replace the canvas with a saved drawing and restore its narration"
+              onClick={() => openRef.current?.click()}
+            >
+              Open drawing with narration…
+            </button>
+            <input
+              ref={openRef}
+              type="file"
+              accept=".excalidraw,application/json"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (f) {
+                  void openWithNarration(f);
+                }
+              }}
+            />
+          </div>
+          {note && <div style={{ color: "#888", marginTop: 4 }}>{note}</div>}
           {job && (
             <div style={{ marginTop: 6 }}>
               <div
