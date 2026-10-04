@@ -4,6 +4,15 @@
 
 **Hand-drawn diagrams that move.** A local-first diagram studio: animate your slides into MP4 or GIF, generate diagrams with your own LLM, and keep everything on your machine. No telemetry.
 
+<p>
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="License: MIT"></a>
+<img src="https://img.shields.io/badge/TypeScript-5.9-3178c6" alt="TypeScript 5.9">
+<img src="https://img.shields.io/badge/Node-%E2%89%A518-339933" alt="Node 18 or newer">
+<img src="https://img.shields.io/badge/Local--first-100%25-cc440c" alt="Local-first">
+<img src="https://img.shields.io/badge/Telemetry-none-cc440c" alt="No telemetry">
+<img src="https://img.shields.io/badge/Runs%20with-Docker%20Compose-2496ed" alt="Runs with Docker Compose">
+</p>
+
 <img src="docs/media/v3-hero.gif" alt="A data platform built step by step with Trazo: new elements appear one by one, arrows draw themselves, captions, and a camera move to the last slide" width="720">
 
 <sub>Made and exported to GIF with Trazo itself: new elements appear one by one, arrows draw themselves, captions fade in and the camera travels to the last slide. Elements that do not change stay perfectly still.</sub>
