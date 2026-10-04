@@ -12,6 +12,7 @@
 <img src="https://img.shields.io/badge/Local--first-100%25-cc440c" alt="Local-first">
 <img src="https://img.shields.io/badge/Telemetry-none-cc440c" alt="No telemetry">
 <img src="https://img.shields.io/badge/Runs%20with-Docker%20Compose-2496ed" alt="Runs with Docker Compose">
+<a href="https://buymeacoffee.com/balalex12"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-balalex12-ffdd00?logo=buymeacoffee&logoColor=black" alt="Buy me a coffee"></a>
 </p>
 
 <img src="docs/media/v3-hero.gif" alt="A data platform built step by step with Trazo: new elements appear one by one, arrows draw themselves, captions, and a camera move to the last slide" width="720">
