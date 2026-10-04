@@ -50,6 +50,8 @@ Once a model is connected you get two things: **Text to diagram** and the **✦ 
 
 ## Let Claude draw in Trazo (MCP, optional)
 
+`docker compose up` runs the app (`trazo-app:local`, port 3000) and the map viewer (port 3001). The MCP server is a **separate image** (`trazo-mcp:local`) that is **not** started that way: you build it once, and your Claude app starts it on demand (it has no ports and no network, and stops when Claude is done). To build everything at once, including the MCP image: `docker compose --profile mcp build`.
+
 For **Claude Code** or **Claude Desktop**, with their own login and no API key. Trazo guides you:
 
 1. In Trazo open **Menu → Connect Claude (MCP)…** and follow the three steps. It writes the exact commands for your system, with a copy button.

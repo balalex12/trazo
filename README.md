@@ -129,6 +129,24 @@ Stop with `docker compose down`. Everything listens on `127.0.0.1` only. Full gu
 | let **Claude Code or Claude Desktop** draw and edit my diagrams, with their own login | **Menu → Connect Claude (MCP)…**: three guided steps with the exact commands for your system | Docker (already there) |
 | use my signed-in Claude Code or Codex as the AI (experimental) | the [CLI bridge](docs/CLI_BRIDGE.md) | Node.js 18+ |
 
+#### Use it with Claude Code or Claude Desktop (MCP)
+
+The MCP server is a **separate small image** (`trazo-mcp:local`). `docker compose up` does **not** start it: your Claude app starts it on demand and it stops by itself. So there are two things to do, once:
+
+```bash
+docker compose --profile mcp build mcp      # 1. builds the MCP image (about 2 minutes)
+```
+
+2. In Trazo open **Menu → Connect Claude (MCP)…**. It asks for a folder for your diagrams and shows the exact command (Claude Code) or the few lines (Claude Desktop) for your system, with a copy button. Run or paste it, restart your Claude app, and ask: _"Use Trazo to draw the architecture of this docker-compose.yml"_. Open the files it writes with **Menu → Open**. Docker has to be running when you use it. More in [docs/MCP.md](docs/MCP.md).
+
+What Docker runs:
+
+| Image | What it is | When it runs |
+| --- | --- | --- |
+| `trazo-app:local` | the Trazo app (port 3000) | always, with `docker compose up` |
+| `nginx` (viewer) | the map viewer (port 3001) | always, with `docker compose up` |
+| `trazo-mcp:local` | the MCP server | only if you built it, and only while Claude is using it. No ports, no network |
+
 Is it safe? Read [docs/SECURITY.md](docs/SECURITY.md): what is hardened, what the optional parts can and cannot do, and how to check it yourself.
 
 ### What talks to the network?
@@ -207,6 +225,8 @@ docker compose up -d --build                     # la primera vez tarda unos min
 ```
 
 Todo escucha solo en `127.0.0.1`. Guía completa, actualizar, desinstalar y problemas comunes: [docs/INSTALL.md](docs/INSTALL.md) (en inglés).
+
+**Para usarlo con Claude Code o Claude Desktop (MCP):** el servidor MCP es una imagen aparte (`trazo-mcp:local`) que `docker compose up` **no** arranca; tu app de Claude la arranca cuando la necesita. Una sola vez: `docker compose --profile mcp build mcp` y luego, en Trazo, **Menú → Connect Claude (MCP)…**, que te da el comando exacto para tu sistema con botón de copiar. Detalles en [docs/MCP.md](docs/MCP.md) (en inglés).
 
 Sin configurar nada tienes: dibujo, librerías de iconos, animación con exportación a MP4/GIF, narración, grabador e _Import to diagram_. Opcional, cuando quieras: una IA propia para el **panel ✦ Agent** (Menú → AI assistant settings, por ejemplo Ollama local), y que **Claude Code o Claude Desktop** dibujen y editen tus diagramas con su propio inicio de sesión (Menú → Connect Claude (MCP), tres pasos guiados). Seguridad: [docs/SECURITY.md](docs/SECURITY.md).
 
