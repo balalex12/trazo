@@ -333,3 +333,16 @@ describe("start at login files", () => {
     expect(f.content).toContain("WantedBy=default.target");
   });
 });
+
+describe("systemd quoting", () => {
+  it("escapes backslashes before quotes, so a path cannot break out of its quotes", () => {
+    const f = b.startupFile(
+      "linux",
+      { node: '/opt/we"ird\\dir/node', script: "/t/s.mjs", args: [] },
+      { TRAZO_STARTUP_DIR: "/startup" },
+    );
+    expect(f.content).toContain(
+      'ExecStart="/opt/we\\"ird\\\\dir/node" "/t/s.mjs"',
+    );
+  });
+});

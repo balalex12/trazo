@@ -1,13 +1,6 @@
 // Runs the Trazo MCP server over stdio (one JSON message per line) in the folder TRAZO_DIR (default /work).
 // Built into one file with esbuild by Dockerfile.mcp. Logs go to stderr: stdout is only for the protocol.
-import {
-  mkdir,
-  readdir,
-  readFile,
-  rename,
-  stat,
-  writeFile,
-} from "node:fs/promises";
+import { mkdir, open, readdir, rename, writeFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import { createInterface } from "node:readline";
 
@@ -31,10 +24,16 @@ const files: Files = {
   list: async () => (await readdir(dir)).sort(),
   read: async (name) => {
     const p = inside(name);
-    if ((await stat(p)).size > MAX_READ) {
-      throw new Error(`${name} is too big (over 5 MB).`);
+    // one handle for both the size check and the read, so the file cannot change in between
+    const handle = await open(p, "r");
+    try {
+      if ((await handle.stat()).size > MAX_READ) {
+        throw new Error(`${name} is too big (over 5 MB).`);
+      }
+      return await handle.readFile("utf8");
+    } finally {
+      await handle.close();
     }
-    return readFile(p, "utf8");
   },
   write: async (name, text) => {
     const p = inside(name);

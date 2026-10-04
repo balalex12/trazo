@@ -405,7 +405,8 @@ export const createBridge = ({
 
 // ---- starting at login (no terminal left open) ---------------------------------------------------------------------
 
-const quote = (s) => `"${String(s).replace(/"/g, '\\"')}"`;
+const quote = (s) =>
+  `"${String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 
 /** the file that makes the OS start the bridge at login, for each platform (pure, tested) */
 export const startupFile = (platform, { node, script, args }, env = process.env) => {
