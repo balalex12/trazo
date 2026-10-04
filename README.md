@@ -1,6 +1,6 @@
 <div align="center">
 
-# Trazo
+# <img src="docs/media/trazo-logo.svg" alt="Trazo logo" width="56" align="absmiddle"> Trazo
 
 **Hand-drawn diagrams that move.** A local-first diagram studio: animate your slides into MP4 or GIF, generate diagrams with your own LLM, and keep everything on your machine. No telemetry.
 
