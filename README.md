@@ -85,6 +85,14 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 </details>
 
+<div align="center">
+
+**Trazo is free and I build it in my spare time.** If it saved you an hour, you can buy me a coffee:
+
+<a href="https://buymeacoffee.com/balalex12"><img src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=%E2%98%95&slug=balalex12&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" height="48"></a>
+
+</div>
+
 ### Quick start
 
 Requirements: **Docker** (with Compose v2) and **Node.js 20+** (only to generate the icon library).
@@ -181,3 +189,11 @@ Excalidraw (MIT, © 2020 Excalidraw) · íconos de Esri Architecture Center (CC 
 ### Estado
 
 Joven. Probado de punta a punta con pruebas automáticas de navegador (modo local, librería, mapa, animación y exportación, interfaz multi-portal, conector LLM). El mantenedor también lo validó a mano contra **un portal ArcGIS Enterprise privado** (inicio de sesión y exploración de contenido) y con **un LLM real** (texto a diagrama). **Pendiente de validar: el trazado de Utility Network** con un Web Map real; se agradecen reportes. Ver [docs/ROADMAP.md](docs/ROADMAP.md).
+
+<div align="center">
+
+**Trazo es gratis y lo construyo en mis ratos libres.** Si te ahorró tiempo, puedes invitarme un café:
+
+<a href="https://buymeacoffee.com/balalex12"><img src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=%E2%98%95&slug=balalex12&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" height="48"></a>
+
+</div>
