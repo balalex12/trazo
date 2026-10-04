@@ -5,6 +5,7 @@
 **Hand-drawn diagrams that move.** A local-first diagram studio: animate your slides into MP4 or GIF, generate diagrams with your own LLM, and keep everything on your machine. No telemetry.
 
 <p>
+<a href="https://github.com/balalex12/trazo/actions/workflows/ci.yml"><img src="https://github.com/balalex12/trazo/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="License: MIT"></a>
 <img src="https://img.shields.io/badge/TypeScript-5.9-3178c6" alt="TypeScript 5.9">
 <img src="https://img.shields.io/badge/Node-%E2%89%A518-339933" alt="Node 18 or newer">
