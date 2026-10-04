@@ -12,10 +12,11 @@
 <img src="https://img.shields.io/badge/Local--first-100%25-cc440c" alt="Local-first">
 <img src="https://img.shields.io/badge/Telemetry-none-cc440c" alt="No telemetry">
 <img src="https://img.shields.io/badge/Runs%20with-Docker%20Compose-2496ed" alt="Runs with Docker Compose">
+<img src="https://img.shields.io/badge/MCP-Claude%20Desktop%20%7C%20Claude%20Code-cc440c" alt="MCP server for Claude Desktop and Claude Code">
 <a href="https://buymeacoffee.com/balalex12"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-balalex12-ffdd00?logo=buymeacoffee&logoColor=black" alt="Buy me a coffee"></a>
 </p>
 
-<img src="docs/media/v3-hero.gif" alt="A data platform built step by step with Trazo: new elements appear one by one, arrows draw themselves, captions, and a camera move to the last slide" width="720">
+<img src="docs/media/v4-hero.gif" alt="A data platform built step by step with Trazo: new elements appear one by one, arrows draw themselves, captions, and a camera move to the last slide" width="720">
 
 <sub>Made and exported to GIF with Trazo itself: new elements appear one by one, arrows draw themselves, captions fade in and the camera travels to the last slide. Elements that do not change stay perfectly still.</sub>
 
@@ -37,6 +38,8 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 | --- | --- |
 | 🎞️ **Diagrams that move** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). You can **narrate it with your voice**: talk while it builds, press → for the next slide, and the MP4 keeps voice and picture in sync. Each slide has its own timing, transition (smart, fade, cut, **build** where elements appear one by one and arrows draw themselves, or **pan** where the camera travels over the canvas) and caption, and unchanged elements stay still. Preview, present with ← →, and **export MP4 or GIF**, rendered in your browser, nothing uploaded. |
 | 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model: Ollama / LM Studio locally, **Ollama Cloud**, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes, colored by role with symbols (see [docs/AI.md](docs/AI.md#styling-diagrams-colors-symbols)). |
+| ✨ **Agent panel** | A chat inside Trazo that **explains your diagram or edits it** with your own model: "add a cache between the API and the database", "rename this box", "what is missing here?". It shows what it will do before it does it, and every change is one **Ctrl+Z** away (see [docs/AGENT.md](docs/AGENT.md)). |
+| 🔌 **MCP server** | Let **Claude Desktop, Claude Code** or any MCP client draw and edit Trazo diagrams with their own login, no API key needed. A tiny container with **no network** that only touches one folder (see [docs/MCP.md](docs/MCP.md)). |
 | 🎙️ **Record while you explain** | **⏺ Record** captures just the canvas, the canvas with live maps, or the whole app, with your microphone and a highlighted pointer, and gives you an MP4 or WebM. Made in your browser, nothing uploaded (see [docs/RECORDER.md](docs/RECORDER.md)). |
 | 🏗️ **Import to diagram** | Paste a `docker-compose.yml`, **Kubernetes**, **Terraform** (`.tf` or JSON), an **OpenAPI** file, **SQL** `CREATE TABLE`s, a **dbt** `manifest.json` or an **n8n** workflow and get it drawn for you: architecture by role, API by tag, tables with their keys, lineage, workflow steps. Read in your browser, **no AI and no network**, so the same file always gives the same diagram (see [docs/IMPORT.md](docs/IMPORT.md)). |
 | 🔒 **Local-first and hardened** | No analytics, no Sentry, no CDN, no service worker, no hosted collaboration. Strict Content-Security-Policy, read-only containers, ports bound to `127.0.0.1`. One `docker compose` and it runs on your machine. See [docs/SECURITY.md](docs/SECURITY.md), and verify it yourself. |
@@ -45,43 +48,51 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 <table>
 <tr>
-<td><img src="docs/media/v3-editor-light.png" alt="A data platform diagram in light mode"><br><sub><b>Light mode</b>: a data platform from events to dashboards</sub></td>
-<td><img src="docs/media/v3-editor-dark.png" alt="The same diagram in dark mode"><br><sub><b>Dark mode</b>: same drawing, theme-aware UI</sub></td>
+<td><img src="docs/media/v4-editor-light.png" alt="A data platform diagram in light mode"><br><sub><b>Light mode</b>: a data platform from events to dashboards</sub></td>
+<td><img src="docs/media/v4-editor-dark.png" alt="The same diagram in dark mode"><br><sub><b>Dark mode</b>: same drawing, theme-aware UI</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/v3-text-to-diagram.png" alt="Text to diagram with your own LLM"><br><sub><b>Text to diagram</b> with your own LLM: colors, symbols and groups</sub></td>
-<td><img src="docs/media/v3-library.png" alt="Library grouped by source"><br><sub><b>Library</b> grouped by source, never mixed</sub></td>
+<td><img src="docs/media/v4-text-to-diagram.png" alt="Text to diagram with your own LLM"><br><sub><b>Text to diagram</b> with your own LLM: colors, symbols and groups</sub></td>
+<td><img src="docs/media/v4-library.png" alt="Library grouped by source"><br><sub><b>Library</b> grouped by source, never mixed</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/v3-animation-panel.png" alt="The animation panel: a transition, a caption and a narration clip for every slide"><br><sub><b>Animate and narrate</b>: a transition, a caption and your own voice for each slide</sub></td>
-<td><img src="docs/media/v3-recorder-panel.png" alt="The recorder: canvas only, canvas with live maps, or the whole app"><br><sub><b>Record</b>: the canvas, the canvas with live maps, or the whole app, with your microphone</sub></td>
+<td><img src="docs/media/v4-animation-panel.png" alt="The animation panel: a transition, a caption and a narration clip for every slide"><br><sub><b>Animate and narrate</b>: a transition, a caption and your own voice for each slide</sub></td>
+<td><img src="docs/media/v4-recorder-panel.png" alt="The recorder: canvas only, canvas with live maps, or the whole app"><br><sub><b>Record</b>: the canvas, the canvas with live maps, or the whole app, with your microphone</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/v3-import-compose.png" alt="A docker-compose file turned into an architecture diagram"><br><sub><b>Docker Compose</b>: services by role, ports and volumes</sub></td>
-<td><img src="docs/media/v3-import-kubernetes.png" alt="Kubernetes manifests turned into an architecture diagram"><br><sub><b>Kubernetes</b>: ingress, services, workloads, config and claims</sub></td>
+<td><img src="docs/media/v4-agent-panel.png" alt="The agent panel putting a connection pooler between the API and the database"><br><sub><b>Agent</b>: ask or edit with your own model. It shows what it will do, makes room, and Ctrl+Z undoes it</sub></td>
+<td><img src="docs/media/v4-mcp-connect.png" alt="The Connect Claude dialog with the commands for Claude Code"><br><sub><b>Connect Claude (MCP)</b>: three guided steps, the exact commands for your system</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/v3-import-terraform.png" alt="Terraform files turned into an architecture diagram"><br><sub><b>Terraform</b>: resources and the references between them (HCL or JSON)</sub></td>
-<td><img src="docs/media/v3-import-openapi.png" alt="An OpenAPI file turned into a diagram of endpoints by tag and schemas"><br><sub><b>OpenAPI</b>: endpoints by tag, schemas and security</sub></td>
+<td><img src="docs/media/v4-mcp-diagram.png" alt="A diagram drawn by Claude Code through the MCP server and opened in Trazo"><br><sub>Drawn by <b>Claude Code</b> through the MCP server from a docker-compose file, then edited by it</sub></td>
+<td><img src="docs/media/v4-ai-connections.png" alt="AI assistant settings with one saved setting per connection"><br><sub><b>One saved setting per connection</b>: trying another model never erases the first</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/v3-import-sql-dark.png" alt="SQL CREATE TABLE statements turned into an entity relationship diagram"><br><sub><b>SQL</b>: tables with their keys and foreign keys</sub></td>
-<td><img src="docs/media/v3-import-dbt.png" alt="A dbt manifest turned into a lineage graph"><br><sub><b>dbt</b>: lineage from sources to dashboards, colored by layer</sub></td>
+<td><img src="docs/media/v4-import-compose.png" alt="A docker-compose file turned into an architecture diagram"><br><sub><b>Docker Compose</b>: services by role, ports and volumes</sub></td>
+<td><img src="docs/media/v4-import-kubernetes.png" alt="Kubernetes manifests turned into an architecture diagram"><br><sub><b>Kubernetes</b>: ingress, services, workloads, config and claims</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/v3-import-n8n.png" alt="An n8n workflow turned into a flow diagram"><br><sub><b>n8n</b>: the workflow, with true and false branches</sub></td>
-<td><img src="docs/media/v3-import-kubernetes-dark.png" alt="The Kubernetes diagram in dark mode"><br><sub>Dark mode too. All of it offline, no AI</sub></td>
+<td><img src="docs/media/v4-import-terraform.png" alt="Terraform files turned into an architecture diagram"><br><sub><b>Terraform</b>: resources and the references between them (HCL or JSON)</sub></td>
+<td><img src="docs/media/v4-import-openapi.png" alt="An OpenAPI file turned into a diagram of endpoints by tag and schemas"><br><sub><b>OpenAPI</b>: endpoints by tag, schemas and security</sub></td>
 </tr>
 <tr>
-<td><img src="docs/media/v3-map-embed.png" alt="Interactive ArcGIS map in the canvas"><br><sub><b>GIS pack</b>: a live map inside the canvas (ArcGIS Online or any Enterprise portal)</sub></td>
-<td><img src="docs/media/v3-arcgis-architecture.png" alt="An ArcGIS Enterprise architecture with official Esri icons"><br><sub><b>GIS pack</b>: an ArcGIS Enterprise architecture with official Esri icons</sub></td>
+<td><img src="docs/media/v4-import-sql-dark.png" alt="SQL CREATE TABLE statements turned into an entity relationship diagram"><br><sub><b>SQL</b>: tables with their keys and foreign keys</sub></td>
+<td><img src="docs/media/v4-import-dbt.png" alt="A dbt manifest turned into a lineage graph"><br><sub><b>dbt</b>: lineage from sources to dashboards, colored by layer</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/v4-import-n8n.png" alt="An n8n workflow turned into a flow diagram"><br><sub><b>n8n</b>: the workflow, with true and false branches</sub></td>
+<td><img src="docs/media/v4-import-kubernetes-dark.png" alt="The Kubernetes diagram in dark mode"><br><sub>Dark mode too. All of it offline, no AI</sub></td>
+</tr>
+<tr>
+<td><img src="docs/media/v4-map-embed.png" alt="Interactive ArcGIS map in the canvas"><br><sub><b>GIS pack</b>: a live map inside the canvas (ArcGIS Online or any Enterprise portal)</sub></td>
+<td><img src="docs/media/v4-arcgis-architecture.png" alt="An ArcGIS Enterprise architecture with official Esri icons"><br><sub><b>GIS pack</b>: an ArcGIS Enterprise architecture with official Esri icons</sub></td>
 </tr>
 </table>
 
 <details>
 <summary>See the GIS pack animated</summary>
 
-<img src="docs/media/v3-animation-arcgis.gif" alt="An ArcGIS Enterprise architecture built step by step with Trazo" width="720">
+<img src="docs/media/v4-animation-arcgis.gif" alt="An ArcGIS Enterprise architecture built step by step with Trazo" width="720">
 
 </details>
 
@@ -95,18 +106,30 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 ### Quick start
 
-Requirements: **Docker** (with Compose v2) and **Node.js 20+** (only to generate the icon library).
+You only need **Docker** (with Compose v2). No Node.js, no account.
 
 ```bash
 git clone https://github.com/balalex12/trazo.git && cd trazo
 
-node tools/build-library.js      # downloads the Calcite glyphs, builds the ArcGIS library
-docker compose up -d --build     # first build takes a few minutes
+docker compose --profile setup run --rm setup   # once: downloads the icon libraries
+docker compose up -d --build                     # first build takes a few minutes
 
 # open http://localhost:3000
 ```
 
-Stop with `docker compose down`. Everything listens on `127.0.0.1` only.
+Stop with `docker compose down`. Everything listens on `127.0.0.1` only. Full guide, updating, removing and troubleshooting: **[docs/INSTALL.md](docs/INSTALL.md)**.
+
+**What you get right away**, with nothing else to set up: drawing, the icon libraries, animation with MP4/GIF export, narration, the recorder and _Import to diagram_. They run in your browser and send nothing anywhere.
+
+**Add what you want, when you want it** (each one is optional):
+
+| I want to… | Do this | Needs |
+| --- | --- | --- |
+| ask an AI about my diagram or have it edit it (✦ Agent, Text to diagram) | **Menu → AI assistant settings** and connect a model: a local one like Ollama (private, free) or an API key | nothing more for Ollama's app; see [docs/AI.md](docs/AI.md) |
+| let **Claude Code or Claude Desktop** draw and edit my diagrams, with their own login | **Menu → Connect Claude (MCP)…**: three guided steps with the exact commands for your system | Docker (already there) |
+| use my signed-in Claude Code or Codex as the AI (experimental) | the [CLI bridge](docs/CLI_BRIDGE.md) | Node.js 18+ |
+
+Is it safe? Read [docs/SECURITY.md](docs/SECURITY.md): what is hardened, what the optional parts can and cannot do, and how to check it yourself.
 
 ### What talks to the network?
 
@@ -114,13 +137,15 @@ Stop with `docker compose down`. Everything listens on `127.0.0.1` only.
 | --- | --- | --- |
 | Opening the app, drawing, saving, animating, exporting | **nothing** | fully local (verified: 0 external hosts, 0 CSP violations, 0 service workers) |
 | You use an interactive map | `js.arcgis.com`, Esri basemaps, **the portals you add** | an ArcGIS map needs them |
-| You configure an LLM | **the URL you set** (e.g. `http://localhost:11434`); with the _Ollama Cloud_ preset, `ollama.com` through the local pass-through | Text to diagram |
+| You connect an AI and use _Text to diagram_ or the ✦ Agent | **the address you set** (e.g. `http://localhost:11434`, which stays on your computer); with the _Ollama Cloud_ preset, `ollama.com` through the local pass-through | the text of your request and, for the agent, of your diagram (never images) |
+| Claude Desktop or Claude Code use the MCP server | **nothing from Trazo**: its container has no network. Your Claude app sees what the tools return | see [docs/MCP.md](docs/MCP.md) |
 | You click _Browse libraries_ | `libraries.excalidraw.com` | optional community libraries (a normal link) |
 
 ### Documentation
 
 |  |  |
 | --- | --- |
+| [docs/INSTALL.md](docs/INSTALL.md) | Install, update, remove and troubleshoot; what is optional |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | How it is built and why |
 | [docs/SECURITY.md](docs/SECURITY.md) | Threat model, hardening, how to verify |
 | [docs/VIEWER.md](docs/VIEWER.md) | ArcGIS viewer: portals, sign-in, layers, Utility Network |
@@ -128,6 +153,9 @@ Stop with `docker compose down`. Everything listens on `127.0.0.1` only.
 | [docs/RECORDER.md](docs/RECORDER.md) | Recording the canvas with your voice |
 | [docs/IMPORT.md](docs/IMPORT.md) | docker-compose, Kubernetes, Terraform, OpenAPI, SQL, dbt and n8n to diagram |
 | [docs/AI.md](docs/AI.md) | Connecting Ollama / LM Studio / OpenAI-compatible / Claude |
+| [docs/AGENT.md](docs/AGENT.md) | The agent panel: ask or edit your diagram with AI |
+| [docs/MCP.md](docs/MCP.md) | The MCP server for Claude Desktop and Claude Code |
+| [docs/CLI_BRIDGE.md](docs/CLI_BRIDGE.md) | Experimental: use your own Claude Code or Codex CLI |
 | [docs/LIBRARIES.md](docs/LIBRARIES.md) | Icon sources, adding your own libraries, licensing rules |
 | [docs/UPDATING.md](docs/UPDATING.md) | Staying in sync with Excalidraw upstream |
 | [docs/LOCAL_FIRST_CHANGES.md](docs/LOCAL_FIRST_CHANGES.md) | Everything removed/changed vs. Excalidraw |
@@ -169,14 +197,18 @@ Issues and PRs welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Security reports
 
 ### Inicio rápido
 
+Solo necesitas **Docker** (con Compose v2). Sin Node.js y sin cuenta.
+
 ```bash
 git clone https://github.com/balalex12/trazo.git && cd trazo
-node tools/build-library.js       # descarga los glifos Calcite y genera la librería
-docker compose up -d --build      # la primera vez tarda unos minutos
+docker compose --profile setup run --rm setup   # una vez: descarga las librerías de iconos
+docker compose up -d --build                     # la primera vez tarda unos minutos
 # abre http://localhost:3000
 ```
 
-Requisitos: Docker y Node.js 20+. Todo escucha solo en `127.0.0.1`.
+Todo escucha solo en `127.0.0.1`. Guía completa, actualizar, desinstalar y problemas comunes: [docs/INSTALL.md](docs/INSTALL.md) (en inglés).
+
+Sin configurar nada tienes: dibujo, librerías de iconos, animación con exportación a MP4/GIF, narración, grabador e _Import to diagram_. Opcional, cuando quieras: una IA propia para el **panel ✦ Agent** (Menú → AI assistant settings, por ejemplo Ollama local), y que **Claude Code o Claude Desktop** dibujen y editen tus diagramas con su propio inicio de sesión (Menú → Connect Claude (MCP), tres pasos guiados). Seguridad: [docs/SECURITY.md](docs/SECURITY.md).
 
 ### Privacidad y red
 

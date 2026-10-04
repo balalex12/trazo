@@ -9,6 +9,7 @@ Nothing is sent anywhere until you configure a provider. **Menu → AI assistant
 | LM Studio (local) | `http://localhost:1234/v1` | enable CORS in its server settings |
 | OpenAI-compatible | your URL | vLLM, llama.cpp server, OpenAI… API key if required |
 | Anthropic (Claude) | `https://api.anthropic.com` | needs an API key; sent with `anthropic-dangerous-direct-browser-access` (browser calls) |
+| **Your own Claude Code or Codex** (experimental) | `http://127.0.0.1:11500` (preset) | no API key: uses the CLI you already have installed and signed in to, through a small local bridge you install once (`node tools/cli-bridge.mjs --install`). Read [CLI_BRIDGE.md](CLI_BRIDGE.md) first |
 
 ### Ollama Cloud
 
