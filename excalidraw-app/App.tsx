@@ -148,9 +148,11 @@ import DebugCanvas, {
 import { useSimulatedCollaborators } from "./debugCollaborators";
 import { AIComponents } from "./components/AI";
 import { AnimationPanel } from "./animation/AnimationPanel";
+import { AgentPanel } from "./components/AgentPanel";
 import { RecorderPanel } from "./components/RecorderPanel";
 import { BrandDialogs } from "./components/BrandDialogs";
 import { InfraDialog } from "./components/InfraDialog";
+import { McpDialog } from "./components/McpDialog";
 import { EVENTS } from "./branding";
 import { libraryItemFingerprint } from "./libraryFingerprint";
 import { ExcalidrawPlusIframeExport } from "./ExcalidrawPlusIframeExport";
@@ -1008,6 +1010,7 @@ const ExcalidrawWrapper = () => {
         <AppWelcomeScreen />
         <BrandDialogs />
         <InfraDialog />
+        <McpDialog />
         <OverwriteConfirmDialog>
           <OverwriteConfirmDialog.Actions.ExportToImage />
           <OverwriteConfirmDialog.Actions.SaveToDisk />
@@ -1016,6 +1019,7 @@ const ExcalidrawWrapper = () => {
         <AIComponents />
         {excalidrawAPI && <AnimationPanel excalidrawAPI={excalidrawAPI} />}
         {excalidrawAPI && <RecorderPanel />}
+        {excalidrawAPI && <AgentPanel excalidrawAPI={excalidrawAPI} />}
 
         <TTDDialogTrigger />
         {isCollaborating && isOffline && (
@@ -1069,6 +1073,27 @@ const ExcalidrawWrapper = () => {
               ],
               perform: () =>
                 window.dispatchEvent(new Event(EVENTS.openInfraImport)),
+            },
+            {
+              label: "Agent: ask or edit this diagram with AI",
+              category: DEFAULT_CATEGORIES.app,
+              predicate: true,
+              keywords: ["agent", "ai", "assistant", "chat", "edit", "explain"],
+              perform: () => window.dispatchEvent(new Event(EVENTS.openAgent)),
+            },
+            {
+              label: "Connect Claude (MCP)",
+              category: DEFAULT_CATEGORIES.app,
+              predicate: true,
+              keywords: [
+                "mcp",
+                "claude",
+                "claude code",
+                "claude desktop",
+                "connect",
+                "agent",
+              ],
+              perform: () => window.dispatchEvent(new Event(EVENTS.openMcp)),
             },
             {
               label: "AI assistant settings",

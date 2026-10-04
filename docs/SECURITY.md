@@ -1,6 +1,6 @@
 # Security and privacy
 
-Trazo is designed to be **local-first**: your diagrams, credentials and settings stay in your browser, and the app does not phone home. This document states exactly what that means, what we hardened, what remains, and how you can verify every claim.
+Trazo is designed to be **local-first**: your diagrams, credentials and settings stay in your browser, and the app does not phone home. This document states exactly what that means, what we hardened, what remains, and how you can verify every claim. Section 4 covers the optional parts that add moving pieces (the agent panel, the MCP server and the CLI bridge): what each can and cannot do, and where the risk that remains is.
 
 ## 1. Guarantees (and how they are verified)
 
@@ -12,19 +12,24 @@ Trazo is designed to be **local-first**: your diagrams, credentials and settings
 | No service worker | `injectRegister: false`; old workers are unregistered on load (`index.tsx`) | DevTools → Application → Service workers: none |
 | Strict CSP | nginx header generated at image build with the sha256 of each inline script (no `unsafe-inline` for scripts) | `curl -I http://localhost:3000` and the script above reports _CSP violations: none_ |
 | Not reachable from your LAN | compose binds `127.0.0.1:3000/3001` | `docker compose ps` → `127.0.0.1:…` |
+| The AI features send nothing until you connect a model | the connection is _Off_ by default; the agent panel and Text to diagram refuse to run when it is off | open the Network tab, use the agent panel with the connection off: no request |
+| The MCP server cannot reach the network | its container runs with `--network none` | `docker inspect` of a running one (section 6) |
 
-Measured on the current build (headless Chrome, load + menu + library + map embed + animation panel + text-to-diagram dialog): **0 external hosts for the app, 0 CSP violations, 0 service workers**. Hosts contacted only when a map embed is used: `js.arcgis.com`, `www.arcgis.com`, `cdn.arcgis.com`, `basemaps.arcgis.com`, `static.arcgis.com` (the ArcGIS SDK and basemaps) plus any portal you add.
+Measured on the current build (headless Chrome, load + menu + library + map embed + animation panel + text-to-diagram dialog + agent panel): **0 external hosts for the app, 0 CSP violations, 0 service workers**. Hosts contacted only when a map embed is used: `js.arcgis.com`, `www.arcgis.com`, `cdn.arcgis.com`, `basemaps.arcgis.com`, `static.arcgis.com` (the ArcGIS SDK and basemaps) plus any portal you add.
 
 ## 2. What can leave your machine (by your action)
 
 1. **Interactive maps** → Esri and the portals you configure. Unavoidable: a map needs its data.
-2. **LLM** (opt-in, _Menu → AI assistant settings_) → only the base URL you set. With the **Ollama Cloud** preset the request goes to this app's nginx (`/llm/ollama-cloud/`), which forwards it to `ollama.com`, the only case where a container makes an outbound request, and only when the app sends one. The prompt and conversation are sent there. The API key is stored in `localStorage` (key `app-llm-config`) and sent only to that URL.
+2. **AI connection** (opt-in, _Menu → AI assistant settings_) → only the address you set. **Text to diagram** sends your description; the **agent panel** sends the **text** of the diagram (names, other lines of text, roles, positions, which boxes are selected, the arrows and their labels; never images, pixels or the file) and the last six messages of the chat, each time you send a message. With a local model (Ollama, LM Studio) that stays on this computer; with a cloud connection or the CLI bridge it goes to that provider, and the panel says so on top. With the **Ollama Cloud** preset the request goes through this app's nginx (`/llm/ollama-cloud/`) to `ollama.com`, the only case where a container makes an outbound request, and only when the app sends one.
 3. **Browse libraries** → opens `libraries.excalidraw.com` in a new tab (a plain link). Importing a library from there into the app goes through the URL that site provides.
 4. **#url= links**: Excalidraw can load a scene from a URL you open (`#url=…`); that is a request you initiated.
+5. **Your AI client, when you use the MCP server**: what the tools return (a summary of a diagram, the result of an edit) is seen by that client (for example Claude Desktop or Claude Code), under its own terms and privacy settings. Trazo itself sends nothing.
+
+Nothing is sent to Trazo's maintainers: there is no server of ours in the picture.
 
 ## 3. Hardening applied
 
-**Containers** (`docker-compose.yml`): ports bound to `127.0.0.1`; `read_only: true` root FS with `tmpfs` for nginx runtime dirs; `cap_drop: ALL` + only `CHOWN, SETGID, SETUID, NET_BIND_SERVICE`; `no-new-privileges`.
+**Containers** (`docker-compose.yml`): ports bound to `127.0.0.1`; `read_only: true` root FS with `tmpfs` for nginx runtime dirs; `cap_drop: ALL` + only `CHOWN, SETGID, SETUID, NET_BIND_SERVICE`; `no-new-privileges`. The optional `mcp` and `setup` services are described in section 4.
 
 **nginx** (`deploy/nginx/*.conf`): `server_tokens off`; `X-Content-Type-Options: nosniff`; `Referrer-Policy`; `Permissions-Policy` (camera, geolocation, payment, usb denied; the **microphone only for the app itself**, `microphone=(self)`, so the [recorder](RECORDER.md) can ask for it when you press record, while the map viewer and any embedded page still cannot use it; screen sharing for the recorder's tab modes is the browser's own dialog and only this tab is accepted); `Cross-Origin-Opener-Policy: same-origin` (app); `Cache-Control: no-cache` (avoids stale versions).
 
@@ -38,32 +43,93 @@ frame-src 'self' http://localhost:3001 http://127.0.0.1:3001 https:;
 worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 ```
 
-Trade-offs, stated honestly: `style-src 'unsafe-inline'` is needed by React inline styles; `frame-src https:` lets you embed any HTTPS page (ArcGIS apps, video); embedded pages run in a sandboxed iframe; `connect-src` allows local LLM servers on any port of localhost. **To use a remote LLM host**, add it to `connect-src` in `scripts/csp-hashes.mjs` and rebuild.
+Trade-offs, stated honestly: `style-src 'unsafe-inline'` is needed by React inline styles; `frame-src https:` lets you embed any HTTPS page (ArcGIS apps, video); embedded pages run in a sandboxed iframe; `connect-src` allows local servers on any port of localhost (local LLMs, the optional CLI bridge). That means the app's own code can talk to any service on your machine; it is our code (scripts are restricted to hashed inline scripts and files from this origin), but it is why the local services we offer protect themselves with a token and an origin check (section 4). **To use a remote LLM host**, add it to `connect-src` in `scripts/csp-hashes.mjs` and rebuild.
 
 **Viewer CSP** (`deploy/nginx/viewer.conf`): scripts only from `self` and `https://js.arcgis.com` (no `unsafe-eval`, no inline scripts); it can only be framed by the app origin (`frame-ancestors`).
 
 **Iframe isolation**: the viewer runs on a different origin (port 3001) from the app (3000), inside an iframe sandbox (`allow-scripts allow-forms allow-popups …`; `allow-same-origin` only for localhost/ArcGIS URLs). Without `allow-modals`, `confirm()`/`prompt()` do nothing inside embeds; the viewer uses inline UI instead.
 
-## 4. Where sensitive data lives (and the residual risk)
+**Input limits** (so a huge or hostile file cannot tie the browser or a container up): the importers read at most about 2 MB of text, a single SQL column or constraint definition is cut to 4,000 characters before it is parsed, at most 150 boxes are drawn per diagram, an agent reply may carry at most 50 operations, and the agent summary sends at most 150 boxes.
+
+## 4. The optional parts: agent panel, MCP server, CLI bridge
+
+All three are **off until you turn them on**, and none of them can run code of the model's choosing: the model only ever names a small set of diagram operations (add, link, rename, recolor, move, delete) that our code validates and applies.
+
+### 4.1 Agent panel
+
+| Question | Answer |
+| --- | --- |
+| What can a model make it do? | Only the six operations above, on the canvas. No file access, no network, no code. Anything that does not validate (an id that is not on the canvas, a box linked twice, a list of more than 50 operations) is skipped and reported |
+| Can it change my work without my say-so? | By default no: it shows what it would do and waits for **Apply**. If you tick _Apply without asking_ it applies at once. Either way a change is one undo step (**Ctrl+Z**); an import or other change that was not yet in the undo history becomes its own step first, so undo never reaches further than the agent's change |
+| Can text from a diagram trick the model (prompt injection)? | Yes, as with any model that reads untrusted text: a diagram imported from a stranger can contain labels written to steer it. The damage is bounded by the above: at worst, wrong edits to the canvas that you can discard or undo. It cannot read your files, call the network or run code |
+| Is what the model says shown safely? | It is rendered as plain text, never as HTML; labels become canvas text, not markup |
+| What does it send, and where? | Section 2 |
+
+### 4.2 MCP server (Claude Desktop, Claude Code, other MCP clients)
+
+The server runs in its **own container** (`Dockerfile.mcp`, started by the client with `docker run`, see [MCP.md](MCP.md)) with: `--network none` (no network at all, so nothing can be sent out by the server), `--read-only` filesystem, `--cap-drop ALL`, `no-new-privileges`, an unprivileged user, base images pinned by digest and the packages of `yarn.lock` (`--frozen-lockfile`).
+
+Its only reach is **one folder you mount**. Inside it:
+
+- Names are reduced to a plain file name: `../`, absolute paths, hidden files and subfolders are refused. Diagram files always end in `.excalidraw`.
+- It **never overwrites** an existing diagram unless the tool is called with `overwrite: true`, and when it edits a file in place it **keeps the previous version** next to it as `<name>.excalidraw.bak`.
+- It only **reads** files you name and only parses them as one of the supported formats; it never shows a file's raw content: the result is a drawing (box labels, links), so a file that is not one of those formats produces an error that does not repeat its content.
+- Files over 5 MB are refused; at most 150 boxes per drawn diagram and 50 operations per edit.
+
+Risks that remain, and what to do about them:
+
+| Risk | Mitigation |
+| --- | --- |
+| **The folder is the boundary.** Mount your whole home folder or a repository and the server can read and write the top-level files there (an AI client could ask it to draw a file there, for example a `.tf` or `.yml`) | Use **a folder made for diagrams**. If you want it to draw a project's `docker-compose.yml`, copy that file into the diagrams folder |
+| **Prompt injection reaches your AI client.** A file you ask the client to read can contain instructions aimed at the model, and the client may have other tools (a shell, other MCP servers) | This is the client's responsibility and permission prompts (Claude Code asks before using a tool). Trazo's server is the least powerful of those tools: no network, one folder, no code. Review what the client asks permission for |
+| **A model decides to overwrite or delete.** Deleting a box or replacing a diagram is a normal request | Overwriting needs an explicit flag, edits keep a `.bak`, and your diagrams belong in version control or a backup like any other file |
+| **Resource use** by a huge request | the size limits above; the container can be stopped at any time with the client or `docker stop` |
+
+### 4.3 CLI bridge (experimental, advanced)
+
+A small Node script (`tools/cli-bridge.mjs`) you install or start yourself, that lets Trazo use your own signed-in Claude Code or Codex. Full description in [CLI_BRIDGE.md](CLI_BRIDGE.md). Its protections:
+
+- Listens on **`127.0.0.1` only**.
+- Every request needs an **allowed Origin** (default `http://localhost:3000` and `http://127.0.0.1:3000`, so no other web page can use it) and a **local Host header** (blocks DNS rebinding); everything except `/hello` also needs a **random 192-bit token** compared in constant time. `/hello` only says that a bridge is there and which CLIs it found, and only to an allowed page.
+- **No command injection**: the command line of the CLI is a constant; nothing from the browser ever reaches an argument (the prompt goes through stdin) and there is no shell.
+- The CLI runs **with no tools** (Claude: `--tools ""`; Codex: read-only sandbox) in an **empty temporary folder**, so it cannot read your files or run commands. It never sees the bridge token, and credentials in the environment that would override your subscription login (`ANTHROPIC_API_KEY` and similar) are removed unless you pass `--keep-env-auth`.
+- One run at a time, requests limited to 1 MB, runs limited to 3 minutes. The log has the tool, model, sizes and time of each request, never the text.
+- The token lives in `~/.trazo/bridge.json`, readable only by you (on Windows it inherits your profile folder's access rules). `--rotate` replaces it.
+- **Pairing link** (`http://localhost:3000/#bridge=<token>`): the part after `#` is never sent to any server. Trazo reads it, stores the token, removes it from the address bar, and only accepts an address that is `localhost` or `127.0.0.1`. The link is a password for the bridge, so do not post it; it gives no access to your provider account.
+
+What remains: a **process running as you** can read the token file and use the bridge, but it could already read the CLI's own credentials, so it gains nothing new. Autostart means a small server is always listening on your machine; `--uninstall` removes it and it is not installed unless you run `--install`. And the **providers' terms** about subscription logins may restrict this use: that is yours to check (see CLI_BRIDGE.md).
+
+### 4.4 Optional setup container
+
+`docker compose --profile setup run --rm setup` runs `tools/build-library.js` in a throwaway Node container to download the icon libraries from their official sources (Esri Calcite glyphs from jsDelivr at a pinned version, community libraries from the public `excalidraw-libraries` repository), then writes them into the repository folder. It is the only container that has network access, only for that step, with `cap_drop: ALL`; the downloaded files are plain data (SVG and drawing JSON), not code.
+
+## 5. Where sensitive data lives (and the residual risk)
 
 | Data | Location | Notes |
 | --- | --- | --- |
 | Diagrams | browser `localStorage` / IndexedDB of `localhost:3000` | export `.excalidraw` files regularly |
+| Narration clips | IndexedDB of `localhost:3000` | _Save drawing with narration_ copies them into the file you save |
 | Portal sign-in tokens | `localStorage` of `localhost:3001` (key `arcgis-credentials`) | tokens expire per portal policy; anyone with access to your browser profile can read them. Use _Sign out_ on shared machines |
 | Map layers / sketches per map | `localStorage` of `localhost:3001` (`arcgis-embed:<id>`) | not included in exported `.excalidraw` files |
-| LLM config + key | `localStorage` of `localhost:3000` (`app-llm-config`) | stored in clear text in the browser profile |
+| AI connections: addresses, models, API keys | `localStorage` of `localhost:3000` (`app-llm-profiles`; the old `app-llm-config` is kept only as a migration source) | **stored in clear text** in the browser profile, one entry per connection, so switching connections never erases a key; anyone with access to your browser profile can read them. Clear a key with the field in _AI assistant settings_ |
+| CLI bridge token (browser side) | the CLI connection in `app-llm-profiles` | only useful together with the bridge on your computer, from an allowed page |
+| CLI bridge token and log (bridge side) | `~/.trazo/` | readable only by you |
+| Preferences | `localStorage` (`trazo-agent-auto-apply`, `trazo-mic-device`, animation settings) | no secrets |
+| MCP diagrams | the folder you mounted | plain `.excalidraw` files, plus `.bak` of edited ones |
 
 Never put tokens or API keys in a map link (`?token=`): links are stored in the diagram file.
 
-## 5. Supply chain
+## 6. Supply chain
 
-- Base images in the upstream `Dockerfile` are pinned by digest. The viewer uses `nginx:stable-alpine-slim` (unpinned); pin it before production use.
+- Base images are pinned by digest: the app build and the setup service use the same `node:24` digest, the MCP runtime image uses a pinned `node:24-slim` digest. The viewer uses `nginx:stable-alpine-slim` (unpinned); pin it before production use.
+- The MCP server is built from this repository with `yarn --frozen-lockfile` and bundled into one file (`esbuild`), so the running container has no `node_modules` and no package manager.
 - Vendored libraries live in `public/vendor/` (no yarn.lock change): hashes in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 - Calcite glyphs are fetched from jsDelivr at a pinned version (`tools/fetch-calcite.mjs`); community libraries from `raw.githubusercontent.com/excalidraw/excalidraw-libraries` (`tools/fetch-community-libraries.mjs`). Both downloads happen on **your machine at build time**, never at runtime. Review `libraries/community.json` before adding a source: library files are plain JSON of drawing elements (no code), but their drawings are third-party content.
 - The ArcGIS SDK is loaded from `js.arcgis.com` at runtime (version pinned in `viewer/index.html`). Self-hosting it is on the roadmap.
 - Run `yarn audit` before releases (Excalidraw's dependency tree is large). Known: the dormant, unreachable collaboration code keeps `firebase` (→ `protobufjs`, `websocket-driver`) in the tree, and the unused `examples/` workspace brings `next`; see [MAINTAINING.md](MAINTAINING.md) §3 for why these do not affect the deployed static app.
+- The new code adds **no runtime dependency**: the MCP protocol is implemented in a few hundred lines, the bridge uses only Node's standard library, and `js-yaml` was already in the lockfile.
 
-## 6. Verify it yourself
+## 7. Verify it yourself
 
 ```bash
 npm i --no-save puppeteer-core
@@ -72,6 +138,25 @@ CHROME_PATH="/path/to/chrome" node tools/audit/network-audit.cjs
 
 The script opens the app, exercises menu / library / map / animation / text-to-diagram and prints every external host contacted, CSP violations and service workers. **Re-run it after every upstream merge**: new upstream features may add network calls ([UPDATING.md](UPDATING.md)).
 
-## 7. Reporting a vulnerability
+The MCP container, as a client runs it (replace the folder):
+
+```bash
+docker run -i --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  -v /path/to/diagrams:/work trazo-mcp:local
+# in another terminal, while it runs:
+docker inspect --format '{{.HostConfig.NetworkMode}} {{.HostConfig.ReadonlyRootfs}} {{.HostConfig.CapDrop}}' $(docker ps -q --filter ancestor=trazo-mcp:local)
+# expected: none true [ALL]
+```
+
+The bridge: `node tools/cli-bridge.mjs --status` shows whether it is installed and running; with it running, `curl -i http://127.0.0.1:11500/hello` (no `Origin` header) must answer `403`, and a request with the right `Origin` but no token to anything but `/hello` must answer `401`. The automated tests for all of this are `excalidraw-app/ai/cliBridge.test.ts`, `excalidraw-app/mcp/server.test.ts` and `excalidraw-app/agent/agent.test.ts`.
+
+## 8. Known limits (so nobody is surprised)
+
+- Trazo is a local tool, not a multi-user service. If you put it on a server for other people, you need to add authentication and TLS in front of it yourself; nothing here is designed for that.
+- A browser extension or another program running as you can read your browser's `localStorage`, which holds your diagrams and API keys in clear text.
+- The CLI bridge and the MCP server depend on programs and terms that are not ours (Claude Code, Codex, Docker, your AI client). We pin and isolate what we ship; we cannot vouch for those.
+- No independent security audit has been done. The checks above are the ones the maintainers run.
+
+## 9. Reporting a vulnerability
 
 Please do **not** open a public issue. Use GitHub's private vulnerability reporting ("Security" tab → "Report a vulnerability") once the repository is public, or email the maintainer address in the repository profile.

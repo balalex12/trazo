@@ -63,7 +63,10 @@ export const parseOpenApi = (text: string): Graph => {
   try {
     doc = load(text);
   } catch (e) {
-    throw new Error(`That is not valid YAML or JSON: ${(e as Error).message}`);
+    // first line only: the rest of a YAML error repeats the text around the problem
+    throw new Error(
+      `That is not valid YAML or JSON: ${(e as Error).message.split("\n")[0]}`,
+    );
   }
   if (!isDict(doc) || !(doc.openapi || doc.swagger) || !isDict(doc.paths)) {
     throw new Error(

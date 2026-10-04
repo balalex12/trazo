@@ -33,6 +33,12 @@ export const FORMAT_NAMES: Record<InfraFormat, string> = {
   n8n: "n8n workflow",
 };
 
+/**
+ * The most text an importer reads (about 2 MB). Real files are far smaller; the limit keeps a huge or hostile paste
+ * (or an AI client sending one through the MCP server) from tying the browser or the container up.
+ */
+export const MAX_INPUT_CHARS = 2_000_000;
+
 export const SUPPORTED =
   "docker-compose.yml, Kubernetes manifests, Terraform (.tf or JSON), OpenAPI, SQL (CREATE TABLE), a dbt manifest.json or an n8n workflow";
 
@@ -146,6 +152,13 @@ export const importInfra = (
 ): Imported => {
   if (!text.trim()) {
     throw new Error(`Paste something to draw: ${SUPPORTED}.`);
+  }
+  if (text.length > MAX_INPUT_CHARS) {
+    throw new Error(
+      `That is too big to draw (over ${
+        MAX_INPUT_CHARS / 1_000_000
+      } MB of text). Paste a part of it.`,
+    );
   }
   const format = detectFormat(text);
   if (!format) {

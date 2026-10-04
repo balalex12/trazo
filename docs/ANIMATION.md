@@ -20,7 +20,7 @@ Each slide (except the first) has a selector for **how it is entered** (stored i
 | **Build** | Like Smart, but the **new elements appear one after another** (in the order they are in the scene) and **arrows and lines draw themselves**. A group, or a text with its container, appears as one piece. The transition lasts as long as it has things to show (about 0.45 s per piece, at least the default transition time, at most 10 s). |
 | **Pan** | The **camera travels over the canvas** from the previous slide to this one, with a zoom out on long trips. Nothing morphs: elements stay where they are on the canvas and only the view moves. Good for slides placed far apart. |
 
-![A three slide animation: Smart, then Build (new boxes appear one by one and arrows draw themselves), then Pan (the camera travels to the last slide), with captions and a closing title](media/v3-hero.gif)
+![A three slide animation: Smart, then Build (new boxes appear one by one and arrows draw themselves), then Pan (the camera travels to the last slide), with captions and a closing title](media/v4-hero.gif)
 
 Elements that are **identical in both slides** (same type, place inside the frame, colours, text…) never move or blink, even if they were copy/pasted and have no `animKey`. Only what actually changed is animated.
 

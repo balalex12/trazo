@@ -101,7 +101,7 @@ const GAP_X = 150;
 const GAP_Y = 44;
 
 /** a box big enough for its text: wider for long lines, taller for many lines */
-const sizeOf = (lines: string[]) => {
+export const sizeOf = (lines: string[]) => {
   const longest = Math.max(0, ...lines.map((l) => l.length));
   return {
     width: Math.min(380, Math.max(W, Math.round(longest * 8.6 + 34))),
@@ -283,6 +283,36 @@ export const edgeEnds = (
   return [edge(a, dx, dy), edge(b, -dx, -dy)];
 };
 
+/**
+ * Where the line of an edge starts. A dashed line to a second box under the same owner would run through the first
+ * one, so it is chained from the box just above it.
+ */
+export const drawFrom = (layout: Layout, e: LayoutEdge): string => {
+  const byId = new Map(layout.nodes.map((n) => [n.id, n]));
+  const a = byId.get(e.from);
+  const b = byId.get(e.to);
+  if (
+    !a ||
+    !b ||
+    e.kind !== "attach" ||
+    b.kind !== "attached" ||
+    b.x + b.width / 2 !== a.x + a.width / 2
+  ) {
+    return e.from;
+  }
+  const above = layout.nodes
+    .filter(
+      (n) =>
+        n.kind === "attached" &&
+        n.x + n.width / 2 === b.x + b.width / 2 &&
+        n.y < b.y &&
+        n.y > a.y &&
+        n.id !== b.id,
+    )
+    .sort((p, q) => q.y - p.y)[0];
+  return above ? above.id : e.from;
+};
+
 /** Plain element skeletons for `convertToExcalidrawElements`; `offset` moves the whole diagram. */
 export const layoutToSkeleton = (
   layout: Layout,
@@ -334,32 +364,8 @@ export const layoutToSkeleton = (
     };
   });
 
-  // a dashed line to a second box under the same owner would run through the first one: chain it from the box just above
-  const lineFrom = (e: LayoutEdge): string => {
-    const a = byId.get(e.from)!;
-    const b = byId.get(e.to)!;
-    if (
-      e.kind !== "attach" ||
-      b.kind !== "attached" ||
-      b.x + b.width / 2 !== a.x + a.width / 2
-    ) {
-      return e.from;
-    }
-    const above = layout.nodes
-      .filter(
-        (n) =>
-          n.kind === "attached" &&
-          n.x + n.width / 2 === b.x + b.width / 2 &&
-          n.y < b.y &&
-          n.y > a.y &&
-          n.id !== b.id,
-      )
-      .sort((p, q) => q.y - p.y)[0];
-    return above ? above.id : e.from;
-  };
-
   const arrows: Skeleton[] = layout.edges.map((e) => {
-    const from = lineFrom(e);
+    const from = drawFrom(layout, e);
     const [[sx, sy], [ex, ey]] = edgeEnds(byId.get(from)!, byId.get(e.to)!);
     return {
       type: "arrow",

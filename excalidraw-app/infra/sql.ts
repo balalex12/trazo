@@ -6,6 +6,8 @@ import { MAX_NODES, clip } from "./graph";
 import type { Graph, GraphEdge, GraphNode } from "./graph";
 
 const MAX_COLUMNS = 8;
+/** a single column or constraint definition is cut to this many characters before it is read */
+const MAX_ITEM = 4000;
 
 /** the text without -- line comments, # line comments (MySQL) and block comments; strings are kept */
 export const stripSqlComments = (s: string): string => {
@@ -98,7 +100,7 @@ const parseTable = (name: string, body: string): Table => {
   const table: Table = { name, columns: [], fks: [] };
   const pkCols: string[] = [];
   for (const item of splitTop(body, ",")) {
-    const text = item.replace(/\s+/g, " ");
+    const text = item.slice(0, MAX_ITEM).replace(/\s+/g, " ");
     if (CONSTRAINT_START.test(text)) {
       const pk = new RegExp(
         `primary key\\s*(?:clustered\\s*)?\\(([^)]*)\\)`,

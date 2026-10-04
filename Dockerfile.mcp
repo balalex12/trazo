@@ -1,0 +1,31 @@
+# Trazo MCP server (see docs/MCP.md): lets Claude Desktop, Claude Code and other MCP clients draw and edit diagrams as
+# .excalidraw files in one folder. Built locally from this repository, like the app; nothing is pulled from anywhere
+# else but the pinned Node images and the packages in yarn.lock.
+#
+#   docker compose --profile mcp build mcp
+#
+# It runs with no network, a read-only filesystem and no privileges (see the "mcp" service in docker-compose.yml).
+FROM --platform=${BUILDPLATFORM} node:24@sha256:8530f76a96d88820d288761f022e318970dda93d01536919fbc16076b7983e63 AS build
+
+WORKDIR /opt/node_app
+
+COPY . .
+
+RUN --mount=type=cache,target=/root/.cache/yarn \
+    yarn --frozen-lockfile --network-timeout 600000
+
+# one self-contained file: the importers, the editor-free diagram code and js-yaml, no node_modules at runtime
+RUN node_modules/.bin/esbuild excalidraw-app/mcp/main.ts \
+    --bundle --platform=node --format=esm --target=node20 --legal-comments=none \
+    --outfile=/out/trazo-mcp.mjs
+
+FROM node:24-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
+
+COPY --from=build /out/trazo-mcp.mjs /app/trazo-mcp.mjs
+
+# the folder the diagrams live in; mounted by the user, owned by the unprivileged "node" user
+ENV TRAZO_DIR=/work
+WORKDIR /work
+USER node
+
+ENTRYPOINT ["node", "/app/trazo-mcp.mjs"]

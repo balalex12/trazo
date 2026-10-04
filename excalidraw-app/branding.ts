@@ -18,4 +18,6 @@ export const EVENTS = {
   openAbout: "brand:open-about",
   openAISettings: "brand:open-ai-settings",
   openInfraImport: "brand:open-infra-import",
+  openAgent: "brand:open-agent",
+  openMcp: "brand:open-mcp",
 } as const;

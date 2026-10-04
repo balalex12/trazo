@@ -2,7 +2,7 @@
 
 **⏺ Record** (next to the Animation button) records the canvas, or the whole app, together with your microphone, so you can draw and explain at the same time. The video is made in your browser and **never leaves it**.
 
-![The recording bar with the time, the microphone level, Pause and Stop](media/v3-recorder-bar.png)
+![The recording bar with the time, the microphone level, Pause and Stop](media/v4-recorder-bar.png)
 
 ## How to use it
 

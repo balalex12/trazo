@@ -27,7 +27,12 @@ Two containers, both plain nginx serving static files (plus one optional pass-th
 | --- | --- | --- |
 | `packages/`, `excalidraw-app/` | the editor and the web app | upstream (patched, see below) |
 | `excalidraw-app/animation/` | slides → smart-animate → MP4/GIF | **new** |
-| `excalidraw-app/ai/`, `components/AI.tsx` | opt-in LLM connector | **new** |
+| `excalidraw-app/ai/`, `components/AI.tsx` | opt-in LLM connector, one saved setting per connection | **new** |
+| `excalidraw-app/infra/` | importers (compose, Kubernetes, Terraform, OpenAPI, SQL, dbt, n8n) to a graph, layout and shapes | **new** |
+| `excalidraw-app/agent/` | the diagram as a graph, the edit operations, the model instructions; no editor or DOM, shared by the panel and the MCP server | **new** |
+| `excalidraw-app/components/AgentPanel.tsx`, `McpDialog.tsx` | the ✦ Agent chat; the "Connect Claude (MCP)" guide | **new** |
+| `excalidraw-app/mcp/`, `Dockerfile.mcp` | MCP server over stdio, bundled into one file and run in a no-network container | **new** |
+| `tools/cli-bridge.mjs` | experimental local bridge to the user's own Claude Code / Codex CLI | **new** |
 | `excalidraw-app/branding.ts`, `components/BrandDialogs.tsx` | identity, About, AI settings | **new** |
 | `viewer/` | ArcGIS Maps SDK viewer (standalone page, served on :3001) | **new** |
 | `tools/` | icon conversion, library builder, Calcite fetch, network audit | **new** |
