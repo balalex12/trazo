@@ -1,4 +1,4 @@
-import { detectFormat, importInfra } from "./detect";
+import { MAX_INPUT_CHARS, detectFormat, importInfra } from "./detect";
 
 const COMPOSE = "services:\n  web:\n    image: nginx\n    ports: ['80:80']\n";
 const K8S =
@@ -123,5 +123,15 @@ describe("importInfra", () => {
         .layout.nodes.map((n) => n.id)
         .sort(),
     ).toEqual(["tf:aws_instance.i", "tf:aws_vpc.v"]);
+  });
+});
+
+describe("input limits", () => {
+  it("refuses text over the limit with a clear message, before reading it", () => {
+    const huge = `services:\n${" ".repeat(MAX_INPUT_CHARS)}`;
+    expect(() => importInfra(huge)).toThrow(/too big to draw/);
+    expect(() =>
+      importInfra(`services:\n  a:\n    image: x\n${" ".repeat(1000)}`),
+    ).not.toThrow();
   });
 });

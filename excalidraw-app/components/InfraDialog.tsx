@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  CaptureUpdateAction,
   convertToExcalidrawElements,
   useExcalidrawAPI,
 } from "@excalidraw/excalidraw";
@@ -509,6 +510,7 @@ export const InfraDialog = () => {
       );
       api.updateScene({
         elements: [...api.getSceneElementsIncludingDeleted(), ...created],
+        captureUpdate: CaptureUpdateAction.IMMEDIATELY, // so the import can be undone
       });
       const [x1, y1, x2, y2] = layout.bounds;
       api.setViewport({

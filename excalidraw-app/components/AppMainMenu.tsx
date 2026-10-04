@@ -31,6 +31,9 @@ export const AppMainMenu: React.FC<{
       <MainMenu.Item onSelect={() => openDialog(EVENTS.openInfraImport)}>
         Import to diagram…
       </MainMenu.Item>
+      <MainMenu.Item onSelect={() => openDialog(EVENTS.openMcp)}>
+        Connect Claude (MCP)…
+      </MainMenu.Item>
       <MainMenu.Item onSelect={() => openDialog(EVENTS.openAISettings)}>
         AI assistant settings…
       </MainMenu.Item>

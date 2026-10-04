@@ -45,3 +45,36 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+
+  # Optional MCP server (docs/MCP.md): not started by `docker compose up`. An MCP client (Claude Desktop, Claude Code)
+  # starts it on demand over stdin/stdout. No network at all; it only reads and writes ./diagrams.
+  #   docker compose --profile mcp build mcp
+  mcp:
+    profiles: ["mcp"]
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    image: trazo-mcp:local
+    stdin_open: true
+    network_mode: none
+    volumes:
+      - ./diagrams:/work
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+
+  # One-time setup for people who only have Docker (no Node.js): downloads the icon libraries and builds
+  # public/arcgis.excalidrawlib. It needs the network once, only for this step, and only writes inside this folder.
+  #   docker compose --profile setup run --rm setup
+  setup:
+    profiles: ["setup"]
+    image: node:24@sha256:8530f76a96d88820d288761f022e318970dda93d01536919fbc16076b7983e63
+    working_dir: /repo
+    user: node
+    volumes:
+      - .:/repo
+    command: ["node", "tools/build-library.js"]
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true

@@ -141,3 +141,17 @@ describe("parseOpenApi", () => {
     );
   });
 });
+
+describe("errors do not repeat the file", () => {
+  it("shows only the first line of a YAML error", () => {
+    let message = "";
+    try {
+      parseOpenApi("openapi: 3.0.0\npaths: [unclosed\nsecret_token: abc123");
+    } catch (e) {
+      message = (e as Error).message;
+    }
+    expect(message).toContain("not valid YAML");
+    expect(message).not.toContain("\n");
+    expect(message).not.toContain("secret_token");
+  });
+});

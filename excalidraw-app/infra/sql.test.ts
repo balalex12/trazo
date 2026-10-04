@@ -120,3 +120,14 @@ describe("helpers", () => {
     expect(cleanName("`x`")).toBe("x");
   });
 });
+
+describe("hostile input", () => {
+  it("cuts a monstrous column definition instead of grinding on it", () => {
+    const start = Date.now();
+    const g = parseSql(
+      `CREATE TABLE t (a int, b ${"x ".repeat(200_000)}, c int);`,
+    );
+    expect(g.nodes[0].lines.length).toBeGreaterThan(1);
+    expect(Date.now() - start).toBeLessThan(2000);
+  });
+});
