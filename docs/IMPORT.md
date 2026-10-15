@@ -21,6 +21,8 @@ It is **deterministic and offline**: the text is parsed in your browser and laid
 
 Layout is left to right. For infrastructure: the Internet first, then whatever nobody depends on (proxies, ingresses, apps), and on the right what they depend on (databases, caches, queues). For data flows (dbt, n8n): upstream on the left, downstream on the right, with each column ordered to keep arrows from crossing. Dashed boxes (volumes, config, claims) hang under the first thing that uses them. Boxes grow with their text.
 
+Arrows are **elbow arrows** (only horizontal and vertical segments). Each one leaves the side of its box that faces the target and goes around every other box instead of through it; arrows that share a side of a box are spread along it, and when several could use the same lane they avoid each other where there is room. The routing is plain code (`excalidraw-app/infra/route.ts`, an A\* search over the lines just outside the boxes), still offline and deterministic. Arrows stay bound to their boxes.
+
 ## Docker Compose
 
 | Compose | Diagram |
@@ -109,7 +111,7 @@ The role is guessed from the image and the name (compose, Kubernetes), from the 
 ## Limits
 
 - At most 150 boxes per diagram; paste fewer files (for example one namespace, one module, a `dbt --select` subset) for bigger systems.
-- The layout is a simple column layout. Arrows are straight, so in dense diagrams one can pass over another box (they stay bound to their shapes: drag a box and the arrow follows). Tidying that up, for example with elbow arrows, is future work.
+- The layout is a simple column layout. Arrows are routed around the boxes when the diagram is created. If you drag a box afterwards, its arrows follow but are not re-routed (they are bound to their shapes, so they keep their corners). Two arrows can still cross each other, and an edge label sits on its line, so on a crowded line it can cover a neighbouring arrow.
 - Detection is by the text itself: a file that mixes formats is read as the first one it recognizes.
 - Several files chosen at once are joined into one text: that works for YAML, `.tf` and SQL, but JSON documents have to be imported one at a time.
 

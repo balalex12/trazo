@@ -206,7 +206,8 @@ describe("layoutToSkeleton", () => {
       const b = layout.nodes.find((n) => n.id === e.to)!;
       const pts = arrow.points as number[][];
       const start = [(arrow.x as number) - 100, (arrow.y as number) - 200];
-      const end = [start[0] + pts[1][0], start[1] + pts[1][1]];
+      const last = pts[pts.length - 1];
+      const end = [start[0] + last[0], start[1] + last[1]];
       // the end points must be just outside the boxes (within the 6px gap), not at the box centers or far away
       const outside = (n: typeof a, p: number[]) =>
         p[0] >= n.x - 7 &&
@@ -215,22 +216,27 @@ describe("layoutToSkeleton", () => {
         p[1] <= n.y + n.height + 7;
       expect(outside(a, start)).toBe(true);
       expect(outside(b, end)).toBe(true);
-      expect(near(Math.abs(pts[1][0]), arrow.width as number, 0.001)).toBe(
-        true,
-      );
-      expect(near(Math.abs(pts[1][1]), arrow.height as number, 0.001)).toBe(
-        true,
-      );
+      const xs = pts.map((p) => p[0]);
+      const ys = pts.map((p) => p[1]);
+      expect(
+        near(Math.max(...xs) - Math.min(...xs), arrow.width as number, 0.001),
+      ).toBe(true);
+      expect(
+        near(Math.max(...ys) - Math.min(...ys), arrow.height as number, 0.001),
+      ).toBe(true);
     }
   });
 
-  it("gives arrows different directions instead of one horizontal line", () => {
-    const dirs = new Set(
-      sk
-        .filter((s) => s.type === "arrow")
-        .map((s) => Math.sign((s.points as number[][])[1][1])),
-    );
-    expect(dirs.size).toBeGreaterThan(1);
+  it("draws elbow arrows: only horizontal and vertical segments", () => {
+    for (const a of sk.filter((s) => s.type === "arrow")) {
+      const pts = a.points as number[][];
+      for (let i = 1; i < pts.length; i++) {
+        const straight =
+          Math.abs(pts[i][0] - pts[i - 1][0]) < 0.01 ||
+          Math.abs(pts[i][1] - pts[i - 1][1]) < 0.01;
+        expect(straight).toBe(true);
+      }
+    }
   });
 
   it("applies the offset", () => {
