@@ -167,6 +167,19 @@ container("Logical Grouping", "dotted", "#595959", glyph("group-layers"));
   ["Maps SDK for JavaScript", "code"], ["Experience Builder", "apps"],
 ].forEach(([n, f]) => calcite(CAT.services, n, f, BLUE));
 
+// 4b. Trazo's own icon packs (tools/own-icons/icons.cjs): original neutral glyphs, MIT like the rest of the repo.
+// Ids start with "lib:" so the app replaces them on reload and the panel groups them by section, like community items.
+const ownPacks = require("./own-icons/icons.cjs");
+let ownCount = 0;
+for (const pack of ownPacks.sections) {
+  for (const ic of pack.icons) {
+    iconItem(pack.title, ic.name, ic.svg, 1, 64, pack.accent);
+    items[items.length - 1].id = `lib:trazo-${pack.key}:${slug(ic.name)}`;
+    ownCount++;
+  }
+}
+console.log(`Own icon packs: ${ownCount} icons in ${ownPacks.sections.length} sections`);
+
 // Content fingerprint: MUST stay identical to excalidraw-app/libraryFingerprint.ts
 function fingerprint(elements) {
   const str = JSON.stringify(elements.map((e) => [e.type, Math.round(e.width), Math.round(e.height), e.text || "", (e.points || []).length]));
