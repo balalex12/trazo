@@ -11,6 +11,7 @@ import {
 } from "../recorder/recorder";
 
 import { MicSelect, useMics } from "./MicSelect";
+import { useMobileBarOffset } from "./useMobileBarOffset";
 
 import type {
   CaptureMode,
@@ -37,10 +38,11 @@ const ghost: React.CSSProperties = {
 };
 const card: React.CSSProperties = {
   position: "fixed",
-  bottom: 64,
+  bottom: "calc(64px + var(--trazo-mobile-bar-offset, 0px))",
   left: "50%",
   transform: "translateX(-50%)",
-  zIndex: 21,
+  // above Excalidraw's own mobile bottom toolbar (--zIndex-ui-bottom: 60), or it hides behind it
+  zIndex: 61,
   width: 360,
   maxWidth: "94vw",
   boxSizing: "border-box",
@@ -135,6 +137,7 @@ const PointerRing = () => {
 };
 
 export const RecorderPanel = () => {
+  useMobileBarOffset();
   const [phase, setPhase] = useState<Phase>("idle");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<CaptureMode>("canvas");
@@ -295,9 +298,10 @@ export const RecorderPanel = () => {
           style={{
             ...btn,
             position: "fixed",
-            bottom: 16,
+            bottom: "calc(16px + var(--trazo-mobile-bar-offset, 0px))",
             left: "calc(50% + 62px)",
-            zIndex: 20,
+            // above Excalidraw's own mobile bottom toolbar (--zIndex-ui-bottom: 60), or it hides behind it
+            zIndex: 61,
             boxShadow: "0 2px 8px #0003",
           }}
           title="Record the canvas with your voice (nothing is uploaded)"
@@ -456,8 +460,8 @@ export const RecorderPanel = () => {
         <div
           style={{
             position: "fixed",
-            // bottom center: the top center is taken by the editor toolbar
-            bottom: 64,
+            // bottom center, above Excalidraw's own mobile toolbar if one is showing
+            bottom: "calc(64px + var(--trazo-mobile-bar-offset, 0px))",
             left: "50%",
             transform: "translateX(-50%)",
             zIndex: 1200,
