@@ -74,7 +74,7 @@ describe("buildPlayerHtml", () => {
 
   it("is one self-contained file: the runtime, the data and the fonts are inside", () => {
     expect(html).toContain("window.__ran = 1");
-    expect(html).toContain('id="trazo-payload"');
+    expect(html).toContain("window.__TRAZO_PAYLOAD__=");
     expect(html).toContain('font-family:"Test"');
     // nothing is fetched: no external script, stylesheet, image or font
     expect(html).not.toMatch(/(src|href)="https?:/);
@@ -85,7 +85,9 @@ describe("buildPlayerHtml", () => {
     expect(html).toContain(
       "<title>Tom &amp; &quot;Jerry&quot; &lt;demo&gt;</title>",
     );
-    const data = html.split('id="trazo-payload">')[1].split("</script>")[0];
+    const data = html
+      .split("window.__TRAZO_PAYLOAD__=")[1]
+      .split(";</script>")[0];
     expect(data).not.toContain("</script");
     const payload = JSON.parse(data);
     expect(payload.slides[0].frame.customData.caption).toBe(
@@ -98,7 +100,7 @@ describe("buildPlayerHtml", () => {
   it("carries only the image files the slides use", () => {
     expect(Object.keys(usedFiles(slides, files))).toEqual(["file-1"]);
     const payload = JSON.parse(
-      html.split('id="trazo-payload">')[1].split("</script>")[0],
+      html.split("window.__TRAZO_PAYLOAD__=")[1].split(";</script>")[0],
     );
     expect(Object.keys(payload.files)).toEqual(["file-1"]);
   });

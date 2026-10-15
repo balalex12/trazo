@@ -73,7 +73,7 @@ describe("prepareComposition", () => {
     expect(out).toContain('style="width:1920px;height:1080px"');
     expect(out).toContain(":root{--w:1920px;--h:1080px}");
     const payload = JSON.parse(
-      out.split('id="trazo-payload">')[1].split("</script>")[0],
+      out.split("window.__TRAZO_PAYLOAD__=")[1].split(";</script>")[0],
     );
     expect([payload.width, payload.height]).toEqual([1920, 1080]);
     expect(out).not.toContain("1280");

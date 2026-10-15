@@ -196,9 +196,7 @@ export const buildPlayerHtml = (input: PlayerInput): string => {
   <button id="trazo-full" aria-label="Full screen">⛶</button>
 </div>
 ${audio}
-<script type="application/json" id="trazo-payload">${scriptJson(
-    payload,
-  )}</script>
+<script>window.__TRAZO_PAYLOAD__=${scriptJson(payload)};</script>
 <script>${input.runtime.replace(/<\/script/gi, "<\\/script")}</script>
 </body>
 </html>

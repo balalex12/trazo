@@ -36,6 +36,24 @@ const USAGE = readFileSync(new URL(import.meta.url), "utf8")
  * plays itself) written out as a real file, because HyperFrames mixes audio from files. `size` re-sizes the stage.
  * Pure: returns the new html and the files to write next to it.
  */
+const PAYLOAD_START = "window.__TRAZO_PAYLOAD__=";
+const PAYLOAD_END = ";</script>";
+
+/** the player's data is a JSON literal in the file: set the size it draws at */
+const setPayloadSize = (html, w, h) => {
+  const from = html.indexOf(PAYLOAD_START);
+  const to = from < 0 ? -1 : html.indexOf(PAYLOAD_END, from);
+  if (to < 0) return html;
+  const payload = JSON.parse(html.slice(from + PAYLOAD_START.length, to));
+  payload.width = w;
+  payload.height = h;
+  return (
+    html.slice(0, from + PAYLOAD_START.length) +
+    JSON.stringify(payload).replace(/</g, "\\u003c") +
+    html.slice(to)
+  );
+};
+
 export const prepareComposition = (html, { size } = {}) => {
   const files = {};
   let out = html.replace(
@@ -51,12 +69,8 @@ export const prepareComposition = (html, { size } = {}) => {
       .replace(/data-width="\d+" data-height="\d+"/, `data-width="${w}" data-height="${h}"`)
       .replace(/(id="trazo-root"[^>]*style=")width:\d+px;height:\d+px/, `$1width:${w}px;height:${h}px`)
       .replace(/:root\{--w:\d+px;--h:\d+px\}/, `:root{--w:${w}px;--h:${h}px}`)
-      .replace(/(<script type="application\/json" id="trazo-payload">)([^]*?)(<\/script>)/, (_m, a, json, c) => {
-        const payload = JSON.parse(json);
-        payload.width = w;
-        payload.height = h;
-        return `${a}${JSON.stringify(payload).replace(/</g, "\\u003c")}${c}`;
-      });
+      ;
+    out = setPayloadSize(out, w, h);
   }
   return { html: out, files };
 };

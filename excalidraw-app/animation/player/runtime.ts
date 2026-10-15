@@ -52,9 +52,8 @@ const fmt = (ms: number) => {
 };
 
 const start = () => {
-  const payload: PlayerPayload = JSON.parse(
-    $("trazo-payload").textContent || "{}",
-  );
+  // the data is a JavaScript literal in the file (window.__TRAZO_PAYLOAD__), not text read back from the page
+  const payload: PlayerPayload = (window as any).__TRAZO_PAYLOAD__;
   const { slides, settings, files, width, height, background } = payload;
   const total = Math.max(1, totalDurationMs(slides, settings));
   const root = $("trazo-root");
