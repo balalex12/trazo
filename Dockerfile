@@ -11,6 +11,14 @@ RUN --mount=type=cache,target=/root/.cache/yarn \
 
 ARG NODE_ENV=production
 
+# Optional: move the ArcGIS viewer off its default origin (same host, port 3001) — a different
+# port, a reverse proxy, a tunnel with its own hostname. Unset, nothing changes. See
+# packages/element/src/embeddable.ts and docs/VIEWER.md. Remember to also update
+# deploy/nginx/viewer.conf (frame-ancestors) and, if you change the viewer's own listen port,
+# the "viewer" service in docker-compose.yml.
+ARG ARCGIS_VIEWER_ORIGIN=
+ENV VITE_APP_ARCGIS_VIEWER_ORIGIN=${ARCGIS_VIEWER_ORIGIN}
+
 RUN npm_config_target_arch=${TARGETARCH} yarn build:app:docker
 
 # Strict CSP: allow exactly the inline scripts of the built index.html (no 'unsafe-inline' for scripts)

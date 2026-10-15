@@ -156,6 +156,7 @@ import {
   createSrcDoc,
   embeddableURLValidator,
   getEmbedLink,
+  isArcGISViewerOrigin,
   getInitializedImageElements,
   normalizeSVG,
   updateImageCache as _updateImageCache,
@@ -1931,14 +1932,17 @@ class App extends React.Component<AppProps, AppState> {
           } else {
             src = getEmbedLink(toValidURL(el.link || ""));
             // ArcGIS viewer embeds: give each element its own saved state (layers, drawings)
-            if (
-              src &&
-              "link" in src &&
-              /^https?:\/\/[^/]+:3001\//.test(src.link)
-            ) {
-              const viewerUrl = new URL(src.link);
-              viewerUrl.searchParams.set("eid", el.id);
-              src = { ...src, link: viewerUrl.toString() };
+            if (src && "link" in src) {
+              let viewerUrl: URL | null = null;
+              try {
+                viewerUrl = new URL(src.link);
+              } catch {
+                // not an absolute URL (e.g. a srcdoc-based embed): not a viewer link either
+              }
+              if (viewerUrl && isArcGISViewerOrigin(viewerUrl.origin)) {
+                viewerUrl.searchParams.set("eid", el.id);
+                src = { ...src, link: viewerUrl.toString() };
+              }
             }
           }
 

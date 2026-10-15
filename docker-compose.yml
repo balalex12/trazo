@@ -10,6 +10,10 @@ services:
       context: .
       args:
         - NODE_ENV=production
+        # Optional: move the ArcGIS viewer off its default origin (same host, port 3001).
+        # Uncomment and set if you changed the "viewer" service's port below, or put the
+        # viewer behind its own domain/tunnel. See the Dockerfile and docs/VIEWER.md.
+        # - ARCGIS_VIEWER_ORIGIN=http://localhost:3400
     image: trazo-app:local
     container_name: trazo-app
     ports:
@@ -30,6 +34,8 @@ services:
   viewer:
     image: nginx:stable-alpine-slim
     container_name: trazo-viewer
+    # If you change the host port here, also set ARCGIS_VIEWER_ORIGIN on the app build above and
+    # update frame-ancestors in deploy/nginx/viewer.conf to match.
     ports:
       - "127.0.0.1:3001:80"
     volumes:
