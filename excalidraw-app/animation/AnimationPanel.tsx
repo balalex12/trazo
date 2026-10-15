@@ -10,6 +10,7 @@ import {
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 import { MicSelect, useMics } from "../components/MicSelect";
+import { useMobileBarOffset } from "../components/useMobileBarOffset";
 
 import { downloadBlob, exportAnimation } from "./exporter";
 import {
@@ -494,6 +495,7 @@ export const AnimationPanel = ({
 }: {
   excalidrawAPI: ExcalidrawImperativeAPI;
 }) => {
+  useMobileBarOffset();
   const [open, setOpen] = useState(false);
   const [slides, setSlides] = useState<Slide[]>([]);
   const [settings, setSettings] = useState<TimelineSettings>(loadSettings);
@@ -858,10 +860,11 @@ export const AnimationPanel = ({
 
   const card: React.CSSProperties = {
     position: "fixed",
-    bottom: 64,
+    bottom: "calc(64px + var(--trazo-mobile-bar-offset, 0px))",
     left: "50%",
     transform: "translateX(-50%)",
-    zIndex: 20,
+    // above Excalidraw's own mobile bottom toolbar (--zIndex-ui-bottom: 60), or it hides behind it
+    zIndex: 61,
     width: 420,
     background: "var(--island-bg-color)",
     border: "1px solid var(--default-border-color, #8884)",
@@ -872,7 +875,7 @@ export const AnimationPanel = ({
     color: "var(--text-primary-color)",
   };
   const btn: React.CSSProperties = {
-    padding: "6px 10px",
+    padding: "6px 12px",
     border: "1px solid var(--color-primary)",
     background: "var(--color-primary)",
     color: "var(--color-icon-white, #fff)",
@@ -901,10 +904,11 @@ export const AnimationPanel = ({
         style={{
           ...btn,
           position: "fixed",
-          bottom: 16,
+          bottom: "calc(16px + var(--trazo-mobile-bar-offset, 0px))",
           left: "50%",
           transform: "translateX(-50%)",
-          zIndex: 20,
+          // above Excalidraw's own mobile bottom toolbar (--zIndex-ui-bottom: 60), or it hides behind it
+          zIndex: 61,
           boxShadow: "0 2px 8px #0003",
         }}
         title="Slides, animation preview, presentation mode and MP4/GIF export"

@@ -9,6 +9,8 @@ import { AGENT_SYSTEM, buildUserTurn, parseAgentReply } from "../agent/prompt";
 import { askModel, describeConnection } from "../ai/llm";
 import { EVENTS } from "../branding";
 
+import { useMobileBarOffset } from "./useMobileBarOffset";
+
 import type { El } from "../agent/elements";
 
 type Msg = {
@@ -57,6 +59,7 @@ export const AgentPanel = ({
 }: {
   excalidrawAPI: ExcalidrawImperativeAPI;
 }) => {
+  useMobileBarOffset();
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -234,9 +237,10 @@ export const AgentPanel = ({
         style={{
           ...btn,
           position: "fixed",
-          bottom: 16,
+          bottom: "calc(16px + var(--trazo-mobile-bar-offset, 0px))",
           right: "calc(50% + 62px)",
-          zIndex: 20,
+          // above Excalidraw's own mobile bottom toolbar (--zIndex-ui-bottom: 60), or it hides behind it
+          zIndex: 61,
           boxShadow: "0 2px 8px #0003",
         }}
         title="Ask an AI about this diagram or have it edit the diagram (your own model)"
@@ -252,9 +256,10 @@ export const AgentPanel = ({
         position: "fixed",
         top: 64,
         right: 16,
-        bottom: 72,
+        bottom: "calc(72px + var(--trazo-mobile-bar-offset, 0px))",
         width: 360,
-        zIndex: 20,
+        // above Excalidraw's own mobile bottom toolbar (--zIndex-ui-bottom: 60), or it hides behind it
+        zIndex: 61,
         display: "flex",
         flexDirection: "column",
         background: "var(--island-bg-color)",
