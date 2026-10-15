@@ -1,0 +1,103 @@
+<title>Trazo Import Preview</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one column on a phone (input, then the drawing); input left and drawing right from 900px. Tokens: paper, ink, orange ink accent (Trazo brand). */
+:root{--bg:#fbfaf8;--panel:#ffffff;--fg:#1d1b19;--muted:#6b665f;--line:#e4dfd8;--accent:#d9480f;--accent-fg:#fff;--canvas:#ffffff;--arrow:#495057;--font:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17161a;--panel:#201f24;--fg:#ece9e4;--muted:#9c978f;--line:#35333a;--accent:#ff8a4c;--accent-fg:#1a1208;--canvas:#1c1b20;--arrow:#adb5bd;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17161a;--panel:#201f24;--fg:#ece9e4;--muted:#9c978f;--line:#35333a;--accent:#ff8a4c;--accent-fg:#1a1208;--canvas:#1c1b20;--arrow:#adb5bd;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.45 var(--font);padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1400px;margin:0 auto;display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media(max-width:899px){main>section:last-child{order:-1}textarea{height:140px}}
+@media(min-width:900px){main{grid-template-columns:minmax(0,380px) minmax(0,1fr)}}
+h1{font-size:20px;margin:0 0 2px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+label{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+select,textarea,button{font:inherit;color:var(--fg)}
+select{width:100%;padding:9px 10px;background:var(--bg);border:1px solid var(--line);border-radius:8px}
+textarea{width:100%;height:260px;resize:vertical;padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font:12.5px/1.45 var(--mono);margin-top:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+button{padding:10px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);cursor:pointer;min-height:44px}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.status{margin:10px 0 0;color:var(--muted);font-size:13px;min-height:1.4em}
+.status.err{color:#e03131}
+.stage{background:var(--canvas);border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:78vh;touch-action:pan-x pan-y pinch-zoom}
+.stage svg{display:block}
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.bar .zoom{margin-left:auto;display:flex;gap:6px}
+.bar .zoom button{min-width:44px;padding:6px 10px}
+.hint{color:var(--muted);font-size:13px}
+</style>
+<main>
+  <section class="panel">
+    <h1>Trazo Import Preview</h1>
+    <p class="sub">The real import code (parsers, layout and elbow arrows) running in your browser. Nothing is sent anywhere.</p>
+    <label for="ex">Example</label>
+    <select id="ex"></select>
+    <textarea id="src" spellcheck="false" aria-label="Text to import"></textarea>
+    <div class="row">
+      <button class="primary" id="go">Draw</button>
+      <label style="margin:0;display:flex;gap:6px;align-items:center;text-transform:none;letter-spacing:0;font-size:13px"><input type="checkbox" id="details"> network and IAM details</label>
+    </div>
+    <p class="status" id="status" role="status"></p>
+  </section>
+  <section class="panel">
+    <div class="bar"><strong id="fmt">Diagram</strong><span class="hint" id="count"></span>
+      <span class="zoom"><button id="zo" aria-label="Zoom out">−</button><button id="zf" aria-label="Fit to width">Fit</button><button id="zi" aria-label="Zoom in">+</button></span></div>
+    <div class="stage" id="stage"><svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+  </section>
+</main>
+<script>
+/*__BUNDLE__*/
+</script>
+<script>
+(function(){
+var T=window.TrazoPreview,$=function(i){return document.getElementById(i)};
+var svg=$("svg"),stage=$("stage"),scale=1,box=[0,0,100,100];
+var NAMES=T.FORMAT_NAMES,ex=$("ex");
+ex.innerHTML='<option value="">Choose an example…</option>'+Object.keys(T.EXAMPLES).map(function(k){return '<option value="'+k+'">'+(NAMES[k]||k)+'</option>'}).join("");
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function dark(){var r=document.documentElement.getAttribute("data-theme");return r?r==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
+function draw(res){
+  var pad=40,b=res.bounds,x0=b[0]-pad,y0=b[1]-pad,w=b[2]-b[0]+2*pad,h=b[3]-b[1]+2*pad,out='<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="var(--arrow)" stroke-width="1.6"/></marker></defs>';
+  var sk=res.skeleton,fixed=dark();
+  sk.forEach(function(e){
+    if(e.type==="arrow"){
+      var pts=e.points.map(function(p){return (e.x+p[0])+","+(e.y+p[1])}).join(" ");
+      out+='<polyline points="'+pts+'" fill="none" stroke="var(--arrow)" stroke-width="2" stroke-linejoin="round"'+(e.strokeStyle==="dashed"?' stroke-dasharray="7 6"':'')+(e.endArrowhead?' marker-end="url(#ah)"':'')+'/>';
+      if(e.label){var m=e.points[Math.floor(e.points.length/2)],a=e.points[Math.floor((e.points.length-1)/2)],mx=e.x+(m[0]+a[0])/2,my=e.y+(m[1]+a[1])/2;
+        out+='<text x="'+mx+'" y="'+my+'" text-anchor="middle" dominant-baseline="middle" font-size="13" fill="var(--fg)" paint-order="stroke" stroke="var(--canvas)" stroke-width="5">'+esc(e.label.text)+'</text>';}
+    } else {
+      var fill=fixed?"#2a2931":e.backgroundColor,st=e.strokeColor,dash=e.strokeStyle==="dashed"?' stroke-dasharray="7 6"':'';
+      if(e.type==="ellipse")out+='<ellipse cx="'+(e.x+e.width/2)+'" cy="'+(e.y+e.height/2)+'" rx="'+e.width/2+'" ry="'+e.height/2+'" fill="'+fill+'" stroke="'+st+'" stroke-width="2"'+dash+'/>';
+      else out+='<rect x="'+e.x+'" y="'+e.y+'" width="'+e.width+'" height="'+e.height+'" rx="'+(e.roundness?14:0)+'" fill="'+fill+'" stroke="'+st+'" stroke-width="2"'+dash+'/>';
+      var lines=e.label.text.split("\n"),lh=21,top=e.y+e.height/2-(lines.length-1)*lh/2;
+      lines.forEach(function(t,i){out+='<text x="'+(e.x+e.width/2)+'" y="'+(top+i*lh)+'" text-anchor="middle" dominant-baseline="middle" font-size="15" fill="'+(fixed?"#ece9e4":"#1d1b19")+'">'+esc(t)+'</text>'});
+    }
+  });
+  svg.innerHTML=out;box=[x0,y0,w,h];svg.setAttribute("viewBox",x0+" "+y0+" "+w+" "+h);fit();
+}
+function apply(){svg.setAttribute("width",box[2]*scale);svg.setAttribute("height",box[3]*scale)}
+function fit(full){var f=(stage.clientWidth-2)/box[2];scale=Math.min(1.2,full===true?Math.max(.05,f):Math.max(innerWidth<600?.55:.1,f));apply()}
+function go(){
+  var st=$("status");
+  try{
+    var r=T.run($("src").value,$("details").checked);
+    draw(r);
+    $("fmt").textContent=r.format||"Diagram";
+    $("count").textContent=r.skeleton.filter(function(e){return e.type!=="arrow"}).length+" boxes, "+r.skeleton.filter(function(e){return e.type==="arrow"}).length+" arrows";
+    st.className="status";st.textContent=(r.summary||"")+(r.notes.length?" "+r.notes.join(" "):"");
+  }catch(e){st.className="status err";st.textContent=e.message}
+}
+ex.addEventListener("change",function(){if(ex.value){$("src").value=T.EXAMPLES[ex.value];go()}});
+$("go").addEventListener("click",go);
+$("zi").addEventListener("click",function(){scale*=1.25;apply()});
+$("zo").addEventListener("click",function(){scale/=1.25;apply()});
+$("zf").addEventListener("click",function(){fit(true)});
+addEventListener("resize",fit);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",go);
+ex.value="compose";$("src").value=T.EXAMPLES.compose;go();
+})();
+</script>
