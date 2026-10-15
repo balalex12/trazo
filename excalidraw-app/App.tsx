@@ -1052,7 +1052,8 @@ const ExcalidrawWrapper = () => {
               perform: () => window.dispatchEvent(new Event(EVENTS.openAbout)),
             },
             {
-              label: "Import to diagram (infrastructure, API, SQL, dbt, n8n)",
+              label:
+                "Import to diagram (infrastructure, API, SQL, JSON, dbt, n8n)",
               category: DEFAULT_CATEGORIES.app,
               predicate: true,
               keywords: [
@@ -1064,6 +1065,8 @@ const ExcalidrawWrapper = () => {
                 "openapi",
                 "swagger",
                 "sql",
+                "query",
+                "select",
                 "dbt",
                 "n8n",
                 "json",

@@ -7,8 +7,10 @@
 - **Terraform** files (`.tf`) or **Terraform JSON** (`terraform show -json`, a plan or a state),
 - an **OpenAPI / Swagger** file (YAML or JSON),
 - **SQL** `CREATE TABLE` statements, as an entity relationship diagram,
+- **SQL queries** (`SELECT`, `WITH`, `INSERT`, `UPDATE`, `DELETE`, `MERGE`, `CREATE VIEW … AS`), as a diagram of how the query runs,
 - a **dbt `manifest.json`**, as a lineage graph,
-- an **n8n workflow** (the JSON you export from n8n).
+- an **n8n workflow** (the JSON you export from n8n),
+- **any other JSON** (an API response, a config, an export, GeoJSON…), as a diagram of its shape.
 
 It is **deterministic and offline**: the text is parsed in your browser and laid out by plain code. No AI is involved, nothing is sent anywhere, and the same input always gives the same diagram.
 
@@ -94,6 +96,30 @@ One box per `CREATE TABLE`, with the table name and its columns: 🔑 for primar
 
 Foreign keys are read from `REFERENCES` on a column, from `FOREIGN KEY (...) REFERENCES ...` in the table, and from `ALTER TABLE ... ADD [CONSTRAINT x] FOREIGN KEY ...`. Primary keys from the column, the table and `ALTER TABLE ... ADD PRIMARY KEY`. Names can be quoted (`"x"`, `` `x` ``, `[x]`) and schema-qualified. It reads the common shape of PostgreSQL, MySQL, SQLite and SQL Server scripts (for example the output of `pg_dump --schema-only`) and ignores what it does not know. Self references, foreign keys to tables that are not in the text and views are counted in the note, not drawn.
 
+## SQL queries (how a query runs)
+
+![A query with CTEs, joins, subqueries and an UPDATE, drawn step by step](media/v5-import-sql-query.png)
+
+Paste one or more queries (separated by `;`) and Trazo draws them as a flow, left to right, in the order the database runs them, so you can see how a query works instead of reading it:
+
+1. **where the rows come from**: a box per table (with its alias), per CTE (`📦 WITH name`), per subquery in `FROM` (`⤷ subquery`) and per table function (`ƒ`);
+2. **`⋈` joins**, one step per `JOIN` with its type and its `ON` / `USING` condition (a comma in `FROM` is a `CROSS JOIN`);
+3. **`🔎 WHERE`**, then **`Σ GROUP BY`** (or `Σ AGGREGATE`, listing the aggregates), then **`🔎 HAVING`**;
+4. **`SELECT`** with its output columns (`alias ← expression`), `DISTINCT` / `TOP`, and a count of window functions; **`QUALIFY`** after it;
+5. **`↕ ORDER BY`** and **`✂ LIMIT / OFFSET / FETCH`**, then **`📤 Result`**.
+
+Subqueries in `WHERE`, `HAVING`, `ON` or the select list (`IN`, `EXISTS`, `ANY`, a scalar value) are small pipelines of their own whose result feeds the step that uses them, with the arrow labelled `IN`, `EXISTS`… `UNION`, `INTERSECT` and `EXCEPT` join the pipelines of their sides in a `∪` / `∩` / `−` step, and a trailing `ORDER BY` / `LIMIT` is applied to the combined result.
+
+Statements that change data end in the table they change: `INSERT … SELECT | VALUES` (with `ON CONFLICT`), `UPDATE … SET … FROM … WHERE`, `DELETE … USING … WHERE`, `MERGE … WHEN MATCHED / NOT MATCHED`, and `CREATE [MATERIALIZED] VIEW | TABLE … AS query`. Reading and writing boxes of the same table are separate boxes, so the arrows never loop.
+
+It is a small scanner written for this (no SQL library), for the common shape of PostgreSQL, MySQL, SQLite, SQL Server and Oracle queries. It never runs anything and never connects to a database. Not read: stored procedures and other statements (the note counts them), dollar-quoted bodies, `PIVOT`, recursive CTE logic (drawn as a normal CTE). A script that has `CREATE TABLE` with columns is drawn as an ER diagram instead (paste the queries on their own). At most 12 statements and 150 boxes.
+
+## Any JSON
+
+![An API response drawn as boxes and arrows](media/v5-import-json.png)
+
+JSON that has no importer of its own is drawn as its shape: the root is a box listing its simple fields (`key: value`), and every nested object or list is a box of its own linked from the one that holds it. A list of objects is drawn once, as its first item with the count on the arrow (`×500`), and a list whose items have different keys shows each shape (up to 3). Lists of simple values are shown inline (`[1, 2, 3, …] (12)`). Up to 9 fields per box, 10 nested boxes per object, 9 levels deep and 150 boxes in all; the note says what was left out. Kubernetes, compose, Terraform, OpenAPI, dbt and n8n JSON are still recognised first.
+
 ## dbt lineage
 
 Paste `target/manifest.json`. Every source, seed, snapshot, model and exposure is a box, and an arrow goes from each parent to what is built on it, so data flows left to right. Models are colored by layer from their name: `stg_` and `base_` (staging), `int_` (intermediate), `fct_`, `dim_`, `mart_` (marts), anything else as a plain model. Each box shows the materialization (`view`, `table`, `incremental`…) and the schema. Tests and the nodes of installed packages are left out (the note counts them).
@@ -117,4 +143,4 @@ The role is guessed from the image and the name (compose, Kubernetes), from the 
 
 ## Where the code is
 
-`excalidraw-app/infra/`: `detect.ts` (which format it is, and the single entry point), one reader per format (`compose.ts`, `kubernetes.ts`, `terraform.ts` and `terraformJson.ts`, `openapi.ts`, `sql.ts`, `dbt.ts`, `n8n.ts`, all producing the same graph), `graph.ts` (the graph, the layout and the Excalidraw elements), and the tests next to them. The dialog is `excalidraw-app/components/InfraDialog.tsx`. YAML is read with `js-yaml`, already in the lockfile; the Terraform and SQL readers are small scanners written for this (no HCL or SQL library).
+`excalidraw-app/infra/`: `detect.ts` (which format it is, and the single entry point), one reader per format (`compose.ts`, `sqlQuery.ts`, `json.ts`, `kubernetes.ts`, `terraform.ts` and `terraformJson.ts`, `openapi.ts`, `sql.ts`, `dbt.ts`, `n8n.ts`, all producing the same graph), `graph.ts` (the graph, the layout and the Excalidraw elements), and the tests next to them. The dialog is `excalidraw-app/components/InfraDialog.tsx`. YAML is read with `js-yaml`, already in the lockfile; the Terraform and SQL readers are small scanners written for this (no HCL or SQL library).

@@ -19,6 +19,7 @@ Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, e
 - ✅ MCP server: Claude Desktop, Claude Code and other MCP clients draw and edit diagram files in a no-network container
 - ✅ Experimental CLI bridge: use your own signed-in Claude Code or Codex (advanced, needs Node; see CLI_BRIDGE.md)
 - ✅ Import to diagram: `docker-compose.yml`, Kubernetes, Terraform (HCL and JSON), OpenAPI, SQL (ER diagram), dbt lineage and n8n workflows, offline and deterministic
+- ✅ Import SQL queries (SELECT, WITH, INSERT, UPDATE, DELETE, MERGE, CREATE VIEW AS) as a step by step diagram of how they run, and any JSON as a diagram of its shape
 - ✅ Elbow arrows in every import: horizontal and vertical segments that go around the boxes instead of through them
 - ✅ Opt-in LLM connector (OpenAI-compatible, Ollama Cloud via local pass-through, Anthropic) for Text to diagram
 - ✅ Library grouped by source: 150+ English ArcGIS components (official Esri icons) plus 16 community libraries (311 items; downloaded at build time, public profile without brand-logo libraries)
