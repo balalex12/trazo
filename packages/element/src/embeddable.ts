@@ -173,8 +173,26 @@ const ID32 = "([0-9a-f]{32})";
 const RE_ARCGIS_APP =
   /\/(apps\/(opsdashboard|dashboards|experiencebuilder|instant|webappviewer|storymaps|sites|webappbuilder)|experience\/)|^https?:\/\/(experience|storymaps|[^/]*\.maps)\.arcgis\.com\//i;
 
+// The ArcGIS viewer is a separate static site (viewer/), normally reachable at the same host on
+// port 3001 (see docs/VIEWER.md). Deployments that move it — a different port, a reverse proxy, a
+// tunnel with its own hostname — can override this without touching the source: set
+// VITE_APP_ARCGIS_VIEWER_ORIGIN at build time (e.g. "http://localhost:3400" or
+// "https://my-tunnel.example.com"), and update scripts/csp-hashes.mjs (frame-src) and
+// deploy/nginx/viewer.conf (frame-ancestors) to match. Unset, nothing changes: same host, port 3001.
+const ARCGIS_VIEWER_ORIGIN_OVERRIDE: string | undefined = (
+  import.meta.env.VITE_APP_ARCGIS_VIEWER_ORIGIN as string | undefined
+)?.replace(/\/$/, "");
+
+/** True for a URL whose origin is the configured (or default) ArcGIS viewer origin. */
+export const isArcGISViewerOrigin = (origin: string): boolean =>
+  ARCGIS_VIEWER_ORIGIN_OVERRIDE
+    ? origin === ARCGIS_VIEWER_ORIGIN_OVERRIDE
+    : /^https?:\/\/[^/]+:3001$/i.test(origin);
+
 const arcgisViewerBase = () =>
-  `${window.location.protocol}//${window.location.hostname}:3001/`;
+  ARCGIS_VIEWER_ORIGIN_OVERRIDE
+    ? `${ARCGIS_VIEWER_ORIGIN_OVERRIDE}/`
+    : `${window.location.protocol}//${window.location.hostname}:3001/`;
 
 /** Rewrites ArcGIS item/service URLs to the local viewer. Returns null if not an ArcGIS data URL. */
 const toArcGISViewerLink = (url: string): string | null => {

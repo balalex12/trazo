@@ -6,10 +6,29 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 const [, , htmlPath, outPath] = process.argv;
 const html = readFileSync(htmlPath, "utf8");
-const hashes = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)]
+const hashes = [
+  ...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi),
+]
   .map((m) => m[1])
   .filter((body) => body.trim().length)
-  .map((body) => `'sha256-${createHash("sha256").update(body).digest("base64")}'`);
+  .map(
+    (body) => `'sha256-${createHash("sha256").update(body).digest("base64")}'`,
+  );
+
+// The ArcGIS viewer normally lives at the same host, port 3001 (always allowed below). A
+// deployment that moves it to a different port or host over plain http (a reverse proxy, a
+// non-default port) needs that origin in frame-src too: set VITE_APP_ARCGIS_VIEWER_ORIGIN to the
+// same value used for the app build (see packages/element/src/embeddable.ts) and rebuild. An
+// https:// override needs nothing extra here: frame-src already allows https: for ArcGIS app
+// embeds (Experience Builder, Dashboards, ...), so any https viewer origin is already covered.
+const viewerOriginOverride = process.env.VITE_APP_ARCGIS_VIEWER_ORIGIN?.replace(
+  /\/$/,
+  "",
+);
+const extraFrameSrc =
+  viewerOriginOverride && viewerOriginOverride.startsWith("http://")
+    ? ` ${viewerOriginOverride}`
+    : "";
 
 const policy = [
   "default-src 'self'",
@@ -19,8 +38,9 @@ const policy = [
   "font-src 'self' data:",
   // 'self' + local LLM servers (Ollama 11434, LM Studio 1234, ...). Remote LLM hosts: add them in nginx conf.
   "connect-src 'self' data: blob: http://localhost:* http://127.0.0.1:*",
-  // the ArcGIS viewer (port 3001) and https embeds (ArcGIS apps, video, ...); embeds are sandboxed by the app
-  "frame-src 'self' http://localhost:3001 http://127.0.0.1:3001 https:",
+  // the ArcGIS viewer (port 3001, or VITE_APP_ARCGIS_VIEWER_ORIGIN if set) and https embeds
+  // (ArcGIS apps, video, ...); embeds are sandboxed by the app
+  `frame-src 'self' http://localhost:3001 http://127.0.0.1:3001${extraFrameSrc} https:`,
   "worker-src 'self' blob:",
   "media-src 'self' blob: data:",
   "object-src 'none'",
@@ -29,5 +49,10 @@ const policy = [
   "frame-ancestors 'none'",
 ].join("; ");
 
-writeFileSync(outPath, `add_header Content-Security-Policy "${policy}" always;\n`);
-console.log(`CSP written to ${outPath} with ${hashes.length} inline script hash(es)`);
+writeFileSync(
+  outPath,
+  `add_header Content-Security-Policy "${policy}" always;\n`,
+);
+console.log(
+  `CSP written to ${outPath} with ${hashes.length} inline script hash(es)`,
+);

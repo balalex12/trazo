@@ -99,8 +99,11 @@ function calcite(cat, name, file, color) {
   iconItem(cat, name, svg, 1, 64, color);
 }
 
-// 1. Interactive maps
-embed(CAT.interactive, "Interactive Map", "http://localhost:3001/", 760, 480);
+// 1. Interactive maps. Same default origin as packages/element/src/embeddable.ts
+// (VITE_APP_ARCGIS_VIEWER_ORIGIN); set it before running this script if you moved the viewer.
+const ARCGIS_VIEWER_ORIGIN =
+  (process.env.VITE_APP_ARCGIS_VIEWER_ORIGIN || "http://localhost:3001").replace(/\/$/, "") + "/";
+embed(CAT.interactive, "Interactive Map", ARCGIS_VIEWER_ORIGIN, 760, 480);
 
 // 2. Utility Network
 [
