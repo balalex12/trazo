@@ -36,6 +36,7 @@ Two containers, both plain nginx serving static files (plus one optional pass-th
 | `excalidraw-app/branding.ts`, `components/BrandDialogs.tsx` | identity, About, AI settings | **new** |
 | `viewer/` | ArcGIS Maps SDK viewer (standalone page, served on :3001) | **new** |
 | `tools/` | icon conversion, library builder, Calcite fetch, network audit | **new** |
+| `excalidraw-app/animation/htmlPlayer.ts`, `player/` | exports the animation as one offline .html (player + HyperFrames composition); `tools/hyperframes-render.mjs` renders it to video | **new** |
 | `tools/own-icons/` | own icon packs (GIS, data engineering, ML) drawn from primitives, plus a contact sheet renderer | **new** |
 | `assets/esri-icons/` | official Esri icons converted to SVG (CC BY 4.0) | **new** |
 | `deploy/nginx/` | hardened nginx configs | **new** |

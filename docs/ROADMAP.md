@@ -22,6 +22,7 @@ Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, e
 - ✅ Import SQL queries (SELECT, WITH, INSERT, UPDATE, DELETE, MERGE, CREATE VIEW AS) as a step by step diagram of how they run, and any JSON as a diagram of its shape
 - ✅ Elbow arrows in every import: horizontal and vertical segments that go around the boxes instead of through them
 - ✅ Opt-in LLM connector (OpenAI-compatible, Ollama Cloud via local pass-through, Anthropic) for Text to diagram
+- ✅ HTML player export (one offline `.html` that plays anywhere) that is also a HyperFrames composition: `tools/hyperframes-render.mjs` renders it to 4K / 60 fps / WebM / GIF video, locally and deterministically
 - ✅ Own icon packs (63 neutral glyphs): GIS & spatial data (FME-, GeoPandas- and GDAL-style concepts), data engineering and machine learning, MIT, in the public profile too
 - ✅ Library grouped by source: 150+ English ArcGIS components (official Esri icons) plus 16 community libraries (311 items; downloaded at build time, public profile without brand-logo libraries)
 - ✅ GIS pack: ArcGIS viewer (items/layers/services, any-host URL recognition, portal browser, sketch, multi-portal UI)
