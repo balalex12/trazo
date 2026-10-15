@@ -83,7 +83,27 @@ describe("detectFormat", () => {
     expect(detectFormat("")).toBeNull();
     expect(detectFormat("hello world")).toBeNull();
     expect(detectFormat("a: 1\nb: 2")).toBeNull();
-    expect(detectFormat('{"hello":"world"}')).toBeNull();
+    expect(detectFormat("{broken json")).toBeNull();
+  });
+
+  it("tells SQL queries from SQL schemas", () => {
+    expect(detectFormat("SELECT a FROM t WHERE b = 1")).toBe("sqlquery");
+    expect(detectFormat("with x as (select 1) select * from x")).toBe(
+      "sqlquery",
+    );
+    expect(detectFormat("UPDATE t SET a = 1 WHERE id = 2")).toBe("sqlquery");
+    expect(detectFormat("CREATE TABLE c AS SELECT * FROM t")).toBe("sqlquery");
+    expect(detectFormat("CREATE VIEW v AS SELECT 1")).toBe("sqlquery");
+    // a schema with queries after it stays a schema
+    expect(detectFormat("CREATE TABLE t (a int);\nSELECT * FROM t;")).toBe(
+      "sql",
+    );
+  });
+
+  it("falls back to the shape of any other JSON", () => {
+    expect(detectFormat('{"hello":"world"}')).toBe("json");
+    expect(detectFormat("[1, 2, 3]")).toBe("json");
+    expect(detectFormat('[{"a": 1}]')).toBe("json");
   });
 });
 
@@ -95,8 +115,10 @@ describe("importInfra", () => {
       [TF, "terraform"],
       [OPENAPI_YAML, "openapi"],
       [SQL, "sql"],
+      ["SELECT a, b FROM t JOIN u ON u.id = t.id", "sqlquery"],
       [DBT, "dbt"],
       [N8N, "n8n"],
+      ['{"a": {"b": [1, 2]}, "c": "x"}', "json"],
     ] as const) {
       const r = importInfra(text);
       expect(r.format).toBe(format);

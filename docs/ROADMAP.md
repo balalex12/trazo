@@ -19,6 +19,8 @@ Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, e
 - ✅ MCP server: Claude Desktop, Claude Code and other MCP clients draw and edit diagram files in a no-network container
 - ✅ Experimental CLI bridge: use your own signed-in Claude Code or Codex (advanced, needs Node; see CLI_BRIDGE.md)
 - ✅ Import to diagram: `docker-compose.yml`, Kubernetes, Terraform (HCL and JSON), OpenAPI, SQL (ER diagram), dbt lineage and n8n workflows, offline and deterministic
+- ✅ Import SQL queries (SELECT, WITH, INSERT, UPDATE, DELETE, MERGE, CREATE VIEW AS) as a step by step diagram of how they run, and any JSON as a diagram of its shape
+- ✅ Elbow arrows in every import: horizontal and vertical segments that go around the boxes instead of through them
 - ✅ Opt-in LLM connector (OpenAI-compatible, Ollama Cloud via local pass-through, Anthropic) for Text to diagram
 - ✅ Library grouped by source: 150+ English ArcGIS components (official Esri icons) plus 16 community libraries (311 items; downloaded at build time, public profile without brand-logo libraries)
 - ✅ GIS pack: ArcGIS viewer (items/layers/services, any-host URL recognition, portal browser, sketch, multi-portal UI)
@@ -37,7 +39,7 @@ Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, e
 
 Ordered by value for the direction above. Each item ships as its own pull request, with a short demo GIF.
 
-1. **Import to diagram, no LLM needed**: `docker-compose.yml`, Kubernetes, Terraform (HCL and JSON), OpenAPI, SQL DDL to ER, dbt lineage and n8n workflows are done (see [IMPORT.md](IMPORT.md)). Next: reading Terraform module contents, Gateway API routes and Helm values, Airflow DAGs, GraphQL schemas, elbow arrows.
+1. **Import to diagram, no LLM needed**: `docker-compose.yml`, Kubernetes, Terraform (HCL and JSON), OpenAPI, SQL DDL to ER, dbt lineage and n8n workflows are done (see [IMPORT.md](IMPORT.md)). Next: reading Terraform module contents, Gateway API routes and Helm values, Airflow DAGs, GraphQL schemas.
 2. **Recorder and narration**, done: the [recorder](RECORDER.md) (canvas only, canvas with live maps, or the whole app, with the microphone) and [animation narration](ANIMATION.md#narration-your-voice-in-sync-with-the-animation) (your voice per slide, in the MP4). The microphone can be chosen and the narration can be saved inside the drawing file. Next: trim silences, and a crisper "re-render at a larger size" mode.
 3. **Deeper animation**, mostly done (see [ANIMATION.md](ANIMATION.md)): arrows that draw themselves and reveal in order (_Build_), camera moves between regions (_Pan_), captions, richer easings. Still to do: a self-contained HTML player as an alternative to video, choosing the reveal order by hand, text that types itself.
 4. **Agent and MCP**, first version done: the [agent panel](AGENT.md) (ask or edit with your own model, preview, one undo step) and the [MCP server](MCP.md) (Claude Desktop and Claude Code draw and edit `.excalidraw` files, in a container with no network). Next: an MCP bridge to the **live canvas** (edit the open tab, not only files), more operations (groups, frames, restyle), a way to ask for a whole diagram from the panel, and the agent working on slides and animation.

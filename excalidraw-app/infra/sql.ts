@@ -156,7 +156,7 @@ const parseTable = (name: string, body: string): Table => {
 };
 
 /** index of the `)` that closes the `(` at `open` */
-const closeParen = (s: string, open: number): number => {
+export const closeParen = (s: string, open: number): number => {
   let depth = 0;
   let i = open;
   while (i < s.length) {

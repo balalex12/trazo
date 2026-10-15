@@ -8,7 +8,9 @@ import { parseDbt } from "./dbt";
 import { parseKubernetes } from "./kubernetes";
 import { parseN8n } from "./n8n";
 import { parseOpenApi } from "./openapi";
+import { parseJson } from "./json";
 import { parseSql } from "./sql";
+import { looksLikeSqlQuery, parseSqlQuery } from "./sqlQuery";
 import { parseTerraform } from "./terraform";
 import { parseTerraformJson } from "./terraformJson";
 
@@ -20,8 +22,10 @@ export type InfraFormat =
   | "terraform"
   | "openapi"
   | "sql"
+  | "sqlquery"
   | "dbt"
-  | "n8n";
+  | "n8n"
+  | "json";
 
 export const FORMAT_NAMES: Record<InfraFormat, string> = {
   compose: "Docker Compose",
@@ -29,8 +33,10 @@ export const FORMAT_NAMES: Record<InfraFormat, string> = {
   terraform: "Terraform",
   openapi: "OpenAPI",
   sql: "SQL schema",
+  sqlquery: "SQL query",
   dbt: "dbt lineage",
   n8n: "n8n workflow",
+  json: "JSON data",
 };
 
 /**
@@ -40,7 +46,7 @@ export const FORMAT_NAMES: Record<InfraFormat, string> = {
 export const MAX_INPUT_CHARS = 2_000_000;
 
 export const SUPPORTED =
-  "docker-compose.yml, Kubernetes manifests, Terraform (.tf or JSON), OpenAPI, SQL (CREATE TABLE), a dbt manifest.json or an n8n workflow";
+  "docker-compose.yml, Kubernetes manifests, Terraform (.tf or JSON), OpenAPI, SQL (CREATE TABLE schemas, or SELECT / WITH / INSERT / UPDATE / DELETE / MERGE queries), a dbt manifest.json, an n8n workflow or any other JSON";
 
 type Dict = Record<string, unknown>;
 const isDict = (v: unknown): v is Dict =>
@@ -50,6 +56,9 @@ const HCL_BLOCK =
   /^[ \t]*(resource|data|module|provider|terraform|variable|output|locals)\b[^\n{]*\{/m;
 const SQL_TABLE =
   /\bcreate\s+(?:or\s+replace\s+)?(?:(?:global\s+|local\s+)?(?:temp|temporary)\s+|unlogged\s+)?table\b/i;
+/** a CREATE TABLE with a column list: a schema (CREATE TABLE x AS SELECT is a query) */
+const SQL_DDL =
+  /\bcreate\s+(?:or\s+replace\s+)?(?:(?:global\s+|local\s+)?(?:temp|temporary)\s+|unlogged\s+)?table\s+(?:if\s+not\s+exists\s+)?(?:"[^"]+"|`[^`]+`|\[[^\]]+\]|[\w$.]+)(?:\s*\.\s*(?:"[^"]+"|`[^`]+`|[\w$]+))*\s*\(/i;
 
 type JsonKind = "terraform" | "openapi" | "dbt" | "n8n";
 
@@ -109,6 +118,18 @@ export const detectFormat = (text: string): InfraFormat | null => {
   if (HCL_BLOCK.test(text) && !looksKubernetes && !looksCompose) {
     return "terraform";
   }
+  if (SQL_DDL.test(text) && !looksKubernetes && !looksCompose) {
+    return "sql";
+  }
+  if (
+    !looksKubernetes &&
+    !looksCompose &&
+    !t.startsWith("{") &&
+    !t.startsWith("[") &&
+    looksLikeSqlQuery(text)
+  ) {
+    return "sqlquery";
+  }
   if (SQL_TABLE.test(text) && !looksKubernetes && !looksCompose) {
     return "sql";
   }
@@ -132,6 +153,14 @@ export const detectFormat = (text: string): InfraFormat | null => {
     }
   } catch (e) {
     /* not YAML */
+  }
+  if (t.startsWith("{") || t.startsWith("[")) {
+    try {
+      JSON.parse(t);
+      return "json"; // JSON that has no importer of its own: draw its shape
+    } catch (e) {
+      /* not JSON either */
+    }
   }
   return null;
 };
@@ -178,8 +207,12 @@ export const importInfra = (
       ? parseOpenApi(text)
       : format === "sql"
       ? parseSql(text)
+      : format === "sqlquery"
+      ? parseSqlQuery(text)
       : format === "dbt"
       ? parseDbt(text)
+      : format === "json"
+      ? parseJson(text)
       : parseN8n(text);
   return { format, layout: layoutGraph(graph) };
 };

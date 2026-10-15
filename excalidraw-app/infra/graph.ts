@@ -5,6 +5,8 @@
 // is on the right. Entry points (the Internet) form the first column. "Attached" nodes (volumes, config, claims) sit
 // right under the first node that uses them, so their dashed line is short and crosses nothing.
 
+import { routeEdges } from "./route";
+
 export type Role =
   | "proxy"
   | "app"
@@ -364,22 +366,27 @@ export const layoutToSkeleton = (
     };
   });
 
+  // elbow routes that go around the boxes; an edge that cannot be routed is drawn straight
+  const routes = routeEdges(layout, (e) => drawFrom(layout, e));
   const arrows: Skeleton[] = layout.edges.map((e) => {
     const from = drawFrom(layout, e);
-    const [[sx, sy], [ex, ey]] = edgeEnds(byId.get(from)!, byId.get(e.to)!);
+    const route = routes.get(e.id);
+    const abs: [number, number][] =
+      route ?? edgeEnds(byId.get(from)!, byId.get(e.to)!);
+    const [sx, sy] = abs[0];
+    const xsAll = abs.map((p) => p[0]);
+    const ysAll = abs.map((p) => p[1]);
     return {
       type: "arrow",
       id: e.id,
       x: sx + offset.x,
       y: sy + offset.y,
-      width: Math.abs(ex - sx),
-      height: Math.abs(ey - sy),
-      points: [
-        [0, 0],
-        [ex - sx, ey - sy],
-      ],
+      width: Math.max(...xsAll) - Math.min(...xsAll),
+      height: Math.max(...ysAll) - Math.min(...ysAll),
+      points: abs.map(([px, py]) => [px - sx, py - sy]),
       strokeColor: "#495057",
       strokeStyle: e.kind === "attach" ? "dashed" : "solid",
+      roundness: null,
       startArrowhead: null,
       endArrowhead: e.kind === "attach" ? null : "arrow",
       start: { id: from },

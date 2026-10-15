@@ -388,6 +388,56 @@ ALTER TABLE payments ADD CONSTRAINT fk_pay_order FOREIGN KEY (order_id) REFERENC
     null,
     2,
   ),
+  sqlquery: `-- Top customers by revenue this year, with their latest order
+WITH paid AS (
+  SELECT o.id, o.customer_id, o.placed_at, SUM(i.quantity * i.unit_price) AS total
+  FROM orders o
+  JOIN order_items i ON i.order_id = o.id
+  WHERE o.status = 'paid' AND o.placed_at >= DATE '2025-01-01'
+  GROUP BY o.id, o.customer_id, o.placed_at
+),
+ranked AS (
+  SELECT customer_id,
+         SUM(total) AS revenue,
+         MAX(placed_at) AS last_order,
+         RANK() OVER (ORDER BY SUM(total) DESC) AS position
+  FROM paid
+  GROUP BY customer_id
+)
+SELECT c.full_name, c.email, r.revenue, r.last_order, r.position
+FROM ranked r
+JOIN customers c ON c.id = r.customer_id
+LEFT JOIN regions g ON g.id = c.region_id
+WHERE r.revenue > (SELECT AVG(total) FROM paid)
+  AND EXISTS (SELECT 1 FROM subscriptions s WHERE s.customer_id = c.id AND s.active)
+ORDER BY r.revenue DESC
+LIMIT 20;
+
+UPDATE customers
+SET tier = 'gold'
+FROM customer_stats s
+WHERE customers.id = s.customer_id AND s.position <= 10;
+`,
+  json: `{
+  "id": 4821,
+  "status": "shipped",
+  "placed_at": "2025-03-14T09:12:44Z",
+  "customer": {
+    "id": 77,
+    "name": "Ada Lovelace",
+    "email": "ada@example.com",
+    "address": { "street": "12 Analytical St", "city": "London", "zip": "N1 9GU" }
+  },
+  "items": [
+    { "sku": "KB-100", "name": "Keyboard", "quantity": 1, "price": 79.9, "tags": ["usb", "mechanical"] },
+    { "sku": "MS-220", "name": "Mouse", "quantity": 2, "price": 24.5, "tags": ["wireless"] },
+    { "sku": "HD-900", "name": "Headset", "quantity": 1, "price": 59, "warranty": { "months": 24 } }
+  ],
+  "payment": { "method": "card", "last4": "4242", "paid": true },
+  "tracking": [3, 7, 11],
+  "notes": null
+}
+`,
 };
 
 const overlay: React.CSSProperties = {
@@ -530,10 +580,11 @@ export const InfraDialog = () => {
         <div style={{ color: "#888", marginBottom: 6 }}>
           Paste a <code>docker-compose.yml</code>, Kubernetes manifests,
           Terraform (<code>.tf</code> or JSON), an OpenAPI file, SQL{" "}
-          <code>CREATE TABLE</code> statements, a dbt <code>manifest.json</code>{" "}
-          or an n8n workflow, or choose the files. Trazo works out which it is
-          and draws it. It is read in your browser and nothing is sent anywhere.
-          No AI involved.
+          <code>CREATE TABLE</code> statements or SQL queries (to see how they
+          run), a dbt <code>manifest.json</code>, an n8n workflow or any other
+          JSON, or choose the files. Trazo works out which it is and draws it.
+          It is read in your browser and nothing is sent anywhere. No AI
+          involved.
         </div>
         <textarea
           style={area}
@@ -620,8 +671,10 @@ export const InfraDialog = () => {
             <option value="terraform">Terraform</option>
             <option value="openapi">OpenAPI</option>
             <option value="sql">SQL schema</option>
+            <option value="sqlquery">SQL query (SELECT, WITH, UPDATE…)</option>
             <option value="dbt">dbt lineage (manifest.json)</option>
             <option value="n8n">n8n workflow</option>
+            <option value="json">Any JSON</option>
           </select>
           <button style={ghost} onClick={() => setOpen(false)}>
             Close
