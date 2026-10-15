@@ -13,6 +13,7 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { MicSelect, useMics } from "../components/MicSelect";
 import { useMobileBarOffset } from "../components/useMobileBarOffset";
 
+import { DirectorPanel } from "./DirectorPanel";
 import { downloadBlob, exportAnimation } from "./exporter";
 import { buildPlayerHtml, resample } from "./htmlPlayer";
 import {
@@ -208,9 +209,14 @@ const Player = ({
         const level = capture ? Math.round(capture.level() * 8) : 0;
         const meter = `${"|".repeat(level)}${"·".repeat(8 - level)}`;
         const secs = Math.floor(capture ? capture.nowSec() : 0);
+        const script = slides[cur]?.frame.customData?.script;
         return `● REC ${secs} s  ·  slide ${
           cur + 1
-        } / ${n}  ·  mic ${meter}  ·  → next slide  ·  Esc to finish and save`;
+        } / ${n}  ·  mic ${meter}  ·  → next slide  ·  Esc to finish and save${
+          typeof script === "string" && script.trim()
+            ? `\n\n${script.trim()}`
+            : ""
+        }`;
       };
       run(() => renderBlend(opts, cur, cur, 0, canvas));
       setHud(status());
@@ -380,6 +386,8 @@ const Player = ({
             padding: "6px 14px",
             borderRadius: 999,
             font: mode === "narrate" ? "15px system-ui" : "12px system-ui",
+            whiteSpace: "pre-wrap", // the narration script is shown under the status line while recording
+            ...(mode === "narrate" ? { borderRadius: 16 } : {}),
             pointerEvents: "none",
             zIndex: 2, // above the canvas (the editor styles give every canvas its own stacking level)
           }}
@@ -420,10 +428,14 @@ const CaptionInput = ({
   value,
   style,
   onCommit,
+  placeholder = "Caption (optional)",
+  title = "Caption shown at the bottom of this slide in the preview and in the exported video. Empty = none.",
 }: {
   value: string | undefined;
   style: React.CSSProperties;
   onCommit: (v: string) => void;
+  placeholder?: string;
+  title?: string;
 }) => {
   const [draft, setDraft] = useState<string | null>(null);
   const commit = () => {
@@ -435,8 +447,8 @@ const CaptionInput = ({
   return (
     <input
       type="text"
-      title="Caption shown at the bottom of this slide in the preview and in the exported video. Empty = none."
-      placeholder="Caption (optional)"
+      title={title}
+      placeholder={placeholder}
       value={draft ?? value ?? ""}
       onClick={(e) => e.stopPropagation()}
       onChange={(e) => setDraft(e.target.value)}
@@ -1086,6 +1098,17 @@ export const AnimationPanel = ({
                     </>
                   )}
                 </div>
+                <div style={{ marginTop: 2 }}>
+                  <CaptionInput
+                    value={s.frame.customData?.script}
+                    onCommit={(v) =>
+                      setSlideData(s.frame.id, "script", v.trim() || null)
+                    }
+                    placeholder="Narration script (what to say, optional)"
+                    title="What the narrator says over this slide. It is shown as a teleprompter while you record, and it can be turned into a voice with `tools/hyperframes-render.mjs --tts`. The ✨ Direct with AI button can write it."
+                    style={{ ...field, width: "100%" }}
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -1107,6 +1130,16 @@ export const AnimationPanel = ({
               🎙 Narrate
             </button>
           </div>
+          <DirectorPanel
+            excalidrawAPI={excalidrawAPI}
+            slides={slides}
+            settings={timeline}
+            styles={{ btn, ghost, field }}
+            onDone={(m) => {
+              setError("");
+              setNote(m);
+            }}
+          />
           <MicSelect
             style={{ ...field, marginBottom: 8 }}
             mics={micChoice.mics}
