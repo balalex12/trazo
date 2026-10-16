@@ -11,7 +11,7 @@ node tools/build-jupyterlite.mjs          # once: about 230 MB, needs python3, t
 docker compose --profile lite up -d       # then open http://127.0.0.1:3002
 ```
 
-Then in Trazo press **🐍 Notebook** (bottom bar), or **Menu → Python notebook…**, or the command palette, or the **Python notebook…** button of **Import to diagram**. The notebook opens in a **panel next to the canvas**, inside Trazo, with two starter notebooks, `welcome.ipynb` and `churn.ipynb`. **✕** hides the panel without stopping anything (the kernel and its variables stay), **⇔** makes it wider and **↗** opens the same notebook site in its own tab.
+Then in Trazo press **🐍 Notebook** (bottom bar), or **Menu → Python notebook…**, or the command palette, or the **Python notebook…** button of **Import to diagram**. The notebook opens in a **panel next to the canvas**, inside Trazo, with starter notebooks, `welcome.ipynb` and `churn.ipynb`. **✕** hides the panel without stopping anything (the kernel and its variables stay), **⇔** makes it wider and **↗** opens the same notebook site in its own tab.
 
 The first start of a notebook takes some seconds (Pyodide loads), then it is quick. Files you create live in your browser (IndexedDB) for that site: use **File → Download** to keep a notebook as an `.ipynb`.
 
@@ -45,6 +45,25 @@ nodes, edges = trazo.selected() # the same, only for the boxes you selected
 `draw` puts the graph on the canvas (hand-drawn, laid out left to right, undoable); a node may carry `label`, `details` (a list of lines) and `role` (`database`, `cache`, `queue`, `storage`, `function`…). Up to 150 nodes. `canvas()` and `selected()` give the canvas **as it was when the previous cell finished**: Trazo sends a fresh copy to every notebook that imported the module each time the diagram or the selection changes, and a notebook can only receive messages between cells (waiting for an answer inside a cell would block). Put `import pandas as pd` in the cell so the notebook loads pandas. This works only in the panel inside Trazo; elsewhere it says so.
 
 ![trazo.draw from a cell](media/v5-notebooks-python-draw.png)
+
+### Geodata: `trazo.map`
+
+GeoPandas, Shapely and pyproj run in the page, and `trazo.map` draws geometry on the canvas as a **hand-drawn map**:
+
+```python
+import geopandas as gpd
+import trazo
+
+trazo.map([districts, river, stations], color="density", label="name", title="Districts by density")
+```
+
+It takes a GeoDataFrame, a GeoSeries, shapely geometries or GeoJSON (anything with a `__geo_interface__`), or a list of them drawn together. Polygons are filled (holes in white), lines are drawn open and points are dots, all inside a frame named after `title`, with a legend under it. `color="column"` paints by a column: five quantile classes for numbers, the most common values (and "other") for text. `label="column"` writes that column on each shape (up to 80). Geographic coordinates (longitude, latitude) are drawn in Web Mercator and projected ones as they are, so `gdf.to_crs(...)` first when you want a particular projection. Up to 1000 features; the geometry is simplified (Douglas-Peucker, `max_vertices`, 2500 by default) so the canvas stays light, and the legend says when it was. Ctrl+Z undoes it.
+
+There is **no basemap**: nothing is fetched from anywhere, which is what keeps it local-first. The ArcGIS map viewer of Trazo ([VIEWER.md](VIEWER.md)) is a different thing: it loads Esri's SDK from the internet, so it is not used for this.
+
+![trazo.map: a GeoDataFrame as a hand-drawn map with legend](media/v5-notebooks-geomap.png)
+
+The starter notebook `geo.ipynb` has this example.
 
 ![The draft of a notebook written from the diagram](media/v5-notebooks-draft.png)
 

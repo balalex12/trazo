@@ -25,7 +25,7 @@ const python = spawnSync("python3", ["-c", "pass"]).status === 0;
         { encoding: "utf8" },
       );
       expect(r.status).toBe(0);
-      expect(r.stdout.trim()).toBe("trazo-0.2.0-py3-none-any.whl");
+      expect(r.stdout.trim()).toBe("trazo-0.3.0-py3-none-any.whl");
       const list = spawnSync(
         "python3",
         ["-m", "zipfile", "-l", `${dir}/${r.stdout.trim()}`],
@@ -34,7 +34,7 @@ const python = spawnSync("python3", ["-c", "pass"]).status === 0;
         },
       );
       expect(list.stdout).toContain("trazo/__init__.py");
-      expect(list.stdout).toContain("trazo-0.2.0.dist-info/RECORD");
+      expect(list.stdout).toContain("trazo-0.3.0.dist-info/RECORD");
     });
   },
 );

@@ -10,7 +10,10 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 import { MAX_NODES, ROLE_STYLE, clip } from "../infra/graph";
 
+import { parseMap } from "./geomap";
+
 import type { Graph, GraphEdge, GraphNode, Role } from "../infra/graph";
+import type { MapSpec } from "./geomap";
 import type { RunCell, VarInfo } from "./protocol";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -18,6 +21,7 @@ import type { RunCell, VarInfo } from "./protocol";
 /** A message from the `trazo` module (tools/lite-python/trazo/__init__.py) */
 export type KernelOp =
   | { op: "draw"; title: string; graph: Graph }
+  | { op: "map"; map: MapSpec }
   /** the module was imported in a notebook: it wants the canvas, now and whenever it changes */
   | { op: "hello" };
 
@@ -111,6 +115,10 @@ export const parseKernelOp = (data: unknown): KernelOp | string | null => {
     return typeof made === "string"
       ? made
       : { op: "draw", title: made.title, graph: made.graph };
+  }
+  if (data.op === "map") {
+    const made = parseMap(data);
+    return typeof made === "string" ? made : { op: "map", map: made };
   }
   if (data.op === "hello") {
     return { op: "hello" };

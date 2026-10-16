@@ -43,7 +43,7 @@ export const PARENT_ORIGINS = [
 ];
 
 /** the version of tools/lite-python/make_wheel.py */
-export const TRAZO_VERSION = "0.2.0";
+export const TRAZO_VERSION = "0.3.0";
 
 /** pure-Python wheels the kernel needs that Pyodide itself does not include (pinned) */
 export const KERNEL_WHEELS = ["comm==0.2.3"];

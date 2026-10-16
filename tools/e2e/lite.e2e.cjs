@@ -214,6 +214,54 @@ describe("notebook site", { skip: lite.built() ? false : "the notebook site is n
       assert.match(drafted[1], /sales = pd\.read_csv\("sales\.csv"\)/);
     });
 
+    it("draws a GeoDataFrame as a hand-drawn map with trazo.map, coloured by a column, with a legend", SLOW, async () => {
+      await clearCanvas();
+      const out = await py(
+        [
+          "import geopandas as gpd",
+          "from shapely.geometry import box, LineString, Point",
+          "cells = [box(-77.2 + i * 0.1, -12.2 + j * 0.1, -77.1 + i * 0.1, -12.1 + j * 0.1) for j in range(3) for i in range(4)]",
+          "districts = gpd.GeoDataFrame({'name': ['D%d' % n for n in range(12)], 'pop': [10 * n + 5 for n in range(12)]}, geometry=cells, crs=4326)",
+          "trazo.map(districts, color='pop', label='name', title='Districts')",
+          "print('sent', len(districts))",
+        ].join("\n"),
+      );
+      assert.match(out, /sent 12/, out);
+      const els = await waitFor(
+        async () => {
+          const e = await elements(s.page);
+          return e.some((x) => x.type === "frame") ? e : null;
+        },
+        { what: "the map" },
+      );
+      const frame = els.find((x) => x.type === "frame");
+      assert.equal(frame.name, "Districts");
+      const polygons = els.filter((x) => x.polygon);
+      assert.equal(polygons.length, 12, "one closed shape per district");
+      assert.ok(polygons.every((x) => x.frameId === frame.id), "inside the frame");
+      assert.equal(new Set(polygons.map((x) => x.fill)).size, 5, "five classes of the pop column");
+      const labels = els.filter((x) => x.type === "text").map((x) => x.text);
+      assert.ok(labels.includes("D0") && labels.includes("D11"), "the districts are labelled");
+      assert.equal(els.filter((x) => x.type === "rectangle").length, 5, "a legend swatch per class");
+      // a projected layer keeps its shape; lines and points go in the same frame
+      const out2 = await py(
+        [
+          "utm = districts.to_crs(32718)",
+          "river = gpd.GeoSeries([LineString([(-77.2, -12.1), (-77.0, -12.15), (-76.9, -12.0)])], crs=4326).to_crs(32718)",
+          "stations = gpd.GeoSeries([Point(-77.15, -12.15), Point(-77.05, -12.05)], crs=4326).to_crs(32718)",
+          "trazo.map([utm, river, stations], title='UTM')",
+          "print('ok')",
+        ].join("\n"),
+      );
+      assert.match(out2, /ok/, out2);
+      await waitFor(async () => (await elements(s.page)).filter((x) => x.type === "frame").length === 2, { what: "the second map" });
+      // a bad call is explained and draws nothing more
+      const before = (await elements(s.page)).length;
+      const bad = await py("trazo.map(districts, color='missing')");
+      assert.match(bad, /no column called/);
+      assert.equal((await elements(s.page)).length, before);
+    });
+
     it("stays on this machine, under both policies", () => {
       assert.deepEqual(s.seen.external, [], `external requests: ${s.seen.external.join(", ")}`);
       assert.deepEqual(s.seen.csp, []);

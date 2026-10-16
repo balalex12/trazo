@@ -156,7 +156,7 @@ const SPARK_READ =
 const WEB_READ =
   /\b(?:requests|httpx)\.(?:get|post)\s*\(|\burlopen\s*\(|\burlretrieve\s*\(/;
 const CONSTRUCTOR =
-  /\b(?:pd|pandas|gpd|geopandas|dd|dask\.dataframe|pl|polars|np|numpy|xr|xarray)\.(?:DataFrame|GeoDataFrame|Series|array|zeros|ones|arange|linspace|empty|full|random\.\w+|Dataset|DataArray|LazyFrame)\s*\(/;
+  /\b(?:pd|pandas|gpd|geopandas|dd|dask\.dataframe|pl|polars|np|numpy|xr|xarray)\.(?:DataFrame|GeoDataFrame|GeoSeries|Series|array|zeros|ones|arange|linspace|empty|full|random\.\w+|Dataset|DataArray|LazyFrame)\s*\(/;
 const MODEL_MODULES =
   /^(?:sklearn|xgboost|lightgbm|catboost|statsmodels|torch|tensorflow|keras|transformers|prophet|pycaret|imblearn|scipy\.cluster|scipy\.optimize)/;
 const SINK_METHODS =

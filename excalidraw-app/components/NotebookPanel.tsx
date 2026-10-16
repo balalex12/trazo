@@ -11,12 +11,13 @@ import { buildIndex } from "../agent/canvas";
 import { EVENTS } from "../branding";
 import { importInfra } from "../infra/detect";
 import { layoutGraph } from "../infra/graph";
-import { drawLayout } from "../infra/place";
+import { drawBuilt, drawLayout } from "../infra/place";
 import {
   jupyterLiteOrigin,
   jupyterLiteUrl,
   openNotebookSite,
 } from "../notebook/liteUrl";
+import { mapToSkeleton } from "../notebook/geomap";
 import { clearRun, parseKernelOp, showRun, showVars } from "../notebook/live";
 import {
   PROTOCOL,
@@ -308,6 +309,21 @@ export const NotebookPanel = ({
             text: `Python drew ${op.title ? `“${op.title}”` : "a graph"} (${
               layout.nodes.length
             } boxes). Ctrl+Z undoes it.`,
+          });
+        } catch (e) {
+          setNote({ text: (e as Error).message, error: true });
+        }
+      } else if (op.op === "map") {
+        try {
+          drawBuilt(
+            excalidrawAPI,
+            (offset) => mapToSkeleton(op.map, offset),
+            panelWidth(),
+          );
+          setNote({
+            text: `Python drew ${
+              op.map.title ? `“${op.map.title}”` : "a map"
+            } (${op.map.shapes.length} shapes). Ctrl+Z undoes it.`,
           });
         } catch (e) {
           setNote({ text: (e as Error).message, error: true });
