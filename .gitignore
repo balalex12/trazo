@@ -39,3 +39,6 @@ assets/jupyterlite-work/
 .jupyterlite.doit.db
 __pycache__/
 *.egg-info/
+
+# the desktop app has its own lock file (npm ci), unlike the yarn workspace
+!desktop/package-lock.json
