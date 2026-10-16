@@ -18,6 +18,12 @@ import {
   openNotebookSite,
 } from "../notebook/liteUrl";
 import { mapToSkeleton } from "../notebook/geomap";
+import {
+  DEFAULT_SERVER_URL,
+  loadEnvironment,
+  parseServerUrl,
+  saveEnvironment,
+} from "../notebook/environment";
 import { clearRun, parseKernelOp, showRun, showVars } from "../notebook/live";
 import {
   PROTOCOL,
@@ -30,6 +36,7 @@ import { diagramToCells } from "../notebook/scaffold";
 import { useMobileBarOffset } from "./useMobileBarOffset";
 
 import type { El } from "../agent/elements";
+import type { Environment } from "../notebook/environment";
 import type { Reply, Request, RunCell } from "../notebook/protocol";
 
 const REQUEST_TIMEOUT_MS = 8000;
@@ -74,7 +81,20 @@ export const NotebookPanel = ({
   );
   const frame = useRef<HTMLIFrameElement>(null);
   const pending = useRef(new Map<string, Pending>());
+  /** Python in this browser (the notebook site) or a Jupyter server the user runs; the token of a server is kept only here */
+  const [env, setEnv] = useState<Environment>(() => loadEnvironment());
+  const [serverUrl, setServerUrl] = useState(DEFAULT_SERVER_URL);
+  const [serverToken, setServerToken] = useState<string | null>(null);
+  const [serverError, setServerError] = useState("");
+  /** the address loaded in the iframe, or null while no server has been connected */
+  const frameUrl =
+    env.kind === "browser"
+      ? jupyterLiteUrl()
+      : serverToken !== null || env.url
+      ? serverToken ?? env.url
+      : null;
   const origin = useRef<string>(jupyterLiteOrigin());
+  origin.current = frameUrl ? jupyterLiteOrigin(frameUrl) : origin.current;
   const counter = useRef(0);
   /** the colours of the boxes that are lit while their cell runs, and the cells as last reported */
   const lit = useRef(
@@ -87,6 +107,16 @@ export const NotebookPanel = ({
   const unlight = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** the handler of the latest render, so the one message listener never works with stale state */
   const onEvent = useRef<(reply: Reply) => void>(() => undefined);
+
+  // another environment is another kernel: forget everything about the old one
+  useEffect(() => {
+    setReady(false);
+    setSlow(false);
+    modules.current.clear();
+    lastRun.current = [];
+    clearRun(excalidrawAPI, lit.current);
+    setNote(null);
+  }, [frameUrl, excalidrawAPI]);
 
   useEffect(() => {
     const on = () => {
@@ -403,7 +433,33 @@ export const NotebookPanel = ({
             flexWrap: "wrap",
           }}
         >
-          <b style={{ flex: 1, minWidth: 90 }}>🐍 Notebook</b>
+          <span style={{ flex: 1, minWidth: 90 }}>
+            <select
+              value={env.kind}
+              onChange={(e) => {
+                const next: Environment =
+                  e.target.value === "server"
+                    ? { kind: "server", url: "" }
+                    : { kind: "browser" };
+                setServerError("");
+                setServerToken(null);
+                setEnv(next);
+                saveEnvironment(next);
+              }}
+              title="Where the Python runs: in this browser (sandboxed, nothing leaves the page) or on a Jupyter server you run"
+              style={{
+                font: "inherit",
+                fontWeight: 600,
+                border: "none",
+                background: "transparent",
+                color: "inherit",
+                cursor: "pointer",
+              }}
+            >
+              <option value="browser">🐍 Notebook · in this browser</option>
+              <option value="server">🐍 Notebook · Jupyter server</option>
+            </select>
+          </span>
           <button
             style={{ ...ghost, padding: "3px 9px" }}
             disabled={busy || !ready}
@@ -460,26 +516,103 @@ export const NotebookPanel = ({
             {note.text}
           </div>
         )}
-        {slow && !ready && (
+        {env.kind === "server" && (
+          <div style={{ padding: "0 10px 6px" }}>
+            <form
+              style={{ display: "flex", gap: 6 }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                const parsed = parseServerUrl(serverUrl);
+                if (typeof parsed === "string") {
+                  setServerError(parsed);
+                  return;
+                }
+                setServerError("");
+                // the token (if the address has one) stays in memory; only the address is remembered
+                setServerToken(parsed.url);
+                // the box shows the address without the token, so it is not left on screen
+                setServerUrl(parsed.clean);
+                const next: Environment = { kind: "server", url: parsed.clean };
+                setEnv(next);
+                saveEnvironment(next);
+              }}
+            >
+              <input
+                value={serverUrl}
+                onChange={(e) => setServerUrl(e.target.value)}
+                placeholder={DEFAULT_SERVER_URL}
+                spellCheck={false}
+                style={{
+                  flex: 1,
+                  font: "inherit",
+                  padding: "3px 6px",
+                  borderRadius: 4,
+                  border: "1px solid #8884",
+                  background: "transparent",
+                  color: "inherit",
+                }}
+              />
+              <button type="submit" style={{ ...ghost, padding: "3px 9px" }}>
+                Connect
+              </button>
+            </form>
+            {serverError && (
+              <div style={{ color: "#c92a2a", marginTop: 4 }}>
+                {serverError}
+              </div>
+            )}
+            <div style={{ color: "#c92a2a", marginTop: 4 }}>
+              This runs real code on the machine of that Jupyter, with no
+              sandbox. Connect only to one you started.
+            </div>
+          </div>
+        )}
+        {slow && !ready && frameUrl && (
           <div style={{ padding: "0 10px 8px", color: "#888" }}>
-            The notebook site does not answer at <code>{jupyterLiteUrl()}</code>
-            . Build it once and start it:
-            <pre style={{ margin: "4px 0 0", whiteSpace: "pre-wrap" }}>
-              {
-                "node tools/build-jupyterlite.mjs\ndocker compose --profile lite up -d"
-              }
-            </pre>
+            {env.kind === "browser" ? (
+              <>
+                The notebook site does not answer at{" "}
+                <code>{jupyterLiteUrl()}</code>. Build it once and start it:
+                <pre style={{ margin: "4px 0 0", whiteSpace: "pre-wrap" }}>
+                  {
+                    "node tools/build-jupyterlite.mjs\ndocker compose --profile lite up -d"
+                  }
+                </pre>
+              </>
+            ) : (
+              <>
+                That Jupyter does not answer at{" "}
+                <code>{jupyterLiteOrigin(frameUrl)}</code>. Start it and the
+                proxy that lets Trazo embed it:
+                <pre style={{ margin: "4px 0 0", whiteSpace: "pre-wrap" }}>
+                  {
+                    "jupyter lab --no-browser --LabApp.expose_app_in_browser=True\nnode tools/jupyter-proxy.mjs --target http://127.0.0.1:8888"
+                  }
+                </pre>
+                The buttons wake up when the page answers; in that Python,{" "}
+                <code>pip install ./tools/lite-python</code> gives you{" "}
+                <code>import trazo</code>.
+              </>
+            )}
             (see docs/NOTEBOOKS.md)
           </div>
         )}
-        <iframe
-          ref={frame}
-          src={jupyterLiteUrl()}
-          title="Python notebook"
-          // its own origin, so it cannot read Trazo's storage; it may run scripts and keep its own files
-          sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-popups allow-modals"
-          style={{ flex: 1, border: "none", background: "#fff" }}
-        />
+        {frameUrl ? (
+          <iframe
+            key={frameUrl.replace(/[?#].*$/, "")}
+            ref={frame}
+            src={frameUrl}
+            title="Python notebook"
+            // its own origin, so it cannot read Trazo's storage; it may run scripts and keep its own files
+            sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-popups allow-modals"
+            style={{ flex: 1, border: "none", background: "#fff" }}
+          />
+        ) : (
+          <div style={{ flex: 1, padding: "10px", color: "#888" }}>
+            Start your Jupyter and the proxy (see docs/NOTEBOOKS.md), then type
+            the address it prints above.
+          </div>
+        )}
       </div>
     </>
   );

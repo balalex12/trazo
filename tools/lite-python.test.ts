@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 // The conversion code of the `trazo` Python module has its own unittest file; this runs it with the rest of the tests
 // (it needs python3, which the notebook site build needs anyway: skipped without it).
@@ -38,3 +39,22 @@ const python = spawnSync("python3", ["-c", "pass"]).status === 0;
     });
   },
 );
+
+describe("one version of the trazo module everywhere", () => {
+  const read = (f: string) => readFileSync(f, "utf8");
+  it("agrees between the module, the wheel builder, the build script and pyproject", () => {
+    const versions = [
+      /__version__ = "([\d.]+)"/.exec(
+        read("tools/lite-python/trazo/__init__.py"),
+      )![1],
+      /VERSION = "([\d.]+)"/.exec(read("tools/lite-python/make_wheel.py"))![1],
+      /TRAZO_VERSION = "([\d.]+)"/.exec(
+        read("tools/build-jupyterlite.mjs"),
+      )![1],
+      /^version = "([\d.]+)"/m.exec(
+        read("tools/lite-python/pyproject.toml"),
+      )![1],
+    ];
+    expect(new Set(versions).size).toBe(1);
+  });
+});

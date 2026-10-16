@@ -80,11 +80,40 @@ The notebook runs in an iframe on its own origin (port 3002), so it cannot read 
 - The container's policy (`deploy/nginx/lite.conf`, plus `_csp.conf` written by the build) allows no origin except itself and `connect-src 'self'`, so a notebook cannot fetch from the network even if it tries. `'wasm-unsafe-eval'` is what WebAssembly needs and `'unsafe-eval'` is what JupyterLab's own code loader needs; both are the cost of running Python in the page. The inline scripts of the JupyterLite pages are allowed by hash, not by `'unsafe-inline'`.
 - `pip install` / `%pip install` inside a notebook reads from the packages bundled in the site only. A package that is not there cannot be installed (and would need the network, which is blocked). To add one that Pyodide ships, put its name in `PACKAGES` in `tools/build-jupyterlite.mjs` and rebuild.
 
-## What is and is not there
+## Use your own Python: a Jupyter server
+
+The notebook in the browser has the limits of a browser (no GDAL, no PyTorch, no sockets, a few GB of memory). When you need your own packages, your data or a GPU, the panel can use **a Jupyter server you run yourself** instead. In the panel header, change **🐍 Notebook · in this browser** to **🐍 Notebook · Jupyter server**.
+
+```
+# in your environment (a venv, conda, a container… with jupyterlab and ipykernel)
+jupyter labextension disable @jupyterlab/apputils-extension:announcements
+jupyter lab --no-browser --LabApp.expose_app_in_browser=True \
+            --LabApp.check_for_updates_class=jupyterlab.NeverCheckForUpdate
+# it prints a URL with a token, for example http://127.0.0.1:8888/lab?token=abc…
+
+# next to Trazo (node 18+, nothing to install): a small local proxy that lets Trazo embed that Jupyter
+node tools/jupyter-proxy.mjs --target http://127.0.0.1:8888
+```
+
+Then type `http://127.0.0.1:3003/lab?token=abc…` (the address of the proxy and the token Jupyter printed) in the box of the panel and press **Connect**. From then on the panel works as with the notebook in the browser: **Diagram this notebook**, **Send diagram to notebook**, **Draft notebook from diagram**, the boxes that light up while a cell runs and show the size of your tables, and the `trazo` module. In that Python, install the module once: `pip install ./tools/lite-python` (it is a plain pure-Python package; `import trazo` then also gives `trazo.map` and everything above). `tools/lite-python` is in this repository; it is not on PyPI.
+
+![The panel connected to a Jupyter server of your own: the diagram of its notebook, lit up while the real kernel runs](media/v5-notebooks-own-jupyter.png)
+
+What the proxy does, and what it does not:
+
+- It listens on `127.0.0.1` only, and answers only requests addressed to itself (a web page cannot reach it through DNS rebinding).
+- It adds **no login and keeps no secret**: Jupyter's token stays Jupyter's. Trazo remembers only the address, never the token (the token lives in memory for the session; Jupyter keeps its own login in a cookie).
+- It changes Jupyter's answers in two ways only: the Trazo origins may embed the page (`frame-ancestors`), and the bridge script is added to the JupyterLab page. Everything else, including the WebSockets of the kernels, passes through.
+- It refuses a target that is not on this machine unless you add `--allow-remote-target`. A remote Jupyter runs your code elsewhere and Trazo sends it the canvas on request, so that is your call. The panel accepts `http://` only for localhost; any other address must be `https://`.
+- The Trazo app's `frame-src` allows `http://localhost:3003` and `http://127.0.0.1:3003` (the proxy's default port) and any `https:` address; a proxy on another port needs it added in `scripts/csp-hashes.mjs`.
+
+**This is not a sandbox.** Code in that Jupyter runs on the machine that runs it, with that machine's files and network, exactly as if you ran it in a terminal. That is why the panel says so, why the browser-based Python stays the default, and why nothing starts it for you. Connect only to a Jupyter you started, and keep its token private. JupyterLab itself has two features that talk to the internet; the commands above turn them off: the "news" prompt (it fetches from jupyter.org if you accept) and the update check. Trazo's own promise (no request leaves the machine) covers Trazo and the notebook in the browser; what your own Jupyter and its packages do is up to your environment.
+
+## What is and is not there (in the browser)
 
 Included: `micropip`, IPython, NumPy, pandas, SciPy, matplotlib, scikit-learn, statsmodels, NetworkX, SymPy, Pillow, lxml, BeautifulSoup, PyYAML, pydantic, tqdm, joblib, xarray, PyArrow, SQLAlchemy, DuckDB, Shapely, pyproj, Fiona, GeoPandas, rasterio, h5py, netCDF4, and every pure-Python package of Pyodide.
 
-Not possible in the browser sandbox: GDAL command-line tools, FME, PyTorch/TensorFlow, anything that needs a socket or a server, and large datasets (the tab has a few GB of memory at most). Real files on your disk are not visible to the notebook: upload them in the file browser first (they stay in the tab).
+Not possible in the browser sandbox: GDAL command-line tools, FME, PyTorch/TensorFlow, anything that needs a socket or a server, and large datasets (the tab has a few GB of memory at most). Real files on your disk are not visible to the notebook: upload them in the file browser first (they stay in the tab). For any of that, use [your own Python](#use-your-own-python-a-jupyter-server).
 
 ## Moving the site
 

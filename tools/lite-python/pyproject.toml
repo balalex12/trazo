@@ -1,0 +1,16 @@
+# So the `trazo` module can also be installed in a Python of your own (a Jupyter server you connect to the notebook
+# panel, docs/NOTEBOOKS.md):   pip install ./tools/lite-python
+# In the notebook that runs in the browser it is already installed (tools/build-jupyterlite.mjs builds a wheel itself).
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trazo"
+version = "0.3.0"
+description = "Talk to the Trazo canvas from a notebook"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+
+[tool.setuptools]
+packages = ["trazo"]

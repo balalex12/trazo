@@ -139,6 +139,8 @@ Never put tokens or API keys in a map link (`?token=`): links are stored in the 
 
 - Python notebooks (optional, [NOTEBOOKS.md](NOTEBOOKS.md)): Pyodide, JupyterLite and their pip packages are downloaded **once, on your machine, at build time**, from pinned versions (the Pyodide tarball is checked against a pinned SHA-256), and served from `127.0.0.1:3002`. Python runs in a WebAssembly sandbox in the tab; the container's CSP allows no other origin (`connect-src 'self'`), so notebook code cannot reach the network. The notebook and the app talk through a checked `postMessage` bridge: notebook code can draw boxes on the canvas and read the diagram's text and connections, and nothing else (no storage, no keys, no files). It does need `'unsafe-eval'` and `'wasm-unsafe-eval'` for scripts; that is why it is a separate origin from the app and not part of it.
 
+- **Your own Jupyter** (optional, [NOTEBOOKS.md](NOTEBOOKS.md#use-your-own-python-a-jupyter-server)): the panel can embed a Jupyter server you run, through `tools/jupyter-proxy.mjs`. **That runs code unsandboxed on that machine**, so it is never the default, nothing starts it, and the panel warns. The proxy listens on `127.0.0.1` only, refuses requests for any other host name (DNS rebinding), adds no login and keeps no token (Trazo stores only the address), refuses a target that is not local unless told, and changes only `frame-ancestors` and the injected bridge script. The Trazo app allows embedding `localhost:3003` and any `https:` address (`frame-src`). The browser-side promise "no request leaves the machine" covers Trazo and the notebook in the browser, not what your Jupyter does.
+
 ## 7. Verify it yourself
 
 ```bash
