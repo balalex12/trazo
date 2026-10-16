@@ -49,9 +49,9 @@ const policy = [
   "font-src 'self' data:",
   // 'self' + local LLM servers (Ollama 11434, LM Studio 1234, ...). Remote LLM hosts: add them in nginx conf.
   "connect-src 'self' data: blob: http://localhost:* http://127.0.0.1:*",
-  // the ArcGIS viewer (port 3001, or VITE_APP_ARCGIS_VIEWER_ORIGIN if set), the notebook panel (port 3002) and https embeds
+  // the ArcGIS viewer (port 3001, or VITE_APP_ARCGIS_VIEWER_ORIGIN if set), the notebook panel (port 3002), the proxy of the user's own Jupyter (port 3003, tools/jupyter-proxy.mjs) and https embeds
   // (ArcGIS apps, video, ...); embeds are sandboxed by the app
-  `frame-src 'self' http://localhost:3001 http://127.0.0.1:3001${extraFrameSrc} http://localhost:3002 http://127.0.0.1:3002${extraLiteFrameSrc} https:`,
+  `frame-src 'self' http://localhost:3001 http://127.0.0.1:3001${extraFrameSrc} http://localhost:3002 http://127.0.0.1:3002${extraLiteFrameSrc} http://localhost:3003 http://127.0.0.1:3003 https:`,
   "worker-src 'self' blob:",
   "media-src 'self' blob: data:",
   "object-src 'none'",

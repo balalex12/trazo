@@ -38,3 +38,4 @@ assets/jupyterlite/
 assets/jupyterlite-work/
 .jupyterlite.doit.db
 __pycache__/
+*.egg-info/
