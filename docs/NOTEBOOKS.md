@@ -19,14 +19,38 @@ The first start of a notebook takes some seconds (Pyodide loads), then it is qui
 
 ## Notebook and diagram, in both directions
 
-![The notebook panel next to the canvas: the notebook, the diagram it produced, and the cell sent back](media/v5-notebooks-panel.png)
+The panel header has three buttons that connect the notebook with the canvas, and two things happen on their own while you work:
 
-The panel header has two buttons that connect the notebook with the canvas:
+- **Diagram this notebook** draws where the data goes in the notebook that is open (files read, tables, models, files written), **as it is now, saved or not**, with no download. Trazo only reads the notebook as text: it is not run. Ctrl+Z undoes the drawing, and the drawing is fitted into the free space next to the panel. The rules are in [IMPORT.md](IMPORT.md#jupyter-notebook), and the same importer takes any `.ipynb` you paste or choose in **Import to diagram**.
+- **Send diagram to notebook** adds a code cell at the end of the open notebook with the boxes and arrows on the canvas as two pandas tables (`nodes`: id, label, details, role; `edges`: from, to, label). It is **not run**: you run it.
+- **Draft notebook from diagram** is the importer the other way round: it writes a first draft of a notebook from the diagram, one code cell per box in the order the data flows (imports first). Boxes named like a file become a read (`pd.read_csv`, `read_parquet`, `gpd.read_file`, `rasterio.open`…), a box that ends the flow and is named like a file becomes a write, the steps in between are `TODO`s that keep the box's name and details as comments, and a box with two inputs becomes a `merge`. No AI: the same diagram gives the same cells, which are valid Python and are **not run**.
 
-- **Diagram this notebook** draws where the data goes in the notebook that is open (files read, tables, models, files written), **as it is now, saved or not**, with no download. Trazo only reads the notebook as text: it is not run. Ctrl+Z undoes the drawing. The rules are in [IMPORT.md](IMPORT.md#jupyter-notebook), and the same importer takes any `.ipynb` you paste or choose in **Import to diagram**.
-- **Send diagram to notebook** adds a code cell at the end of the open notebook with the boxes and arrows on the canvas as two pandas tables (`nodes`: id, label, details, role; `edges`: from, to, label). It is **not run**: you run it. From there you can join the diagram with your data, count, filter or redraw it with NetworkX. So a research loop is: draw or import an architecture, send it to the notebook, analyse it, and diagram the notebook back.
+![A notebook next to the canvas: the notebook's tables are on the canvas, each with its size](media/v5-notebooks-live.png)
 
-How they talk: the notebook runs in an iframe on its own origin (port 3002), so it cannot read Trazo's storage (settings, AI keys). The two sides exchange a few `postMessage` messages (`excalidraw-app/notebook/protocol.ts` and `tools/lite-bridge.js`), each side checking the origin and the window of the other and the shape of every message. The notebook side answers only to the Trazo origins listed in `PARENT_ORIGINS` (`tools/build-jupyterlite.mjs`, the same list as `frame-ancestors`); if some other page embeds the site, it stays silent. A cell sent to the notebook is only text: a label cannot turn into code, because every label is written as an escaped string literal.
+**The diagram follows your notebook.** For a diagram drawn from a notebook, each box knows its cell and its variable. While a cell runs, its boxes light up in orange; when it finishes they flash green and go back. After every run the kernel is asked, quietly (not stored in the history), what its tables and arrays are, and each box shows the real size next to it (`400 × 3`, `(400,)`). So the diagram is a live view of the analysis, not a drawing that goes stale. These labels are not part of the diagram: they are skipped when the canvas is sent to a notebook or to the Agent.
+
+### The `trazo` module: Python talks to the canvas
+
+Every notebook in the panel starts with the `trazo` module installed (`import trazo`):
+
+```python
+import pandas as pd
+import trazo
+
+trazo.draw(graph)               # a NetworkX graph, a DataFrame of edges, {"nodes": [...], "edges": [...]} or [(a, b), ...]
+nodes, edges = trazo.canvas()   # the diagram on the canvas, as two pandas tables
+nodes, edges = trazo.selected() # the same, only for the boxes you selected
+```
+
+`draw` puts the graph on the canvas (hand-drawn, laid out left to right, undoable); a node may carry `label`, `details` (a list of lines) and `role` (`database`, `cache`, `queue`, `storage`, `function`…). Up to 150 nodes. `canvas()` and `selected()` give the canvas **as it was when the previous cell finished**: Trazo sends a fresh copy to every notebook that imported the module each time the diagram or the selection changes, and a notebook can only receive messages between cells (waiting for an answer inside a cell would block). Put `import pandas as pd` in the cell so the notebook loads pandas. This works only in the panel inside Trazo; elsewhere it says so.
+
+![trazo.draw from a cell](media/v5-notebooks-python-draw.png)
+
+![The draft of a notebook written from the diagram](media/v5-notebooks-draft.png)
+
+### How they talk, and why it is safe
+
+The notebook runs in an iframe on its own origin (port 3002), so it cannot read Trazo's storage (settings, AI keys). The two sides exchange a few `postMessage` messages (`excalidraw-app/notebook/protocol.ts`, `tools/lite-bridge.js`), each side checking the origin and the window of the other and the shape of every message; sizes are capped and unknown fields ignored. The notebook side answers only to the Trazo origins listed in `PARENT_ORIGINS` (`tools/build-jupyterlite.mjs`, the same list as `frame-ancestors`); if some other page embeds the site, it stays silent. Code in a notebook can therefore do two things to Trazo: **draw boxes and arrows** and **read the diagram on the canvas** (its text and connections), nothing else. A cell sent to the notebook is only text: a label cannot turn into code, because every label is written as an escaped string literal. Nothing is run for you.
 
 ![A notebook running in the browser: a table, an aggregation and a matplotlib chart](media/v5-notebooks-jupyterlite.png)
 

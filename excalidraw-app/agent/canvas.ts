@@ -67,6 +67,9 @@ export const buildIndex = (elements: readonly El[]): CanvasIndex => {
     if (LINEAR.has(e.type) || FRAMES.has(e.type)) {
       return null;
     }
+    if (e.customData?.trazoBadge) {
+      return null; // the size of a table written next to its box by the notebook panel: not a box of the diagram
+    }
     if (e.type === "text" && e.containerId) {
       const c = byId.get(e.containerId);
       if (c?.type === "arrow") {
