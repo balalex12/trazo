@@ -23,6 +23,8 @@ Working name: **Trazo** ("stroke / trace" in Spanish). The name is centralised s
 
 The mark (a stroke ending in a node) is original artwork. App icons (`public/favicon.*`, `android-chrome-*`, `apple-touch-icon.png`, `maskable_icon_*`) are generated from it by `tools/make-icons.cjs`; edit `MARK`/`BG` there to restyle and re-run (`npm i --no-save puppeteer-core`). Replace with a designer's artwork before a public 1.0.
 
+The **social preview** (the image shown when the repository link is shared) is `docs/media/social-preview.png`, 1280x640. Its source is `tools/social-preview/index.html`; edit it and run `node tools/social-preview/render.cjs` (needs Chrome and `puppeteer-core`), then upload the PNG in GitHub under Settings > General > Social preview.
+
 ## Color
 
 The brand color is an **orange "ink"**, chosen to be distinct from Excalidraw's indigo and from Esri's blue (using Esri's blue as our own would suggest an affiliation).
