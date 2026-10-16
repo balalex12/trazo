@@ -2,7 +2,7 @@
 // Local-first: Pyodide and the Python packages are downloaded ONCE here, at build time, and served from your own
 // machine. Once built, the notebook site makes no network request.
 //
-//   node tools/build-jupyterlite.mjs              (run from the repository root; needs python3, tar with bzip2, node 18+)
+//   node tools/build-jupyterlite.mjs              (run from the repository root; needs Python 3 (python3, or python on Windows), tar with bzip2, node 18+)
 //   docker compose --profile lite up -d           (then http://127.0.0.1:3002)
 //
 // What it does: downloads the official Pyodide distribution (pinned, checked against a SHA-256), keeps the core plus a
@@ -24,6 +24,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 // Pyodide must be the version the JupyterLite kernel was built for (see the kernel's bundled pyodide.mjs URL).
 export const PYODIDE_VERSION = "314.0.6";
@@ -82,6 +83,8 @@ export const PACKAGES = [
   "netcdf4",
 ];
 
+// Windows has no `python3`, only `python` (or the `py` launcher)
+const PYTHON = process.platform === "win32" ? "python" : "python3";
 const OUT = "assets/jupyterlite";
 const WORK = "assets/jupyterlite-work";
 
@@ -235,7 +238,7 @@ const main = async () => {
   );
   // our own `trazo` module (tools/lite-python), built as a wheel and listed like any Pyodide package, so every kernel
   // starts with `import trazo` available
-  const wheelName = execFileSync("python3", [
+  const wheelName = execFileSync(PYTHON, [
     "tools/lite-python/make_wheel.py",
     "tools/lite-python/trazo",
     slim,
@@ -258,7 +261,7 @@ const main = async () => {
 
   // 3. JupyterLite, from pinned pip packages in a throwaway virtualenv
   const venv = path.join(WORK, "venv");
-  if (!existsSync(venv)) run("python3", ["-m", "venv", venv]);
+  if (!existsSync(venv)) run(PYTHON, ["-m", "venv", venv]);
   const bin = path.join(venv, process.platform === "win32" ? "Scripts" : "bin");
   run(path.join(bin, "pip"), ["install", "--quiet", ...PIP_PINS]);
   const content = path.join(WORK, "lite", "files");
@@ -312,7 +315,11 @@ const main = async () => {
   );
 };
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// run only when started directly (compare file URLs: `file://${path}` never matches on Windows)
+if (
+  process.argv[1] &&
+  pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url
+) {
   main().catch((e) => {
     console.error(e.message);
     process.exit(1);

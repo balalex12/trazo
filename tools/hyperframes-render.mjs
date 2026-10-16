@@ -29,6 +29,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, extname, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import {
   VOICES,
@@ -264,9 +265,11 @@ const main = async () => {
   }
 };
 
+// run only when started directly. Compare file URLs: on Windows the path of this file is not
+// the pathname of its URL ("C:\x" against "/C:/x"), and a wrong comparison made the tool do nothing, silently.
 if (
   process.argv[1] &&
-  resolve(process.argv[1]) === new URL(import.meta.url).pathname
+  pathToFileURL(resolve(process.argv[1])).href === import.meta.url
 ) {
   main();
 }
