@@ -170,8 +170,11 @@ const ALLOW_SAME_ORIGIN = new Set([
 
 // ---- ArcGIS: any portal / any item -------------------------------------
 const ID32 = "([0-9a-f]{32})";
+// An http(s) URL whose PATH is an ArcGIS app (any host: self-hosted Enterprise portals have their own names), or
+// a known ArcGIS Online app host. The scheme and the path are anchored: "javascript:...//experience/" or a
+// "?next=/experience/" query must not pass.
 const RE_ARCGIS_APP =
-  /\/(apps\/(opsdashboard|dashboards|experiencebuilder|instant|webappviewer|storymaps|sites|webappbuilder)|experience\/)|^https?:\/\/(experience|storymaps|[^/]*\.maps)\.arcgis\.com\//i;
+  /^https?:\/\/[^/?#]+\/(?:[^?#]*\/)?(?:apps\/(?:opsdashboard|dashboards|experiencebuilder|instant|webappviewer|storymaps|sites|webappbuilder)|experience)\/|^https?:\/\/(?:experience|storymaps|[^/]*\.maps)\.arcgis\.com\//i;
 
 // The ArcGIS viewer is a separate static site (viewer/), normally reachable at the same host on
 // port 3001 (see docs/VIEWER.md). Deployments that move it — a different port, a reverse proxy, a

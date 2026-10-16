@@ -1,6 +1,6 @@
 // docker-compose.yml -> a small model of the architecture (pure, no DOM). Deterministic: the file is read, nothing is
 // guessed by a model. Layout and drawing live in graph.ts.
-import { load } from "js-yaml";
+import { loadYaml } from "./yaml";
 
 import { ROLE_STYLE, clip } from "./graph";
 
@@ -114,7 +114,7 @@ export const parseCompose = (text: string): ComposeModel => {
   }
   let doc: unknown;
   try {
-    doc = load(text);
+    doc = loadYaml(text);
   } catch (e) {
     throw new Error(
       `That is not valid YAML: ${(e as Error).message.split("\n")[0]}`,

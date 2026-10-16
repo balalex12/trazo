@@ -11,7 +11,7 @@
 //   node tools/cli-bridge.mjs --status | --rotate | --help
 //
 // What it does NOT do: it never reads, stores or forwards your credentials (the CLI keeps its own login), it has no
-// shell, and the CLI is started with no tools (it cannot read files or run commands). Read docs/CLI_BRIDGE.md,
+// shell, and the CLI is started with no tools (Claude) or a read-only sandbox (Codex). Read docs/CLI_BRIDGE.md,
 // including the note about the providers' terms, before using it.
 //
 // Safety rules, all enforced below:
@@ -365,6 +365,9 @@ export const createBridge = ({
       input = JSON.parse(body);
     } catch {
       return send(res, 400, { error: "Body must be JSON." }, allowed);
+    }
+    if (!input || typeof input !== "object") {
+      return send(res, 400, { error: "Body must be a JSON object." }, allowed);
     }
     const messages = Array.isArray(input.messages)
       ? input.messages.filter(

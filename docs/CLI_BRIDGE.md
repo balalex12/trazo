@@ -43,7 +43,7 @@ So the bridge **removes** `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_C
 ## What it does and does not do
 
 - It runs the CLI in its **non-interactive mode** (`claude -p` with JSON output, or `codex exec`), sends the diagram request on standard input and returns the text answer, the model that made it and a list-price cost estimate (a subscription is not billed per request).
-- The CLI is started **with no tools** (Claude: `--tools ""`; Codex: read-only sandbox), in an **empty temporary folder**, so it cannot read your files or run commands. The folder is deleted afterwards.
+- The CLI is started in an **empty temporary folder** (deleted afterwards), **with no tools** for Claude (`--tools ""`), so it cannot read your files or run commands. Codex gets a **read-only sandbox**, which stops it from changing anything but does not stop it from reading files on your disk: if you use Codex, treat diagrams from strangers like any prompt-injection risk.
 - **Trazo never sees your login.** The CLI keeps its own credentials. The bridge does not read, store or forward them. The only secret the page holds is the bridge token, which gives access to the bridge and nothing else.
 - Your diagram text goes to the provider through the CLI, as if you typed it in that tool.
 

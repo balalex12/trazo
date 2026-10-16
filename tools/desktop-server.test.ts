@@ -175,4 +175,20 @@ describe("the desktop app's local server", () => {
       (await get("/llm/ollama-cloud/v1/x", { method: "PUT" })).status,
     ).toBe(405);
   });
+  it("survives paths that Node refuses upstream (a web page can send them)", async () => {
+    seen = [];
+    for (const odd of ["a%20b", "%E2%82%AC", "x%0d%0ay", "%00"]) {
+      const r = await get(`/llm/ollama-cloud/${odd}`);
+      expect([200, 400]).toContain(r.status);
+    }
+    // still serving afterwards, and what was forwarded stayed encoded
+    expect((await get("/")).status).toBe(200);
+    expect(seen.every((s) => !/[\s\u0080-\uffff]/.test(s.url ?? ""))).toBe(
+      true,
+    );
+    // an encoded slash cannot climb out of the route
+    seen = [];
+    await get("/llm/ollama-cloud/..%2f..%2fx");
+    expect(seen.every((s) => !(s.url ?? "").includes("/../"))).toBe(true);
+  });
 });

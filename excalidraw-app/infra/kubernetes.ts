@@ -1,7 +1,7 @@
 // Kubernetes manifests -> architecture graph (pure, no DOM). Deterministic: the YAML is read and the relations that
 // Kubernetes itself defines are followed (selectors, ingress backends, references to config and claims). One thing is
 // inferred and says so on the arrow: a workload that names a Service in an environment variable value.
-import { loadAll } from "js-yaml";
+import { loadAllYaml } from "./yaml";
 
 import { detectRole } from "./compose";
 import { MAX_NODES, ROLE_STYLE, clip } from "./graph";
@@ -147,7 +147,7 @@ export const parseKubernetes = (text: string): Graph => {
   }
   let docs: unknown[];
   try {
-    docs = loadAll(text);
+    docs = loadAllYaml(text);
   } catch (e) {
     if (/\{\{.*\}\}/.test(text)) {
       throw new Error(HELM_HELP);
