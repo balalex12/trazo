@@ -18,6 +18,7 @@ Reply with ONLY a JSON object, nothing before or after it, in this shape:
 - {"op":"delete_node","id":"<id>"}  deletes a box and its arrows.
 - {"op":"delete_edge","from":"<id>","to":"<id>"}  removes the arrow between two nodes.
 - {"op":"move_node","id":"<id>","x":0,"y":0}  moves a box.
+- {"op":"draw_diagram","nodes":[{"id":"a","label":"Sensors","role":"network"}],"edges":[{"from":"a","to":"b","label":"MQTT"}]}  draws a whole new diagram at once (more than 3 or 4 boxes), laid out and colored by Trazo, below what is already there. Use it when asked to draw, design or create a diagram from scratch; use add_node only to add a box to a diagram that exists. 5 to 14 boxes, ids of your choice, edges from upstream to downstream; a label may have a second line after a newline.
 
 Roles (they set the color): ${ROLES.join(", ")}. Use "app" when unsure.
 

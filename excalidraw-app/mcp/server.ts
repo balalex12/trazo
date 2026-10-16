@@ -4,19 +4,17 @@
 // main.ts connects it to stdin and stdout.
 import { summarize } from "../agent/canvas";
 import { excalidrawFile } from "../agent/elements";
-import { layoutToElements } from "../agent/fromLayout";
+import { graphFromSpec, layoutToElements } from "../agent/fromLayout";
 import { applyOps, ROLES } from "../agent/ops";
 import { FORMAT_NAMES, SUPPORTED, importInfra } from "../infra/detect";
 import { layoutGraph } from "../infra/graph";
 
 import type { El } from "../agent/elements";
-import type { Graph, Role } from "../infra/graph";
 
 export const SERVER_NAME = "trazo";
 export const SERVER_VERSION = "0.1.0";
 const PROTOCOLS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 const MAX_FILE = 5 * 1024 * 1024;
-const MAX_NODES = 150;
 
 /** the folder the server may touch; `dir` is where it is (inside the container: /work) */
 export type Files = {
@@ -210,7 +208,7 @@ const TOOLS = [
   {
     name: "trazo_edit",
     description:
-      'Edit a .excalidraw file with simple operations, using the ids from trazo_describe. Operations: {"op":"add_node","id":"n1","label":"Cache","role":"cache","near":"<id>" | "between":["<id>","<id>"] | "x","y"}, {"op":"add_edge","from":"<id>","to":"<id>","label":""}, {"op":"update_node","id":"<id>","label":"new name","role":"database"}, {"op":"delete_node","id":"<id>"}, {"op":"delete_edge","from":"<id>","to":"<id>"}, {"op":"move_node","id":"<id>","x":0,"y":0}. A new node may be named (id) and used by later operations of the same call. Returns what was done and what was skipped, and why.',
+      'Edit a .excalidraw file with simple operations, using the ids from trazo_describe. Operations: {"op":"add_node","id":"n1","label":"Cache","role":"cache","near":"<id>" | "between":["<id>","<id>"] | "x","y"}, {"op":"add_edge","from":"<id>","to":"<id>","label":""}, {"op":"update_node","id":"<id>","label":"new name","role":"database"}, {"op":"delete_node","id":"<id>"}, {"op":"delete_edge","from":"<id>","to":"<id>"}, {"op":"move_node","id":"<id>","x":0,"y":0}, {"op":"draw_diagram","nodes":[{"id":"a","label":"API","role":"app"}],"edges":[{"from":"a","to":"b"}]} (a whole new diagram, laid out by Trazo, below what is there). A new node may be named (id) and used by later operations of the same call. Returns what was done and what was skipped, and why.',
     inputSchema: {
       type: "object",
       properties: {
@@ -285,50 +283,11 @@ const callTool = async (files: Files, name: string, args: Json) => {
     }
 
     case "trazo_create_diagram": {
-      const nodes = Array.isArray(args.nodes) ? args.nodes : [];
-      if (!nodes.length) {
-        throw new ToolError("Give at least one node.");
+      const spec = graphFromSpec(args.nodes, args.edges);
+      if (typeof spec === "string") {
+        throw new ToolError(spec);
       }
-      if (nodes.length > MAX_NODES) {
-        throw new ToolError(`At most ${MAX_NODES} nodes.`);
-      }
-      const ids = new Set<string>();
-      const graph: Graph = { nodes: [], edges: [] };
-      for (const n of nodes) {
-        const id = String(n?.id ?? "").trim();
-        const label = String(n?.label ?? "").trim();
-        if (!id || !label) {
-          throw new ToolError("Every node needs an id and a label.");
-        }
-        if (ids.has(id)) {
-          throw new ToolError(`The id "${id}" is used twice.`);
-        }
-        ids.add(id);
-        graph.nodes.push({
-          id,
-          lines: label.split("\n").slice(0, 12),
-          role: (ROLES as string[]).includes(n.role) ? (n.role as Role) : "app",
-        });
-      }
-      const skipped: string[] = [];
-      for (const [i, e] of (Array.isArray(args.edges)
-        ? args.edges
-        : []
-      ).entries()) {
-        if (!ids.has(e?.from) || !ids.has(e?.to)) {
-          skipped.push(`edge ${i + 1} (${e?.from} to ${e?.to}): unknown node`);
-          continue;
-        }
-        graph.edges.push({
-          id: `e${i}`,
-          from: e.from,
-          to: e.to,
-          kind: "depends",
-          ...(typeof e.label === "string" && e.label.trim()
-            ? { label: e.label.trim().slice(0, 60) }
-            : {}),
-        });
-      }
+      const { graph, skipped } = spec;
       const layout = layoutGraph(graph);
       const out = diagramName(args.output);
       await writeDiagram(

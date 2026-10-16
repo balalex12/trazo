@@ -26,6 +26,30 @@ const freeSpot = (api: ExcalidrawImperativeAPI) => {
 };
 
 /**
+ * Fits the view to `bounds` (x1, y1, x2, y2) with some air around it. `rightInset`: pixels on the right of the view that
+ * something covers (a panel), so the drawing is fitted into the free part to its left.
+ */
+export const fitTo = (
+  api: ExcalidrawImperativeAPI,
+  bounds: [number, number, number, number],
+  rightInset = 0,
+) => {
+  const [bx1, by1, bx2, by2] = bounds;
+  // some air around the drawing, so it does not touch the edges of the view
+  const pad = Math.max(30, 0.04 * Math.max(bx2 - bx1, by2 - by1));
+  const [x1, y1, x2, y2] = [bx1 - pad, by1 - pad, bx2 + pad, by2 + pad];
+  // fitting into (width - inset) pixels means the target is wider by inset / zoom, and zoom = (width - inset) / w
+  const width = api.getAppState().width;
+  const free = width - rightInset;
+  const extra =
+    rightInset > 0 && free > 100 ? (rightInset * (x2 - x1)) / free : 0;
+  api.setViewport({
+    target: [x1, y1, x2 + extra, y2],
+    fit: "scale-down",
+  } as any);
+};
+
+/**
  * Adds skeletons built for `offset` as one undo step and fits the view to `bounds` (their area, offset included).
  * `rightInset`: pixels on the right of the view that something covers (a panel), so the drawing is fitted into the
  * free part to its left instead of hiding behind it.
@@ -44,19 +68,7 @@ const place = (
     elements: [...api.getSceneElementsIncludingDeleted(), ...created],
     captureUpdate: CaptureUpdateAction.IMMEDIATELY, // so the import can be undone
   });
-  const [bx1, by1, bx2, by2] = bounds;
-  // some air around the drawing, so it does not touch the edges of the view
-  const pad = Math.max(30, 0.04 * Math.max(bx2 - bx1, by2 - by1));
-  const [x1, y1, x2, y2] = [bx1 - pad, by1 - pad, bx2 + pad, by2 + pad];
-  // fitting into (width - inset) pixels means the target is wider by inset / zoom, and zoom = (width - inset) / w
-  const width = api.getAppState().width;
-  const free = width - rightInset;
-  const extra =
-    rightInset > 0 && free > 100 ? (rightInset * (x2 - x1)) / free : 0;
-  api.setViewport({
-    target: [x1, y1, x2 + extra, y2],
-    fit: "scale-down",
-  } as any);
+  fitTo(api, bounds, rightInset);
 };
 
 export const drawLayout = (

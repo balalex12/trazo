@@ -3,7 +3,7 @@
 //
 // The AI never writes Excalidraw JSON. It names boxes by the ids of the canvas summary and asks for a few simple
 // operations; everything here is validated, and what cannot be done is reported, not guessed.
-import { ROLE_STYLE } from "../infra/graph";
+import { ROLE_STYLE, layoutGraph } from "../infra/graph";
 
 import { buildIndex } from "./canvas";
 import {
@@ -17,6 +17,7 @@ import {
   textSize,
   touch,
 } from "./elements";
+import { graphFromSpec, layoutToElements } from "./fromLayout";
 
 import type { Role } from "../infra/graph";
 import type { NodeInfo } from "./canvas";
@@ -41,7 +42,12 @@ export type Op =
   | { op: "update_node"; id: string; label?: string; role?: Role }
   | { op: "delete_node"; id: string }
   | { op: "delete_edge"; from: string; to: string }
-  | { op: "move_node"; id: string; x: number; y: number };
+  | { op: "move_node"; id: string; x: number; y: number }
+  | {
+      op: "draw_diagram";
+      nodes: { id: string; label: string; role?: Role }[];
+      edges?: { from: string; to: string; label?: string }[];
+    };
 
 export type ApplyResult = {
   elements: El[];
@@ -468,6 +474,39 @@ export const applyOps = (
         translate(keys, op.x - target.box.x, op.y - target.box.y);
         reroute(keys);
         applied.push(`Moved ${label(target)}`);
+        return;
+      }
+
+      case "draw_diagram": {
+        // a whole diagram at once, laid out by Trazo (the same layout as the imports), below what is already there
+        const spec = graphFromSpec(op.nodes, op.edges);
+        if (typeof spec === "string") {
+          skipped.push(`Operation ${n}: ${spec}`);
+          return;
+        }
+        spec.skipped.forEach((s) => skipped.push(`Operation ${n}: ${s}`));
+        const live = els.filter((e) => !e.isDeleted);
+        const offset = live.length
+          ? {
+              x: Math.min(...live.map((e) => e.x)),
+              y: Math.max(...live.map((e) => e.y + e.height)) + 120,
+            }
+          : { x: 0, y: 0 };
+        els = [
+          ...els,
+          ...layoutToElements(
+            layoutGraph({ ...spec.graph, flow: true }),
+            ctx,
+            offset,
+          ),
+        ];
+        const boxes = spec.graph.nodes.length;
+        const arrows = spec.graph.edges.length;
+        applied.push(
+          `Drew a diagram of ${boxes} box${
+            boxes === 1 ? "" : "es"
+          } and ${arrows} arrow${arrows === 1 ? "" : "s"}`,
+        );
         return;
       }
 
