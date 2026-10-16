@@ -33,37 +33,48 @@ const built = () => fs.existsSync(path.join(ROOT, "_csp.conf")) && fs.existsSync
 /** the policy nginx would send (the quoted value of add_header in _csp.conf) */
 const policy = () => /Content-Security-Policy "([^"]+)"/.exec(fs.readFileSync(path.join(ROOT, "_csp.conf"), "utf8"))[1];
 
+/**
+ * Every file of the site, found once when the server starts: the URL path -> the file. A request is answered only from
+ * this table, so what a request asks for never becomes a path on the disk (no traversal is possible by construction).
+ */
+const siteFiles = () => {
+  const files = new Map();
+  const walk = (dir, url) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const file = path.join(dir, entry.name);
+      const at = `${url}/${entry.name}`;
+      if (entry.isDirectory()) {
+        walk(file, at);
+      } else if (entry.isFile() && at !== "/_csp.conf") {
+        files.set(at, file);
+        if (entry.name === "index.html") {
+          // a folder is served by its index, with or without the closing slash
+          files.set(`${url}/`, file);
+          if (url) files.set(url, file);
+        }
+      }
+    }
+  };
+  walk(ROOT, "");
+  return files;
+};
+
 const start = (port) =>
   new Promise((resolve, reject) => {
     const csp = policy();
+    const files = siteFiles();
     const server = http.createServer((req, res) => {
-      const notFound = () => {
-        res.writeHead(404);
-        res.end();
-      };
-      // the requested path is resolved against the site folder and checked to stay inside it BEFORE the disk is touched
       let requested;
       try {
         requested = decodeURIComponent(req.url.split("?")[0]);
       } catch {
-        return notFound();
+        requested = "";
       }
-      if (requested.includes("\0")) {
-        return notFound();
-      }
-      // resolved against the site folder, and checked with startsWith(root + separator) before every use of the disk
-      let file = path.resolve(ROOT, `.${requested.startsWith("/") ? requested : `/${requested}`}`);
-      if (file !== ROOT && !file.startsWith(ROOT + path.sep)) {
-        return notFound();
-      }
-      if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {
-        file = path.resolve(file, "index.html");
-        if (!file.startsWith(ROOT + path.sep)) {
-          return notFound();
-        }
-      }
-      if (path.basename(file) === "_csp.conf" || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
-        return notFound();
+      const file = files.get(requested);
+      if (!file) {
+        res.writeHead(404);
+        res.end();
+        return;
       }
       res.writeHead(200, {
         "Content-Type": MIME[file.split(".").pop()] || "application/octet-stream",
