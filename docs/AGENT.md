@@ -1,5 +1,7 @@
 # Agent panel: ask an AI about your diagram, or have it edit it
 
+![The agent panel drawing a diagram](media/tour/10-agent.png)
+
 **✦ Agent** (the button at the bottom, next to Animation; or the command palette: "Agent") opens a chat panel. You talk to **your own model**, the one you connected in **Menu → AI assistant settings** (a local model, an API key or the experimental [CLI bridge](CLI_BRIDGE.md)). Nothing is sent until you connect one, and the panel says, on top, which connection is in use and whether the text stays on your computer.
 
 ## What you can ask

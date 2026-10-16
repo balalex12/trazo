@@ -1,5 +1,7 @@
 # Python notebooks in the browser
 
+![A notebook panel next to the diagram of its data flow](media/tour/05-notebook.png)
+
 Trazo can open **JupyterLite**: Jupyter notebooks whose Python (with pandas, NumPy, SciPy, scikit-learn, matplotlib, GeoPandas, Shapely, rasterio, DuckDB…) runs **inside the browser tab**, through WebAssembly (Pyodide). There is no Python server, nothing is executed on your computer outside the tab's sandbox, and nothing is sent anywhere.
 
 It is optional and separate from the app: a small static site that you build once and that Docker serves on `127.0.0.1:3002`.

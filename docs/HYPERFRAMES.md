@@ -77,7 +77,7 @@ In the Animation panel, **✨ Direct with AI**. The model reads what is on each 
 
 You can write a note first ("for the sales team, friendly, in Spanish, short"). The answer is a small JSON that Trazo **validates field by field** (unknown slides, out-of-range times, unknown transitions and over-long texts are dropped and listed, never "fixed"), then shows slide by slide with checkboxes. **Apply** changes only what you ticked, as one undoable step (Ctrl+Z). The model never edits the canvas and never writes code, so a bad answer cannot break anything, and a small local model is enough.
 
-![The proposal of the AI director](media/v5-ai-director.png)
+![The proposal of the AI director](media/tour/11-director.png)
 
 The script is stored on the slide (`customData.script`, in the slide list under the caption) and is used three ways:
 
@@ -106,7 +106,7 @@ For things the slides cannot express (kinetic titles, an explainer that grows sc
 
 When a file is refused, the **reasons are sent back to the model** and it tries again (up to three attempts). A file that passes is saved as `composition.html`. The model builds on a tiny helper that Trazo inserts into the file, `trazoTimeline(id, seconds).add(target, keyframes, {start, duration, easing, stagger})`: every animation is a paused Web Animation that is moved to the asked time, so any frame can be requested in any order and looks the same. It needs no GSAP and no network, which makes it small enough for a modest model to use correctly. A model writing the example below was told only the rules in `AUTHOR_SYSTEM`.
 
-![Frames of a composition written as the model would write it, rendered by HyperFrames](media/v5-ai-composition.png)
+![Frames of a composition written as the model would write it, rendered by HyperFrames](media/tour/12-compose.png)
 
 Then, on your computer:
 

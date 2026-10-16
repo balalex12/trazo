@@ -1,5 +1,7 @@
 # Trazo as a desktop app
 
+![The desktop app](media/tour/13-desktop.png)
+
 The same Trazo as in your browser or in Docker, in its own window, installed like any other program: **no Docker, no Node.js, no command line**. It is the site of the Docker image served by a small local server on `127.0.0.1:3000`, inside a window with no Node.js (the page cannot read your files or run programs). The security headers are the ones of `deploy/nginx/app.conf`, and nothing is contacted unless you connect something (an AI, an ArcGIS portal), exactly like the web version.
 
 ## What you download

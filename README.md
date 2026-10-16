@@ -47,48 +47,31 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 | 🧩 **Icon packs by source** | 450+ components grouped **by source**, never mixed, each credited to its author: architecture and system design, data processing, deep learning, networking, UML/ER, Microsoft Fabric… from 16 curated **community libraries** (downloaded from the official catalog at build time), plus **63 own neutral icons** (GIS & spatial data, data engineering, machine learning) and the **GIS pack** below. |
 | 🗺️ **GIS pack: live maps and Esri icons** | Embed interactive ArcGIS maps in the canvas: add layers by URL or item ID, browse _My content_ or search any portal, open Web Maps, sketch on top. Works with **ArcGIS Online and any number of ArcGIS Enterprise portals** at once. Official **Esri Architecture Center** icons and Utility Network concepts. Optional Utility Network trace (needs a Web Map with a Utility Network). |
 
-<table>
-<tr>
-<td><img src="docs/media/v4-editor-light.png" alt="A data platform diagram in light mode"><br><sub><b>Light mode</b>: a data platform from events to dashboards</sub></td>
-<td><img src="docs/media/v4-editor-dark.png" alt="The same diagram in dark mode"><br><sub><b>Dark mode</b>: same drawing, theme-aware UI</sub></td>
-</tr>
-<tr>
-<td><img src="docs/media/v4-text-to-diagram.png" alt="Text to diagram with your own LLM"><br><sub><b>Text to diagram</b> with your own LLM: colors, symbols and groups</sub></td>
-<td><img src="docs/media/v4-library.png" alt="Library grouped by source"><br><sub><b>Library</b> grouped by source, never mixed</sub></td>
-</tr>
-<tr>
-<td><img src="docs/media/v4-animation-panel.png" alt="The animation panel: a transition, a caption and a narration clip for every slide"><br><sub><b>Animate and narrate</b>: a transition, a caption and your own voice for each slide</sub></td>
-<td><img src="docs/media/v4-recorder-panel.png" alt="The recorder: canvas only, canvas with live maps, or the whole app"><br><sub><b>Record</b>: the canvas, the canvas with live maps, or the whole app, with your microphone</sub></td>
-</tr>
-<tr>
-<td><img src="docs/media/v4-agent-panel.png" alt="The agent panel putting a connection pooler between the API and the database"><br><sub><b>Agent</b>: ask or edit with your own model. It shows what it will do, makes room, and Ctrl+Z undoes it</sub></td>
-<td><img src="docs/media/v4-mcp-connect.png" alt="The Connect Claude dialog with the commands for Claude Code"><br><sub><b>Connect Claude (MCP)</b>: three guided steps, the exact commands for your system</sub></td>
-</tr>
-<tr>
-<td><img src="docs/media/v4-mcp-diagram.png" alt="A diagram drawn by Claude Code through the MCP server and opened in Trazo"><br><sub>Drawn by <b>Claude Code</b> through the MCP server from a docker-compose file, then edited by it</sub></td>
-<td><img src="docs/media/v4-ai-connections.png" alt="AI assistant settings with one saved setting per connection"><br><sub><b>One saved setting per connection</b>: trying another model never erases the first</sub></td>
-</tr>
-<tr>
-<td><img src="docs/media/v4-import-compose.png" alt="A docker-compose file turned into an architecture diagram"><br><sub><b>Docker Compose</b>: services by role, ports and volumes</sub></td>
-<td><img src="docs/media/v4-import-kubernetes.png" alt="Kubernetes manifests turned into an architecture diagram"><br><sub><b>Kubernetes</b>: ingress, services, workloads, config and claims</sub></td>
-</tr>
-<tr>
-<td><img src="docs/media/v4-import-terraform.png" alt="Terraform files turned into an architecture diagram"><br><sub><b>Terraform</b>: resources and the references between them (HCL or JSON)</sub></td>
-<td><img src="docs/media/v4-import-openapi.png" alt="An OpenAPI file turned into a diagram of endpoints by tag and schemas"><br><sub><b>OpenAPI</b>: endpoints by tag, schemas and security</sub></td>
-</tr>
-<tr>
-<td><img src="docs/media/v4-import-sql-dark.png" alt="SQL CREATE TABLE statements turned into an entity relationship diagram"><br><sub><b>SQL</b>: tables with their keys and foreign keys</sub></td>
-<td><img src="docs/media/v4-import-dbt.png" alt="A dbt manifest turned into a lineage graph"><br><sub><b>dbt</b>: lineage from sources to dashboards, colored by layer</sub></td>
-</tr>
-<tr>
-<td><img src="docs/media/v4-import-n8n.png" alt="An n8n workflow turned into a flow diagram"><br><sub><b>n8n</b>: the workflow, with true and false branches</sub></td>
-<td><img src="docs/media/v4-import-kubernetes-dark.png" alt="The Kubernetes diagram in dark mode"><br><sub>Dark mode too. All of it offline, no AI</sub></td>
-</tr>
-<tr>
-<td><img src="docs/media/v4-map-embed.png" alt="Interactive ArcGIS map in the canvas"><br><sub><b>GIS pack</b>: a live map inside the canvas (ArcGIS Online or any Enterprise portal)</sub></td>
-<td><img src="docs/media/v4-arcgis-architecture.png" alt="An ArcGIS Enterprise architecture with official Esri icons"><br><sub><b>GIS pack</b>: an ArcGIS Enterprise architecture with official Esri icons</sub></td>
-</tr>
-</table>
+<p align="center"><img src="docs/media/tour/01-draw.png" alt="A data platform diagram in light mode" width="860"><br><sub><b>1. Draw</b>: the hand-drawn editor, light mode</sub></p>
+
+<p align="center"><img src="docs/media/tour/02-dark.png" alt="The same diagram in dark mode" width="860"><br><sub><b>2. Dark mode</b>: the same drawing, theme-aware interface</sub></p>
+
+<p align="center"><img src="docs/media/tour/03-imports.png" alt="Compose, Kubernetes, Terraform, OpenAPI, SQL and a notebook turned into diagrams" width="860"><br><sub><b>3. Import</b>: Compose, Kubernetes, Terraform, OpenAPI, SQL and notebooks become diagrams, offline and without AI</sub></p>
+
+<p align="center"><img src="docs/media/tour/04-library.png" alt="Icon library grouped by source" width="860"><br><sub><b>4. Library</b>: icons grouped by source, never mixed, each credited</sub></p>
+
+<p align="center"><img src="docs/media/tour/05-notebook.png" alt="A notebook panel next to the diagram of its data flow" width="860"><br><sub><b>5. Notebooks</b>: Python runs in the tab; the diagram shows where the data goes</sub></p>
+
+<p align="center"><img src="docs/media/tour/07-compare.png" alt="Planned diagram compared with the notebook" width="860"><br><sub><b>6. Compare</b>: what is planned but not coded, and the reverse</sub></p>
+
+<p align="center"><img src="docs/media/tour/06-map.png" alt="Live map in the canvas" width="860"><br><sub><b>7. Maps</b>: GIS pack, a live map inside the canvas</sub></p>
+
+<p align="center"><img src="docs/media/tour/08-slides.png" alt="Slides generated from a notebook" width="860"><br><sub><b>8. Slides</b>: an analysis turned into an animated explainer</sub></p>
+
+<p align="center"><img src="docs/media/tour/09-narrated-video.png" alt="Frames of a narrated MP4" width="860"><br><sub><b>9. Narrated video</b>: MP4 with your voice or a local one, made in the browser</sub></p>
+
+<p align="center"><img src="docs/media/tour/10-agent.png" alt="Agent panel drawing a diagram" width="860"><br><sub><b>10. Agent</b>: asks, explains and edits with your own model (Ctrl+Z undoes it)</sub></p>
+
+<p align="center"><img src="docs/media/tour/11-director.png" alt="AI director proposal applied" width="860"><br><sub><b>11. Direct with AI</b>: a proposal for the animation you review first</sub></p>
+
+<p align="center"><img src="docs/media/tour/12-compose.png" alt="Frames of an AI-composed video" width="860"><br><sub><b>12. Compose</b>: slides, captions and narration from one diagram</sub></p>
+
+<p align="center"><img src="docs/media/tour/13-desktop.png" alt="The desktop app" width="860"><br><sub><b>13. Desktop app</b>: the same Trazo as a Windows, macOS or Linux app</sub></p>
 
 <details>
 <summary>See the GIS pack animated</summary>
@@ -218,6 +201,10 @@ Issues and PRs welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). Security reports
 - 🔒 **Local y endurecido**: sin analítica, sin telemetría, sin CDN, sin colaboración alojada; política de seguridad estricta y contenedores de solo lectura. Un solo `docker compose`.
 - 🧩 **Paquetes de íconos por fuente**: más de 450 componentes agrupados por fuente y con sus autores acreditados (arquitectura y diseño de sistemas, procesamiento de datos, aprendizaje profundo, redes, UML/ER, Microsoft Fabric…).
 - 🗺️ **Paquete GIS**: mapas ArcGIS vivos dentro del lienzo, con capas por URL o ID, búsqueda en el portal, Web Maps y dibujo encima. Funciona con **ArcGIS Online y varios ArcGIS Enterprise a la vez**. Incluye los íconos oficiales de Esri Architecture Center y trazado de Utility Network opcional.
+
+### Recorrido
+
+Las capturas del recorrido (dibujar, importar, biblioteca, notebooks, mapas, diapositivas, video narrado, agente y app de escritorio) están en la sección en inglés de arriba, en el mismo orden.
 
 ### Inicio rápido
 
