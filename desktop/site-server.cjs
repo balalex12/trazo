@@ -96,7 +96,7 @@ const createSiteServer = (o) => {
     "Cache-Control": "no-cache, must-revalidate",
   };
 
-  const ollama = (req, res, pathname, search) => {
+  const ollama = (req, res, rawPath, search) => {
     const chunks = [];
     let size = 0;
     req.on("data", (c) => {
@@ -112,32 +112,40 @@ const createSiteServer = (o) => {
     req.on("end", () => {
       const body = Buffer.concat(chunks);
       const lib = upstream.protocol === "http:" ? http : https;
-      const out = lib.request(
-        {
-          host: upstream.hostname,
-          port: upstream.port || (upstream.protocol === "http:" ? 80 : 443),
-          method: req.method,
-          path: `/${pathname.slice(OLLAMA_PREFIX.length)}${search}`,
-          // what the browser sends minus anything that identifies the page or the person (no cookies, origin, referer)
-          headers: {
-            Host: upstream.host,
-            "Content-Type": req.headers["content-type"] || "application/json",
-            Accept: req.headers.accept || "*/*",
-            ...(req.headers.authorization
-              ? { Authorization: req.headers.authorization }
-              : {}),
-            "Content-Length": body.length,
+      let out;
+      try {
+        out = lib.request(
+          {
+            host: upstream.hostname,
+            port: upstream.port || (upstream.protocol === "http:" ? 80 : 443),
+            method: req.method,
+            path: `/${rawPath.slice(OLLAMA_PREFIX.length)}${search}`,
+            // what the browser sends minus anything that identifies the page or the person (no cookies, origin, referer)
+            headers: {
+              Host: upstream.host,
+              "Content-Type": req.headers["content-type"] || "application/json",
+              Accept: req.headers.accept || "*/*",
+              ...(req.headers.authorization
+                ? { Authorization: req.headers.authorization }
+                : {}),
+              "Content-Length": body.length,
+            },
           },
-        },
-        (answer) => {
-          res.writeHead(answer.statusCode, {
-            ...headers,
-            "Content-Type": answer.headers["content-type"] || "text/plain",
-            "Cache-Control": "no-cache",
-          });
-          answer.pipe(res);
-        },
-      );
+          (answer) => {
+            res.writeHead(answer.statusCode, {
+              ...headers,
+              "Content-Type": answer.headers["content-type"] || "text/plain",
+              "Cache-Control": "no-cache",
+            });
+            answer.pipe(res);
+          },
+        );
+      } catch {
+        // a path or header Node refuses (a space, a line break...): answer, do not crash the server
+        res.writeHead(400, headers);
+        res.end();
+        return;
+      }
       out.on("error", () => {
         if (!res.headersSent) res.writeHead(502, headers);
         res.end("Could not reach ollama.com");
@@ -158,9 +166,11 @@ const createSiteServer = (o) => {
       return;
     }
     let pathname;
+    let rawPath;
     let search = "";
     try {
       const u = new URL(req.url, "http://local");
+      rawPath = u.pathname; // still percent-encoded: this is what may go upstream
       pathname = decodeURIComponent(u.pathname);
       search = u.search;
     } catch {
@@ -168,13 +178,13 @@ const createSiteServer = (o) => {
       res.end();
       return;
     }
-    if (o.ollamaCloud && pathname.startsWith(OLLAMA_PREFIX)) {
+    if (o.ollamaCloud && rawPath.startsWith(OLLAMA_PREFIX)) {
       if (req.method !== "GET" && req.method !== "POST") {
         res.writeHead(405, headers);
         res.end();
         return;
       }
-      ollama(req, res, pathname, search);
+      ollama(req, res, rawPath, search);
       return;
     }
     if (req.method !== "GET" && req.method !== "HEAD") {

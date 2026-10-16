@@ -100,7 +100,7 @@ A small Node script (`tools/cli-bridge.mjs`) you install or start yourself, that
 - Listens on **`127.0.0.1` only**.
 - Every request needs an **allowed Origin** (default `http://localhost:3000` and `http://127.0.0.1:3000`, so no other web page can use it) and a **local Host header** (blocks DNS rebinding); everything except `/hello` also needs a **random 192-bit token** compared in constant time. `/hello` only says that a bridge is there and which CLIs it found, and only to an allowed page.
 - **No command injection**: the command line of the CLI is a constant; nothing from the browser ever reaches an argument (the prompt goes through stdin) and there is no shell.
-- The CLI runs **with no tools** (Claude: `--tools ""`; Codex: read-only sandbox) in an **empty temporary folder**, so it cannot read your files or run commands. It never sees the bridge token, and credentials in the environment that would override your subscription login (`ANTHROPIC_API_KEY` and similar) are removed unless you pass `--keep-env-auth`.
+- The CLI runs in an **empty temporary folder**. Claude runs **with no tools** (`--tools ""`), so it cannot read your files or run commands; Codex runs in a **read-only sandbox**, which prevents changes but not reading files on your disk. It never sees the bridge token, and credentials in the environment that would override your subscription login (`ANTHROPIC_API_KEY` and similar) are removed unless you pass `--keep-env-auth`.
 - One run at a time, requests limited to 1 MB, runs limited to 3 minutes. The log has the tool, model, sizes and time of each request, never the text.
 - The token lives in `~/.trazo/bridge.json`, readable only by you (on Windows it inherits your profile folder's access rules). `--rotate` replaces it.
 - **Pairing link** (`http://localhost:3000/#bridge=<token>`): the part after `#` is never sent to any server. Trazo reads it, stores the token, removes it from the address bar, and only accepts an address that is `localhost` or `127.0.0.1`. The link is a password for the bridge, so do not post it; it gives no access to your provider account.
@@ -162,12 +162,29 @@ docker inspect --format '{{.HostConfig.NetworkMode}} {{.HostConfig.ReadonlyRootf
 
 The bridge: `node tools/cli-bridge.mjs --status` shows whether it is installed and running; with it running, `curl -i http://127.0.0.1:11500/hello` (no `Origin` header) must answer `403`, and a request with the right `Origin` but no token to anything but `/hello` must answer `401`. The automated tests for all of this are `excalidraw-app/ai/cliBridge.test.ts`, `excalidraw-app/mcp/server.test.ts` and `excalidraw-app/agent/agent.test.ts`.
 
+The local server of the desktop app and the web zip (`node desktop/serve.cjs 3300`), probed from another terminal:
+
+```bash
+curl -sI  http://127.0.0.1:3300/                                   # CSP, nosniff, no-referrer, Permissions-Policy, COOP
+curl -s -o /dev/null -w "%{http_code}\n" -H "Host: evil.example" http://127.0.0.1:3300/    # 421 (DNS rebinding)
+curl -s -o /dev/null -w "%{http_code}\n" -X POST http://127.0.0.1:3300/                     # 405 (only GET and HEAD)
+curl -s --path-as-is "http://127.0.0.1:3300/../../etc/passwd" | grep -c "root:"             # 0 (it answers the app's page, never a file)
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3300/_csp.inc                     # 404
+curl -s -m 3 -o /dev/null -w "%{http_code}\n" "http://127.0.0.1:3300/llm/ollama-cloud/a%20b"; curl -sI http://127.0.0.1:3300/ | head -1   # the server still answers
+```
+
+These are also automated tests (`tools/desktop-server.test.ts`). Dependencies: `npm audit --omit=dev` in `desktop/` (what the app ships) and `yarn audit --groups dependencies` at the root. Most root findings are in `examples/` or in server-side packages (`protobufjs`, `@grpc/grpc-js` through Firebase) that are **not in the built site**: `grep -c "protobufjs\|grpc-js" desktop/site/assets/*.js` prints `0` for each file. The Firebase browser code that upstream includes is in the bundle but unreachable (collaboration is off, no server is configured), and the network audit above shows it never calls out.
+
 ## 8. Known limits (so nobody is surprised)
 
 - Trazo is a local tool, not a multi-user service. If you put it on a server for other people, you need to add authentication and TLS in front of it yourself; nothing here is designed for that.
 - A browser extension or another program running as you can read your browser's `localStorage`, which holds your diagrams and API keys in clear text.
 - The CLI bridge and the MCP server depend on programs and terms that are not ours (Claude Code, Codex, Docker, your AI client). We pin and isolate what we ship; we cannot vouch for those.
-- No independent security audit has been done. The checks above are the ones the maintainers run.
+- **ArcGIS Enterprise embeds are recognized by their path, on any host** (a self-hosted portal has its own name). A drawing file from a stranger can therefore embed a page from any `https` address whose path looks like an ArcGIS app, and the page is requested when the file is opened. The frame is sandboxed and cannot touch Trazo's storage, but this is a network request you did not ask for: **open drawing files only from people you trust**, as with any document. An allow-list of your own portals is on the [roadmap](ROADMAP.md).
+- A composition written by an AI model (`composition.html`) is checked as text, which is a safety net and not a sandbox: see [HYPERFRAMES.md](HYPERFRAMES.md). Likewise, a notebook is code: run only notebooks you trust.
+- The desktop installers are **not signed**, and there is no automatic update on purpose. Check the `SHA256SUMS` of what you download.
+- The Docker image run on its own (`docker run`) is the plain web server; the extra hardening (read-only filesystem, dropped capabilities, ports on `127.0.0.1`) is in `docker-compose.yml`. For a hardened setup, use Compose.
+- No **independent** security audit has been done. Before each release the maintainers review the code and the release pipeline with the checks above (network audit, probes of the local server, dependency and secret scans) and fix what they find; that is not a substitute for an outside audit.
 
 ## 9. Reporting a vulnerability
 

@@ -1,6 +1,6 @@
 // OpenAPI / Swagger (YAML or JSON) to a graph: clients, the API, one box per tag with its endpoints, the schemas those
 // endpoints use (and the schemas those refer to), and the security schemes. Pure and deterministic, no AI.
-import { load } from "js-yaml";
+import { loadYaml } from "./yaml";
 
 import { MAX_NODES, clip } from "./graph";
 
@@ -61,7 +61,7 @@ const slug = (s: string) => s.replace(/[^\w.-]+/g, "_");
 export const parseOpenApi = (text: string): Graph => {
   let doc: unknown;
   try {
-    doc = load(text);
+    doc = loadYaml(text);
   } catch (e) {
     // first line only: the rest of a YAML error repeats the text around the problem
     throw new Error(

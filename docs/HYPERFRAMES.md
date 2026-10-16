@@ -104,6 +104,8 @@ For things the slides cannot express (kinetic titles, an explainer that grows sc
 - use the clock or randomness (`Date`, `performance.now`, `Math.random`, `requestAnimationFrame`, `setTimeout`…), which would also make frames differ between runs;
 - run dynamic code (`eval`, `new Function`, `import()`), use storage or cookies, touch `window.open` / `navigator` / `parent`, or carry inline event handlers.
 
+This check is a **safety net, not a sandbox**: it reads the text of the file, and a reply written on purpose to get past a text check can. Trazo never runs the file; **you** do, when you open `composition.html` or render it. So treat it like any HTML file you did not write: use a model you chose, and open it in a browser profile or machine you do not mind. What a bad file could take is limited to what is in the file (your slide text), but do not rely on the check alone.
+
 When a file is refused, the **reasons are sent back to the model** and it tries again (up to three attempts). A file that passes is saved as `composition.html`. The model builds on a tiny helper that Trazo inserts into the file, `trazoTimeline(id, seconds).add(target, keyframes, {start, duration, easing, stagger})`: every animation is a paused Web Animation that is moved to the asked time, so any frame can be requested in any order and looks the same. It needs no GSAP and no network, which makes it small enough for a modest model to use correctly. A model writing the example below was told only the rules in `AUTHOR_SYSTEM`.
 
 ![Frames of a composition written as the model would write it, rendered by HyperFrames](media/tour/12-compose.png)

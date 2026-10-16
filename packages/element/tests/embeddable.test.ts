@@ -1,4 +1,8 @@
-import { embeddableURLValidator, getEmbedLink } from "../src/embeddable";
+import {
+  embeddableURLValidator,
+  getEmbedLink,
+  isArcGISUrl,
+} from "../src/embeddable";
 
 describe("YouTube timestamp parsing", () => {
   it("should parse YouTube URLs with timestamp in seconds", () => {
@@ -241,5 +245,27 @@ describe("Google Drive video embedding", () => {
         undefined,
       ),
     ).toBe(true);
+  });
+});
+
+describe("ArcGIS app recognition", () => {
+  it("recognizes ArcGIS Online and Enterprise app URLs", () => {
+    [
+      "https://www.arcgis.com/apps/instant/basic/index.html?appid=abc",
+      "https://experience.arcgis.com/experience/0123456789abcdef0123456789abcdef",
+      "https://gis.example.org/portal/apps/dashboards/0123456789abcdef0123456789abcdef",
+      "https://gis.example.org/portal/apps/experiencebuilder/experience/?id=abc",
+    ].forEach((url) => expect(isArcGISUrl(url)).toBe(true));
+  });
+
+  it("does not treat a scheme, a query or a fragment as an app path", () => {
+    [
+      // eslint-disable-next-line no-script-url
+      "javascript:alert(1)//experience/",
+      "data:text/html,<p>/apps/dashboards/</p>",
+      "https://evil.example/?next=/experience/",
+      "https://evil.example/login#/apps/dashboards/x",
+      "ftp://evil.example/experience/",
+    ].forEach((url) => expect(isArcGISUrl(url)).toBe(false));
   });
 });

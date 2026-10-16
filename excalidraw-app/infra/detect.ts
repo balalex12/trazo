@@ -1,6 +1,6 @@
 // What was pasted? docker-compose, Kubernetes, Terraform (HCL or JSON), OpenAPI, SQL, a dbt manifest or an n8n
 // workflow, decided from the text itself, and the one entry point the dialog uses: text in, laid out diagram out.
-import { loadAll } from "js-yaml";
+import { loadAllYaml } from "./yaml";
 
 import { composeToGraph, parseCompose } from "./compose";
 import { layoutGraph } from "./graph";
@@ -143,7 +143,7 @@ export const detectFormat = (text: string): InfraFormat | null => {
     return "kubernetes"; // a Helm template: the Kubernetes reader explains what to do
   }
   try {
-    const docs = loadAll(text);
+    const docs = loadAllYaml(text);
     if (
       docs.some(
         (d) =>
