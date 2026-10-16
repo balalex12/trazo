@@ -39,6 +39,7 @@ git diff HEAD~1 -- . ':!yarn.lock' | grep -n "^+.*https\?://" | grep -v -E "w3.o
 | `packages/excalidraw/components/{LibraryMenuItems,LibraryMenuSection,LibraryMenuHeaderContent}.tsx`, `hooks/useLibraryItemSvg.ts` | library grouping, short names, images in thumbnails, Publish hidden |
 | `packages/element/src/embeddable.ts` | ArcGIS URL recognition, localhost/arcgis allowed; viewer origin defaults to the same host on port 3001, overridable with `VITE_APP_ARCGIS_VIEWER_ORIGIN` (see `docs/VIEWER.md`) |
 | `packages/excalidraw/fonts/ExcalidrawFontFace.ts` | CDN fallback removed |
+| `packages/excalidraw/fonts/Liberation/` | Liberation Sans 1.05 (GPL v2 + exception) replaced by Arimo (OFL 1.1) subsets and its license text; keep ours if upstream touches this folder |
 | `scripts/woff2/woff2-vite-plugins.js` | fonts from `/` |
 | `packages/excalidraw/renderer/interactiveScene.ts` | one canvas highlight color (`highlightPoint`) in the brand orange |
 | `excalidraw-app/index.tsx` | imports `brand.scss` after the editor styles (new file: the palette) |

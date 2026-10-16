@@ -53,7 +53,7 @@ Ordered by value for the direction above. Each item ships as its own pull reques
 
 Housekeeping:
 
-- Replace Liberation Sans 1.05 (GPL v2 with font exception) with Liberation Sans 2.x (OFL), and ship the OFL 1.1 text next to the fonts
+- ✅ Liberation Sans 1.05 (GPL v2 with font exception) replaced with Arimo (OFL 1.1, metric-compatible), OFL text shipped next to the fonts. Every bundled font is now OFL or MIT
 - ✅ Committed browser test suite (real Chrome through `puppeteer-core`, `yarn test:e2e`, a CI job; see [TESTING.md](TESTING.md)). Next: run the notebook tests in CI too (needs the 350 MB Pyodide download cached) and add the map viewer
 - Self-hosted ArcGIS SDK option (fully offline except for map data)
 - Source releases with a changelog and versioning; pin the viewer's nginx image by digest. **No prebuilt Docker image is published on purpose:** everyone builds locally, which keeps the Esri Calcite icons (Esri MLA) out of anything we redistribute. If a public image is ever wanted, build it with `--profile=public` and without the Calcite sections (see [LIBRARIES.md](LIBRARIES.md))
