@@ -1,6 +1,6 @@
 // A laid out graph (infra/graph.ts) as plain Excalidraw elements, without the editor. The import dialog draws the same
 // layout through the editor's own converter; this is the editor-free twin used by the MCP server and the tests.
-import { ROLE_STYLE, drawFrom } from "../infra/graph";
+import { MAX_NODES, ROLE_STYLE, drawFrom } from "../infra/graph";
 
 import {
   arrowElements,
@@ -11,7 +11,7 @@ import {
   touch,
 } from "./elements";
 
-import type { Layout } from "../infra/graph";
+import type { Graph, Layout, Role } from "../infra/graph";
 import type { BoxStyle, Ctx, El } from "./elements";
 
 const styleOf = (n: Layout["nodes"][number]): BoxStyle => {
@@ -76,4 +76,57 @@ export const layoutToElements = (
         })
       : el,
   );
+};
+
+/**
+ * A graph from a description made of plain data (what the model or an MCP client gives): nodes with an id, a label (extra
+ * lines after a newline) and a role, and edges between those ids. Returns a sentence when there is nothing to draw;
+ * edges to unknown nodes are left out and listed in `skipped`.
+ */
+export const graphFromSpec = (
+  nodes: unknown,
+  edges: unknown,
+): { graph: Graph; skipped: string[] } | string => {
+  const list = Array.isArray(nodes) ? nodes : [];
+  if (!list.length) {
+    return "Give at least one node.";
+  }
+  if (list.length > MAX_NODES) {
+    return `At most ${MAX_NODES} nodes.`;
+  }
+  const ids = new Set<string>();
+  const graph: Graph = { nodes: [], edges: [] };
+  for (const n of list) {
+    const id = String(n?.id ?? "").trim();
+    const label = String(n?.label ?? "").trim();
+    if (!id || !label) {
+      return "Every node needs an id and a label.";
+    }
+    if (ids.has(id)) {
+      return `The id "${id}" is used twice.`;
+    }
+    ids.add(id);
+    graph.nodes.push({
+      id,
+      lines: label.split("\n").slice(0, 12),
+      role: n.role in ROLE_STYLE ? (n.role as Role) : "app",
+    });
+  }
+  const skipped: string[] = [];
+  for (const [i, e] of (Array.isArray(edges) ? edges : []).entries()) {
+    if (!ids.has(e?.from) || !ids.has(e?.to)) {
+      skipped.push(`edge ${i + 1} (${e?.from} to ${e?.to}): unknown node`);
+      continue;
+    }
+    graph.edges.push({
+      id: `e${i}`,
+      from: e.from,
+      to: e.to,
+      kind: "depends",
+      ...(typeof e.label === "string" && e.label.trim()
+        ? { label: e.label.trim().slice(0, 60) }
+        : {}),
+    });
+  }
+  return { graph, skipped };
 };

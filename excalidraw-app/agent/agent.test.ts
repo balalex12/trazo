@@ -265,6 +265,78 @@ describe("applyOps", () => {
     ).toHaveLength(2);
   });
 
+  it("draws a whole diagram at once, laid out by Trazo, below what is already there", () => {
+    const els = make();
+    const bottom = Math.max(...els.map((e) => e.y + e.height));
+    const r = applyOps(els, [
+      {
+        op: "draw_diagram",
+        nodes: [
+          { id: "s", label: "Sensors", role: "network" },
+          { id: "i", label: "Ingest\nKafka", role: "queue" },
+          { id: "d", label: "PostGIS", role: "database" },
+          { id: "x", label: "No role" },
+        ],
+        edges: [
+          { from: "s", to: "i", label: "MQTT" },
+          { from: "i", to: "d" },
+          { from: "d", to: "ghost" },
+        ],
+      },
+    ]);
+    expect(r.applied).toEqual(["Drew a diagram of 4 boxes and 2 arrows"]);
+    // an arrow to a box that is not in the list is left out and said so
+    expect(r.skipped).toHaveLength(1);
+    expect(r.skipped[0]).toContain("unknown node");
+    const idx = buildIndex(r.elements);
+    const drawn = [...idx.nodes.values()].filter((n) =>
+      ["Sensors", "Ingest", "PostGIS", "No role"].includes(n.label),
+    );
+    expect(drawn).toHaveLength(4);
+    // below the existing diagram, left to right in the order of the flow
+    expect(Math.min(...drawn.map((n) => n.box.y))).toBeGreaterThan(bottom);
+    const x = (l: string) => drawn.find((n) => n.label === l)!.box.x;
+    expect(x("Sensors")).toBeLessThan(x("Ingest"));
+    expect(x("Ingest")).toBeLessThan(x("PostGIS"));
+    expect(idx.edges.map((e) => e.label).sort()).toContain("MQTT");
+    // nothing that was there changed, and no two drawn boxes overlap
+    expect(els.every((e) => r.elements.find((o) => o.id === e.id) === e)).toBe(
+      true,
+    );
+    for (const a of drawn) {
+      for (const b of drawn) {
+        if (a !== b) {
+          expect(
+            a.box.x < b.box.x + b.box.width &&
+              a.box.x + a.box.width > b.box.x &&
+              a.box.y < b.box.y + b.box.height &&
+              a.box.y + a.box.height > b.box.y,
+          ).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("draws a diagram on an empty canvas and refuses a description that makes no sense", () => {
+    expect(
+      applyOps(
+        [],
+        [{ op: "draw_diagram", nodes: [{ id: "a", label: "Only" }] }],
+      ).applied,
+    ).toEqual(["Drew a diagram of 1 box and 0 arrows"]);
+    const bad = (nodes: unknown) =>
+      applyOps([], [{ op: "draw_diagram", nodes }]).skipped[0];
+    expect(bad([])).toContain("at least one node");
+    expect(bad("nope")).toContain("at least one node");
+    expect(bad([{ id: "a" }])).toContain("an id and a label");
+    expect(
+      bad([
+        { id: "a", label: "A" },
+        { id: "a", label: "B" },
+      ]),
+    ).toContain("used twice");
+  });
+
   it("renames a box (growing it when needed) and changes its role", () => {
     const els = make();
     const web = idOf(els, "Web");

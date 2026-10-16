@@ -5,6 +5,7 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 import { summarize } from "../agent/canvas";
 import { applyOps } from "../agent/ops";
+import { fitTo } from "../infra/place";
 import { AGENT_SYSTEM, buildUserTurn, parseAgentReply } from "../agent/prompt";
 import { askModel, describeConnection } from "../ai/llm";
 import { EVENTS } from "../branding";
@@ -54,6 +55,8 @@ const readAuto = () => {
   }
 };
 
+const PANEL_WIDTH = 360;
+
 export const AgentPanel = ({
   excalidrawAPI,
 }: {
@@ -101,7 +104,25 @@ export const AgentPanel = ({
     const added = r.elements.filter(
       (e) => !known.has(e.id) && e.type !== "text" && e.type !== "arrow",
     );
-    if (added.length) {
+    // a whole diagram was drawn: bring it into view, in the part of the screen the panel does not cover
+    const drewDiagram = r.applied.some((a) => a.startsWith("Drew a diagram"));
+    if (drewDiagram) {
+      const fresh = r.elements.filter((e) => !known.has(e.id) && !e.isDeleted);
+      if (fresh.length) {
+        fitTo(
+          excalidrawAPI,
+          [
+            Math.min(...fresh.map((e) => e.x)),
+            Math.min(...fresh.map((e) => e.y)),
+            Math.max(...fresh.map((e) => e.x + e.width)),
+            Math.max(...fresh.map((e) => e.y + e.height)),
+          ],
+          PANEL_WIDTH + 24,
+        );
+      }
+    }
+    // (and not selected: the style panel that opens for a selection would hide the left of the drawing)
+    if (added.length && !drewDiagram) {
       excalidrawAPI.updateScene({
         appState: {
           selectedElementIds: Object.fromEntries(
@@ -257,7 +278,7 @@ export const AgentPanel = ({
         top: 64,
         right: 16,
         bottom: "calc(72px + var(--trazo-mobile-bar-offset, 0px))",
-        width: 360,
+        width: PANEL_WIDTH,
         // above Excalidraw's own mobile bottom toolbar (--zIndex-ui-bottom: 60), or it hides behind it
         zIndex: 61,
         display: "flex",

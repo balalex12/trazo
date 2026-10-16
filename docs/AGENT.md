@@ -5,6 +5,7 @@
 ## What you can ask
 
 - **Questions**: "Explain this diagram", "What is missing in this architecture?", "Which boxes depend on the database?". The answer appears in the panel and the canvas is not touched.
+- **A new diagram from a description**: "Draw the architecture of a food delivery app: customers, restaurants, couriers, payments, notifications and a database". The model lists the boxes and arrows and **Trazo lays them out** (the same layout as the imports, colors by role), below what is already on the canvas, and brings it into view. It reads better than the Mermaid in _Text to diagram_ when you want a clean, big, hand-drawn result; _Text to diagram_ is still the one for sequence, class and ER diagrams.
 - **Changes**: "Add a cache between the API and the database", "Rename the selected box to Billing service", "Add a monitoring box and link it to the others", "Delete the queue", "Make the database green". **Select a box first** to say "this one" or "these".
 
 ## How a change happens
@@ -14,7 +15,7 @@
 3. Tick **Apply without asking** to skip the preview. The choice is remembered in this browser.
 4. Either way, a change is **one step in the undo history**: **Ctrl+Z** undoes it and Ctrl+Shift+Z redoes it. Anything that was already on the canvas but not yet in the history (an import, for example) becomes its own step first, so undoing an agent change never undoes something else.
 
-What the model can do is deliberately small: add a box (near another one, **between two** boxes, or at a position), add an arrow, rename a box or change its role (its color), move a box, delete a box or an arrow. Space is made when a box is put between two others, and the arrows of moved or resized boxes are drawn again. What it cannot do (draw by hand, restyle everything, edit images) it says. If the model asks for something that does not make sense (an id that is not on the canvas, linking a box twice), that part is skipped and listed under "Not done", and the rest still applies.
+What the model can do is deliberately small: draw a whole new diagram at once, add a box (near another one, **between two** boxes, or at a position), add an arrow, rename a box or change its role (its color), move a box, delete a box or an arrow. Space is made when a box is put between two others, and the arrows of moved or resized boxes are drawn again. What it cannot do (draw by hand, restyle everything, edit images) it says. If the model asks for something that does not make sense (an id that is not on the canvas, linking a box twice), that part is skipped and listed under "Not done", and the rest still applies.
 
 ## What the model sees
 
