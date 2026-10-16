@@ -52,6 +52,10 @@ Details and limits:
 
 **Save drawing with narration** downloads a normal `.excalidraw` file that also carries the narration of every slide, in one extra field (`trazoNarration`) that Excalidraw ignores, so the file still opens anywhere. **Open drawing with narration…** replaces the canvas with such a file (you can undo it) and puts the clips back, matched to the slides by their id. The audio is the same 16-bit mono WAV the app keeps, compressed with gzip when the browser can: about 5 MB per minute of speech, so a long narration makes a big file. Saving the drawing the usual way (Ctrl+S, or the Excalidraw menu) does not include narration, because Excalidraw does not know about it.
 
+## Direct and compose with AI
+
+**✨ Direct with AI** (under the slide list) asks your own model for captions, a narration script, hold times and transitions from what is on your slides, and applies what you tick. Each slide also has a **Narration script** field (shown as a teleprompter while you record). **🎬 Compose with AI** writes a motion graphic as a HyperFrames composition. See [HYPERFRAMES.md](HYPERFRAMES.md).
+
 ## Easing
 
 The **Easing** setting shapes every transition: _Ease in-out_ (default), _Ease in-out (strong)_, _Ease out_, _Linear_, and two playful ones, _Overshoot_ (goes a little past the end and settles) and _Spring_ (a damped bounce). Colors and opacity are kept in range, so overshooting never breaks the picture.

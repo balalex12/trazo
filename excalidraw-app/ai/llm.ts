@@ -414,7 +414,7 @@ const runViaBridge = async (
  */
 export const streamChat = async (
   props: TTTDDialog.OnTextSubmitProps,
-  opts: { system?: string } = {},
+  opts: { system?: string; maxTokens?: number } = {},
 ): Promise<Ret> => {
   const system = opts.system ?? SYSTEM_PROMPT;
   const cfg = loadLLMConfig();
@@ -444,7 +444,7 @@ export const streamChat = async (
   const body = isClaude
     ? {
         model: cfg.model,
-        max_tokens: 4096,
+        max_tokens: opts.maxTokens ?? 4096,
         system,
         messages: props.messages,
         stream: true,
@@ -531,8 +531,10 @@ export const askModel = async (
   system: string,
   messages: TTTDDialog.OnTextSubmitProps["messages"],
   signal?: AbortSignal,
+  /** a longer answer than the usual one (for example a whole HTML file) */
+  maxTokens?: number,
 ): Promise<{ text: string; error?: string }> => {
-  const r = await streamChat({ messages, signal }, { system });
+  const r = await streamChat({ messages, signal }, { system, maxTokens });
   return r.error
     ? { text: "", error: r.error.message }
     : { text: r.generatedResponse ?? "" };

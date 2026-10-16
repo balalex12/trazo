@@ -23,6 +23,7 @@ Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, e
 - ✅ Elbow arrows in every import: horizontal and vertical segments that go around the boxes instead of through them
 - ✅ Opt-in LLM connector (OpenAI-compatible, Ollama Cloud via local pass-through, Anthropic) for Text to diagram
 - ✅ HTML player export (one offline `.html` that plays anywhere) that is also a HyperFrames composition: `tools/hyperframes-render.mjs` renders it to 4K / 60 fps / WebM / GIF video, locally and deterministically
+- ✅ AI as director (captions, narration scripts, hold times, transitions from your own model, validated and approved slide by slide), a local voice from the scripts (`--tts`), and AI-written HyperFrames compositions that are checked as text and verified with `hyperframes check`
 - ✅ Own icon packs (63 neutral glyphs): GIS & spatial data (FME-, GeoPandas- and GDAL-style concepts), data engineering and machine learning, MIT, in the public profile too
 - ✅ Library grouped by source: 150+ English ArcGIS components (official Esri icons) plus 16 community libraries (311 items; downloaded at build time, public profile without brand-logo libraries)
 - ✅ GIS pack: ArcGIS viewer (items/layers/services, any-host URL recognition, portal browser, sketch, multi-portal UI)
@@ -31,6 +32,8 @@ Trazo is **"hand-drawn diagrams that move"**: draw it, animate it, explain it, e
 - ✅ Per-font license audit (see `THIRD_PARTY_NOTICES.md`)
 
 ## Needs real-world validation 🧪
+
+- AI as director and composer against real models (only canned answers were tested end to end here); an in-app preview of a composition (it needs a sandboxed page with its own CSP); a repair loop driven by `hyperframes check --json`
 
 - OAuth sign-in (username/password sign-in and content browsing against a private Enterprise were validated by the maintainer)
 - **Utility Network trace** with a real Web Map containing a Utility Network
