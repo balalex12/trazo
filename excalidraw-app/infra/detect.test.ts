@@ -28,6 +28,17 @@ const N8N = JSON.stringify({
   connections: {},
 });
 
+const NOTEBOOK = JSON.stringify({
+  nbformat: 4,
+  metadata: { kernelspec: { language: "python" } },
+  cells: [
+    {
+      cell_type: "code",
+      source: "df = pd.read_csv('a.csv')\ndf.to_csv('b.csv')",
+    },
+  ],
+});
+
 describe("detectFormat", () => {
   it("tells the formats apart", () => {
     expect(detectFormat(COMPOSE)).toBe("compose");
@@ -38,6 +49,7 @@ describe("detectFormat", () => {
     expect(detectFormat(SQL)).toBe("sql");
     expect(detectFormat(DBT)).toBe("dbt");
     expect(detectFormat(N8N)).toBe("n8n");
+    expect(detectFormat(NOTEBOOK)).toBe("notebook");
   });
 
   it("reads several Kubernetes documents and a List", () => {
@@ -118,6 +130,7 @@ describe("importInfra", () => {
       ["SELECT a, b FROM t JOIN u ON u.id = t.id", "sqlquery"],
       [DBT, "dbt"],
       [N8N, "n8n"],
+      [NOTEBOOK, "notebook"],
       ['{"a": {"b": [1, 2]}, "c": "x"}', "json"],
     ] as const) {
       const r = importInfra(text);

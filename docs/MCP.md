@@ -65,7 +65,7 @@ The client starts the container when it needs it and stops it afterwards. `docke
 
 | Tool | What it does |
 | --- | --- |
-| `trazo_import` | draws a diagram from text or from files in the folder: docker-compose, Kubernetes, Terraform (HCL or JSON), OpenAPI, SQL (schema or queries), dbt manifest, n8n workflow, any other JSON (see [IMPORT.md](IMPORT.md)). The format is detected |
+| `trazo_import` | draws a diagram from text or from files in the folder: docker-compose, Kubernetes, Terraform (HCL or JSON), OpenAPI, SQL (schema or queries), dbt manifest, n8n workflow, Jupyter notebook (.ipynb), any other JSON (see [IMPORT.md](IMPORT.md)). The format is detected |
 | `trazo_create_diagram` | draws a diagram you describe: boxes with a role (the color) and arrows between them, laid out left to right |
 | `trazo_describe` | reads a `.excalidraw` file as a graph: boxes with ids, labels and roles, and the arrows |
 | `trazo_edit` | changes a file: add, rename, recolor, move or delete boxes, add or remove arrows. The same operations the [agent panel](AGENT.md) uses |

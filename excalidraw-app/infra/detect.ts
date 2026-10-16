@@ -7,6 +7,7 @@ import { layoutGraph } from "./graph";
 import { parseDbt } from "./dbt";
 import { parseKubernetes } from "./kubernetes";
 import { parseN8n } from "./n8n";
+import { parseNotebook } from "./notebook";
 import { parseOpenApi } from "./openapi";
 import { parseJson } from "./json";
 import { parseSql } from "./sql";
@@ -25,6 +26,7 @@ export type InfraFormat =
   | "sqlquery"
   | "dbt"
   | "n8n"
+  | "notebook"
   | "json";
 
 export const FORMAT_NAMES: Record<InfraFormat, string> = {
@@ -36,6 +38,7 @@ export const FORMAT_NAMES: Record<InfraFormat, string> = {
   sqlquery: "SQL query",
   dbt: "dbt lineage",
   n8n: "n8n workflow",
+  notebook: "Jupyter notebook",
   json: "JSON data",
 };
 
@@ -46,7 +49,7 @@ export const FORMAT_NAMES: Record<InfraFormat, string> = {
 export const MAX_INPUT_CHARS = 2_000_000;
 
 export const SUPPORTED =
-  "docker-compose.yml, Kubernetes manifests, Terraform (.tf or JSON), OpenAPI, SQL (CREATE TABLE schemas, or SELECT / WITH / INSERT / UPDATE / DELETE / MERGE queries), a dbt manifest.json, an n8n workflow or any other JSON";
+  "docker-compose.yml, Kubernetes manifests, Terraform (.tf or JSON), OpenAPI, SQL (CREATE TABLE schemas, or SELECT / WITH / INSERT / UPDATE / DELETE / MERGE queries), a dbt manifest.json, an n8n workflow, a Jupyter notebook (.ipynb) or any other JSON";
 
 type Dict = Record<string, unknown>;
 const isDict = (v: unknown): v is Dict =>
@@ -60,7 +63,7 @@ const SQL_TABLE =
 const SQL_DDL =
   /\bcreate\s+(?:or\s+replace\s+)?(?:(?:global\s+|local\s+)?(?:temp|temporary)\s+|unlogged\s+)?table\s+(?:if\s+not\s+exists\s+)?(?:"[^"]+"|`[^`]+`|\[[^\]]+\]|[\w$.]+)(?:\s*\.\s*(?:"[^"]+"|`[^`]+`|[\w$]+))*\s*\(/i;
 
-type JsonKind = "terraform" | "openapi" | "dbt" | "n8n";
+type JsonKind = "terraform" | "openapi" | "dbt" | "n8n" | "notebook";
 
 /** which JSON document this is, or null when it is JSON of another kind (compose and Kubernetes JSON are YAML too) */
 const detectJson = (t: string): JsonKind | null => {
@@ -95,6 +98,9 @@ const detectJson = (t: string): JsonKind | null => {
   }
   if (Array.isArray(doc.nodes) && isDict(doc.connections)) {
     return "n8n";
+  }
+  if (Array.isArray(doc.cells) && "nbformat" in doc) {
+    return "notebook";
   }
   return null;
 };
@@ -213,6 +219,8 @@ export const importInfra = (
       ? parseDbt(text)
       : format === "json"
       ? parseJson(text)
+      : format === "notebook"
+      ? parseNotebook(text)
       : parseN8n(text);
   return { format, layout: layoutGraph(graph) };
 };

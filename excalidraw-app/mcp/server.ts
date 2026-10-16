@@ -123,7 +123,7 @@ const ROLE_LIST = ROLES.join(", ");
 const TOOLS = [
   {
     name: "trazo_import",
-    description: `Turn what already exists into a diagram file: docker-compose.yml, Kubernetes manifests, Terraform (.tf or JSON plan/state), an OpenAPI/Swagger file, SQL CREATE TABLE statements (as an ER diagram), SQL queries such as SELECT, WITH, INSERT, UPDATE, DELETE or MERGE (as a step by step diagram of how the query runs), a dbt manifest.json (lineage), an n8n workflow JSON or any other JSON (as a diagram of its shape). Give the text directly or the names of files in the folder. The format is detected. Nothing is sent anywhere. Supported: ${SUPPORTED}.`,
+    description: `Turn what already exists into a diagram file: docker-compose.yml, Kubernetes manifests, Terraform (.tf or JSON plan/state), an OpenAPI/Swagger file, SQL CREATE TABLE statements (as an ER diagram), SQL queries such as SELECT, WITH, INSERT, UPDATE, DELETE or MERGE (as a step by step diagram of how the query runs), a dbt manifest.json (lineage), an n8n workflow JSON, a Jupyter notebook .ipynb (as the path the data takes through it) or any other JSON (as a diagram of its shape). Give the text directly or the names of files in the folder. The format is detected. Nothing is sent anywhere. Supported: ${SUPPORTED}.`,
     inputSchema: {
       type: "object",
       properties: {
