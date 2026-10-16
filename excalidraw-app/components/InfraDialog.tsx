@@ -397,22 +397,22 @@ ALTER TABLE payments ADD CONSTRAINT fk_pay_order FOREIGN KEY (order_id) REFERENC
         {
           cell_type: "code",
           source:
-            "import pandas as pd\\ncustomers = pd.read_csv('data/customers.csv', usecols=['id', 'plan', 'signup'])\\norders = pd.read_csv('data/orders.csv')",
+            "import pandas as pd\ncustomers = pd.read_csv('data/customers.csv', usecols=['id', 'plan', 'signup'])\norders = pd.read_csv('data/orders.csv')",
         },
         {
           cell_type: "code",
           source:
-            "df = customers.merge(orders, on='id', how='left')\\ndf = df.dropna()\\ndf['total'] = df['price'] * df['qty']",
+            "df = customers.merge(orders, on='id', how='left')\ndf = df.dropna()\ndf['total'] = df['price'] * df['qty']",
         },
         {
           cell_type: "code",
           source:
-            "from sklearn.model_selection import train_test_split\\nfrom sklearn.ensemble import RandomForestClassifier\\nX = df[['total', 'qty']]\\ny = df['plan']\\nX_train, X_test, y_train, y_test = train_test_split(X, y)\\nmodel = RandomForestClassifier()\\nmodel.fit(X_train, y_train)\\npred = model.predict(X_test)",
+            "from sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nX = df[['total', 'qty']]\ny = df['plan']\nX_train, X_test, y_train, y_test = train_test_split(X, y)\nmodel = RandomForestClassifier()\nmodel.fit(X_train, y_train)\npred = model.predict(X_test)",
         },
         {
           cell_type: "code",
           source:
-            "import joblib\\njoblib.dump(model, 'model.pkl')\\ndf.to_csv('out/clean.csv')",
+            "import joblib\njoblib.dump(model, 'model.pkl')\ndf.to_csv('out/clean.csv')",
         },
       ],
     },
