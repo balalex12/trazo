@@ -13,6 +13,8 @@ node tools/build-jupyterlite.mjs          # once: about 230 MB, needs python3, t
 docker compose --profile lite up -d       # then open http://127.0.0.1:3002
 ```
 
+**Without Python, or if the build fails** (on Windows the command is `python`, not `python3`): take `Trazo-Notebook-Pack-X.Y.Z.zip` from the [release](https://github.com/balalex12/trazo/releases), unzip it so that the folder `assets/jupyterlite` exists in your clone (it must contain `index.html` and `_csp.conf`), and run only the second command. The pack is this same site, already built.
+
 Then in Trazo press **🐍 Notebook** (bottom bar), or **Menu → Python notebook…**, or the command palette, or the **Python notebook…** button of **Import to diagram**. The notebook opens in a **panel next to the canvas**, inside Trazo, with starter notebooks, `welcome.ipynb` and `churn.ipynb`. **✕** hides the panel without stopping anything (the kernel and its variables stay), **⇔** makes it wider and **↗** opens the same notebook site in its own tab.
 
 The first start of a notebook takes some seconds (Pyodide loads), then it is quick. Files you create live in your browser (IndexedDB) for that site: use **File → Download** to keep a notebook as an `.ipynb`.

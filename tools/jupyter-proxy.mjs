@@ -20,7 +20,7 @@ import { readFileSync } from "node:fs";
 import http from "node:http";
 import net from "node:net";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { PARENT_ORIGINS } from "./build-jupyterlite.mjs";
 
@@ -241,4 +241,10 @@ const main = () => {
   });
 };
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+// run only when started directly (compare file URLs: `file://${path}` never matches on Windows)
+if (
+  process.argv[1] &&
+  pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url
+) {
+  main();
+}
