@@ -268,6 +268,39 @@ describe("what the model is told", () => {
     ).toContain("(not given)");
   });
 
+  it("puts what the author wrote for each slide before the labels of the drawing", () => {
+    const turn = buildAuthorTurn({
+      brief: "",
+      width: 1920,
+      height: 1080,
+      seconds: 15,
+      slideTexts: [["rng", "customers"], [], ["model"]],
+      slideNotes: [
+        { caption: "Cell 1: make the data", script: "We start with data." },
+        { caption: "Cell 2: merge" },
+        {},
+      ],
+    });
+    expect(turn).toContain(
+      "1. CAPTION: Cell 1: make the data | SCRIPT: We start with data. | LABELS ON THE SLIDE: rng | customers",
+    );
+    // a slide with a caption but no labels is still listed; one with only labels keeps them
+    expect(turn).toContain("2. CAPTION: Cell 2: merge");
+    expect(turn).toContain("3. LABELS ON THE SLIDE: model");
+    expect(turn).toContain("the author's own words");
+    // without notes the turn is the one it always was
+    const plain = buildAuthorTurn({
+      brief: "",
+      width: 1,
+      height: 1,
+      seconds: 3,
+      slideTexts: [["Shop"]],
+    });
+    expect(plain).toContain("(texts only; build the video");
+    expect(plain).toContain("1. Shop");
+    expect(plain).not.toContain("CAPTION");
+  });
+
   it("reads the HTML out of a fence or from the doctype", () => {
     const html = "<!doctype html><html><body>x</body></html>";
     expect(

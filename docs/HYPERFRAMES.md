@@ -98,7 +98,7 @@ Verified: three scripted slides became a 14.1 s, 1920 x 1080 H.264 video with an
 
 ### 3. 🎬 Compose with AI: a motion graphic written by the model
 
-For things the slides cannot express (kinetic titles, an explainer that grows scene by scene), **🎬 Compose with AI** asks your model for a whole **HyperFrames composition**: you give a brief, a format (16:9, 9:16 or 1:1), a length, and optionally the texts of your slides to build from. What comes back is **never run inside Trazo**. It is checked as text, and refused if it could:
+For things the slides cannot express (kinetic titles, an explainer that grows scene by scene), **🎬 Compose with AI** asks your model for a whole **HyperFrames composition**: you give a brief, a format (16:9, 9:16 or 1:1), a length, and optionally your slides to build from: the **caption and narration script** of each slide when it has one (for example the captions of _Slides from notebook_ or what _Direct with AI_ wrote), plus the labels drawn on it. What comes back is **never run inside Trazo**. It is checked as text, and refused if it could:
 
 - reach the network (`fetch`, `XMLHttpRequest`, `WebSocket`, any `http(s)` address, `<link>`, `<script src>`, `@import`, `<iframe>`…);
 - use the clock or randomness (`Date`, `performance.now`, `Math.random`, `requestAnimationFrame`, `setTimeout`…), which would also make frames differ between runs;
@@ -121,7 +121,7 @@ What this does **not** do: the text checks are a fence, not a proof. A determine
 
 ### What your model sees
 
-- **Direct with AI** sends the text of your slides, their shapes (counts only) and your note. **Compose with AI** sends your brief and, if you leave the box ticked, the text of your slides. No image, no file, nothing else. With a local connection (Ollama, LM Studio) it stays on your computer; with a cloud connection the panel says it goes to that provider.
+- **Direct with AI** sends the text of your slides, their shapes (counts only) and your note. **Compose with AI** sends your brief and, if you leave the box ticked, the text, caption and script of your slides. No image, no file, nothing else. With a local connection (Ollama, LM Studio) it stays on your computer; with a cloud connection the panel says it goes to that provider.
 - The text to speech is local; the render is local.
 
 ![The Compose with AI panel](media/v5-ai-compose.png)

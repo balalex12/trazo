@@ -86,6 +86,12 @@ export const ComposerPanel = ({
           slideTexts: useSlides
             ? describeSlides(slides).map((s) => s.texts)
             : undefined,
+          slideNotes: useSlides
+            ? describeSlides(slides).map((s) => ({
+                caption: s.caption,
+                script: s.script,
+              }))
+            : undefined,
         }),
       },
     ];
