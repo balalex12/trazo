@@ -1,13 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  CaptureUpdateAction,
-  convertToExcalidrawElements,
-  useExcalidrawAPI,
-} from "@excalidraw/excalidraw";
+import { useExcalidrawAPI } from "@excalidraw/excalidraw";
 
 import { EVENTS } from "../branding";
 import { FORMAT_NAMES, detectFormat, importInfra } from "../infra/detect";
-import { layoutToSkeleton } from "../infra/graph";
+import { drawLayout } from "../infra/place";
 
 import type { InfraFormat } from "../infra/detect";
 
@@ -577,27 +573,7 @@ export const InfraDialog = () => {
         throw new Error("The editor is not ready yet.");
       }
       const { layout } = importInfra(text, { details });
-      // drop the new diagram below whatever is already on the canvas
-      const live = api.getSceneElements();
-      const offset = live.length
-        ? {
-            x: Math.min(...live.map((e) => e.x)),
-            y: Math.max(...live.map((e) => e.y + e.height)) + 120,
-          }
-        : { x: 0, y: 0 };
-      const created = convertToExcalidrawElements(
-        // skeletons are plain objects; the converter validates them
-        layoutToSkeleton(layout, offset) as any,
-      );
-      api.updateScene({
-        elements: [...api.getSceneElementsIncludingDeleted(), ...created],
-        captureUpdate: CaptureUpdateAction.IMMEDIATELY, // so the import can be undone
-      });
-      const [x1, y1, x2, y2] = layout.bounds;
-      api.setViewport({
-        target: [x1 + offset.x, y1 + offset.y, x2 + offset.x, y2 + offset.y],
-        fit: "scale-down",
-      } as any);
+      drawLayout(api, layout);
       setOpen(false);
     } catch (e) {
       setError((e as Error).message);
@@ -685,6 +661,16 @@ export const InfraDialog = () => {
           </button>
           <button style={ghost} onClick={() => fileRef.current?.click()}>
             Choose files…
+          </button>
+          <button
+            style={ghost}
+            onClick={() => {
+              setOpen(false);
+              window.dispatchEvent(new Event(EVENTS.openNotebook));
+            }}
+            title="Opens the Python notebook panel (runs in your browser) next to the canvas"
+          >
+            Python notebook…
           </button>
           <select
             style={select}

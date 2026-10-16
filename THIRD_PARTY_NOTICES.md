@@ -46,6 +46,8 @@ Attribution for the CC BY 4.0 icons: _"ArcGIS architecture icons © Esri, licens
 | ArcGIS Maps SDK for JavaScript 4.31 | interactive maps in `viewer/` | © Esri, Esri license terms | **Loaded at runtime from `js.arcgis.com`**; not redistributed. Users must comply with Esri's terms and keep map attributions |
 | mp4-muxer 5.1.3 | MP4 export | MIT (© Vanilagy) | vendored `public/vendor/mp4-muxer.js`, sha256 `e239cb3fa122c48bc9cefda504c301a52edafbc27c1506f19f8c33480084bdf7` |
 | gifenc 1.0.3 | GIF export | MIT (© Matt DesLauriers) | vendored `public/vendor/gifenc.js`, sha256 `217761244379253ba5815510d3048a4fb1f4c4dbe9fb51a5cfbfe26f34eec093` |
+| Pyodide 314.0.6 | Python in the browser (notebooks, optional) | MPL-2.0 (© the Pyodide contributors); its packages keep their own licenses (NumPy, pandas, SciPy, scikit-learn, matplotlib… BSD/PSF-style) | **Downloaded at build time** by `tools/build-jupyterlite.mjs` into git-ignored `assets/jupyterlite/`; not committed. Pinned SHA-256 in that file |
+| JupyterLite 0.8.6, JupyterLab, Jupyter Notebook | notebook interface (optional) | BSD-3-Clause (© the Jupyter contributors) | built at build time from pinned pip packages; not committed |
 | nginx | serving static files in Docker | BSD-2-Clause | official image, not modified |
 
 ## Community libraries (downloaded at build time, not redistributed)

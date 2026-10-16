@@ -1,0 +1,327 @@
+// A Python notebook next to the canvas. The notebook is JupyterLite (Python in the browser through WebAssembly) in an
+// iframe served from this machine, see docs/NOTEBOOKS.md. The panel stays mounted when it is hidden, so the kernel and
+// its variables survive. Two things connect it to the diagram, both through the bridge (notebook/protocol.ts):
+// "Diagram this notebook" draws the flow of data of the notebook that is open (without downloading it), and
+// "Send diagram to notebook" adds a cell with the diagram as pandas tables.
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
+
+import { buildIndex } from "../agent/canvas";
+import { EVENTS } from "../branding";
+import { importInfra } from "../infra/detect";
+import { drawLayout } from "../infra/place";
+import {
+  jupyterLiteOrigin,
+  jupyterLiteUrl,
+  openNotebookSite,
+} from "../notebook/liteUrl";
+import { PROTOCOL, diagramToPython, parseReply } from "../notebook/protocol";
+
+import { useMobileBarOffset } from "./useMobileBarOffset";
+
+import type { El } from "../agent/elements";
+import type { Reply, Request } from "../notebook/protocol";
+
+const REQUEST_TIMEOUT_MS = 8000;
+/** how long to wait for the site before saying how to start it */
+const READY_TIMEOUT_MS = 12000;
+
+const btn: React.CSSProperties = {
+  padding: "6px 12px",
+  border: "1px solid var(--color-primary)",
+  background: "var(--color-primary)",
+  color: "var(--color-icon-white, #fff)",
+  borderRadius: 6,
+  cursor: "pointer",
+};
+const ghost: React.CSSProperties = {
+  ...btn,
+  background: "transparent",
+  color: "var(--color-primary)",
+};
+
+type Pending = {
+  resolve: (r: Reply) => void;
+  reject: (e: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+};
+
+export const NotebookPanel = ({
+  excalidrawAPI,
+}: {
+  excalidrawAPI: ExcalidrawImperativeAPI;
+}) => {
+  useMobileBarOffset();
+  const [open, setOpen] = useState(false);
+  /** the iframe is created the first time the panel opens, then kept (it holds the kernel) */
+  const [mounted, setMounted] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [slow, setSlow] = useState(false);
+  const [wide, setWide] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<{ text: string; error?: boolean } | null>(
+    null,
+  );
+  const frame = useRef<HTMLIFrameElement>(null);
+  const pending = useRef(new Map<string, Pending>());
+  const origin = useRef<string>(jupyterLiteOrigin());
+  const counter = useRef(0);
+
+  useEffect(() => {
+    const on = () => {
+      setOpen(true);
+      setMounted(true);
+    };
+    window.addEventListener(EVENTS.openNotebook, on);
+    return () => window.removeEventListener(EVENTS.openNotebook, on);
+  }, []);
+
+  // replies from the notebook: only from our iframe, only from the notebook site's origin, only well-formed ones
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (
+        event.source !== frame.current?.contentWindow ||
+        event.origin !== origin.current
+      ) {
+        return;
+      }
+      const reply = parseReply(event.data);
+      if (!reply) {
+        return;
+      }
+      if (reply.type === "ready") {
+        setReady(true);
+        return;
+      }
+      const wait = pending.current.get(reply.id);
+      if (wait) {
+        clearTimeout(wait.timer);
+        pending.current.delete(reply.id);
+        if (reply.type === "error") {
+          wait.reject(new Error(reply.message));
+        } else {
+          wait.resolve(reply);
+        }
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
+  // if the site never says it is ready, say how to start it
+  useEffect(() => {
+    if (!mounted || ready) {
+      return;
+    }
+    const t = setTimeout(() => setSlow(true), READY_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, [mounted, ready]);
+
+  const ask = useCallback(
+    (build: (id: string) => Request): Promise<Reply> =>
+      new Promise((resolve, reject) => {
+        const target = frame.current?.contentWindow;
+        if (!target) {
+          reject(new Error("The notebook is not open."));
+          return;
+        }
+        counter.current += 1;
+        const id = `r${counter.current}`;
+        const timer = setTimeout(() => {
+          pending.current.delete(id);
+          reject(
+            new Error(
+              "The notebook did not answer. Is it still loading? Open a notebook in the panel and try again.",
+            ),
+          );
+        }, REQUEST_TIMEOUT_MS);
+        pending.current.set(id, { resolve, reject, timer });
+        target.postMessage(build(id), origin.current);
+      }),
+    [],
+  );
+
+  const run = async (job: () => Promise<string>) => {
+    setBusy(true);
+    setNote(null);
+    try {
+      setNote({ text: await job() });
+    } catch (e) {
+      setNote({ text: (e as Error).message, error: true });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const diagramNotebook = () =>
+    run(async () => {
+      const reply = await ask((id) => ({
+        proto: PROTOCOL,
+        type: "get-notebook",
+        id,
+      }));
+      if (reply.type !== "notebook") {
+        throw new Error("Unexpected answer from the notebook.");
+      }
+      const { layout } = importInfra(reply.text);
+      drawLayout(excalidrawAPI, layout);
+      return `Drew the data flow of ${reply.path} (${layout.nodes.length} boxes). Ctrl+Z undoes it.`;
+    });
+
+  const sendDiagram = () =>
+    run(async () => {
+      const index = buildIndex(
+        excalidrawAPI.getSceneElementsIncludingDeleted() as unknown as El[],
+      );
+      const source = diagramToPython(index);
+      if (!source) {
+        throw new Error("There is nothing on the canvas to send.");
+      }
+      const reply = await ask((id) => ({
+        proto: PROTOCOL,
+        type: "insert-cell",
+        id,
+        source,
+      }));
+      if (reply.type !== "inserted") {
+        throw new Error("Unexpected answer from the notebook.");
+      }
+      return `Added a cell with ${index.nodes.size} boxes and ${index.edges.length} arrows to ${reply.path}. Run it when you want.`;
+    });
+
+  if (!mounted) {
+    return (
+      <PanelButton
+        onClick={() => {
+          setOpen(true);
+          setMounted(true);
+        }}
+      />
+    );
+  }
+
+  return (
+    <>
+      {!open && <PanelButton onClick={() => setOpen(true)} />}
+      <div
+        style={{
+          position: "fixed",
+          top: 64,
+          right: 16,
+          bottom: "calc(72px + var(--trazo-mobile-bar-offset, 0px))",
+          width: wide ? "min(1000px, 74vw)" : "min(640px, 48vw)",
+          minWidth: 320,
+          // above Excalidraw's own mobile bottom toolbar (--zIndex-ui-bottom: 60), or it hides behind it
+          zIndex: 61,
+          display: open ? "flex" : "none",
+          flexDirection: "column",
+          background: "var(--island-bg-color)",
+          color: "var(--text-primary-color)",
+          border: "1px solid var(--default-border-color, #8884)",
+          borderRadius: 10,
+          boxShadow: "0 4px 18px #0003",
+          font: "13px system-ui, sans-serif",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "8px 10px",
+            flexWrap: "wrap",
+          }}
+        >
+          <b style={{ flex: 1, minWidth: 90 }}>🐍 Notebook</b>
+          <button
+            style={{ ...ghost, padding: "3px 9px" }}
+            disabled={busy || !ready}
+            onClick={diagramNotebook}
+            title="Draw where the data goes in the notebook that is open (reads, tables, models, files written). The notebook is only read, not run."
+          >
+            Diagram this notebook
+          </button>
+          <button
+            style={{ ...ghost, padding: "3px 9px" }}
+            disabled={busy || !ready}
+            onClick={sendDiagram}
+            title="Add a cell to the open notebook with the boxes and arrows of this diagram as pandas tables (it is not run)"
+          >
+            Send diagram to notebook
+          </button>
+          <button
+            style={{ ...ghost, padding: "3px 9px" }}
+            onClick={() => setWide((w) => !w)}
+            title={wide ? "Make the panel narrower" : "Make the panel wider"}
+          >
+            ⇔
+          </button>
+          <button
+            style={{ ...ghost, padding: "3px 9px" }}
+            onClick={openNotebookSite}
+            title="Open the notebook in its own tab"
+          >
+            ↗
+          </button>
+          <button
+            style={{ ...ghost, padding: "3px 9px" }}
+            onClick={() => setOpen(false)}
+            title="Hide the panel (the notebook keeps running)"
+          >
+            ✕
+          </button>
+        </div>
+        {note && (
+          <div
+            style={{
+              padding: "0 10px 6px",
+              color: note.error ? "#c92a2a" : "#888",
+            }}
+          >
+            {note.text}
+          </div>
+        )}
+        {slow && !ready && (
+          <div style={{ padding: "0 10px 8px", color: "#888" }}>
+            The notebook site does not answer at <code>{jupyterLiteUrl()}</code>
+            . Build it once and start it:
+            <pre style={{ margin: "4px 0 0", whiteSpace: "pre-wrap" }}>
+              {
+                "node tools/build-jupyterlite.mjs\ndocker compose --profile lite up -d"
+              }
+            </pre>
+            (see docs/NOTEBOOKS.md)
+          </div>
+        )}
+        <iframe
+          ref={frame}
+          src={jupyterLiteUrl()}
+          title="Python notebook"
+          // its own origin, so it cannot read Trazo's storage; it may run scripts and keep its own files
+          sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-popups allow-modals"
+          style={{ flex: 1, border: "none", background: "#fff" }}
+        />
+      </div>
+    </>
+  );
+};
+
+const PanelButton = ({ onClick }: { onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    style={{
+      ...btn,
+      position: "fixed",
+      bottom: "calc(16px + var(--trazo-mobile-bar-offset, 0px))",
+      right: "calc(50% + 148px)",
+      // above Excalidraw's own mobile bottom toolbar (--zIndex-ui-bottom: 60), or it hides behind it
+      zIndex: 61,
+      boxShadow: "0 2px 8px #0003",
+    }}
+    title="Python notebook next to the canvas (runs in your browser, nothing is sent anywhere)"
+  >
+    🐍 Notebook
+  </button>
+);

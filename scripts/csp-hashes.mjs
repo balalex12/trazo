@@ -30,6 +30,17 @@ const extraFrameSrc =
     ? ` ${viewerOriginOverride}`
     : "";
 
+// The notebook panel (JupyterLite, docs/NOTEBOOKS.md) is embedded from the same host, port 3002 (always allowed
+// below); VITE_APP_JUPYTERLITE_ORIGIN moves it, like the viewer above (an https origin is covered by `https:`).
+const liteOriginOverride = process.env.VITE_APP_JUPYTERLITE_ORIGIN?.replace(
+  /\/$/,
+  "",
+);
+const extraLiteFrameSrc =
+  liteOriginOverride && liteOriginOverride.startsWith("http://")
+    ? ` ${liteOriginOverride}`
+    : "";
+
 const policy = [
   "default-src 'self'",
   `script-src 'self' 'wasm-unsafe-eval' ${hashes.join(" ")}`.trim(),
@@ -38,9 +49,9 @@ const policy = [
   "font-src 'self' data:",
   // 'self' + local LLM servers (Ollama 11434, LM Studio 1234, ...). Remote LLM hosts: add them in nginx conf.
   "connect-src 'self' data: blob: http://localhost:* http://127.0.0.1:*",
-  // the ArcGIS viewer (port 3001, or VITE_APP_ARCGIS_VIEWER_ORIGIN if set) and https embeds
+  // the ArcGIS viewer (port 3001, or VITE_APP_ARCGIS_VIEWER_ORIGIN if set), the notebook panel (port 3002) and https embeds
   // (ArcGIS apps, video, ...); embeds are sandboxed by the app
-  `frame-src 'self' http://localhost:3001 http://127.0.0.1:3001${extraFrameSrc} https:`,
+  `frame-src 'self' http://localhost:3001 http://127.0.0.1:3001${extraFrameSrc} http://localhost:3002 http://127.0.0.1:3002${extraLiteFrameSrc} https:`,
   "worker-src 'self' blob:",
   "media-src 'self' blob: data:",
   "object-src 'none'",

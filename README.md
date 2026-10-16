@@ -42,6 +42,7 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 | 🔌 **MCP server** | Let **Claude Desktop, Claude Code** or any MCP client draw and edit Trazo diagrams with their own login, no API key needed. A tiny container with **no network** that only touches one folder (see [docs/MCP.md](docs/MCP.md)). |
 | 🎙️ **Record while you explain** | **⏺ Record** captures just the canvas, the canvas with live maps, or the whole app, with your microphone and a highlighted pointer, and gives you an MP4 or WebM. Made in your browser, nothing uploaded (see [docs/RECORDER.md](docs/RECORDER.md)). |
 | 🏗️ **Import to diagram** | Paste a `docker-compose.yml`, **Kubernetes**, **Terraform** (`.tf` or JSON), an **OpenAPI** file, **SQL** `CREATE TABLE`s or **SQL queries** (how a `SELECT`/`WITH`/`UPDATE` runs, step by step), any **JSON** (its shape), a **dbt** `manifest.json`, an **n8n** workflow or a **Jupyter notebook** (where the data goes: reads, cleaning, models, files written) and get it drawn for you: architecture by role, API by tag, tables with their keys, lineage, workflow steps. Read in your browser, **no AI and no network**, so the same file always gives the same diagram (see [docs/IMPORT.md](docs/IMPORT.md)). |
+| 🐍 **Python notebooks in the browser** | Optional **JupyterLite**: Jupyter notebooks whose Python (pandas, scikit-learn, matplotlib, GeoPandas…) runs **inside the tab** through WebAssembly. Built once, served from your own machine, **no network** even while it runs. It opens as a panel **inside Trazo**: **Diagram this notebook** draws where its data goes, and **Send diagram to notebook** hands the canvas to pandas for analysis (see [docs/NOTEBOOKS.md](docs/NOTEBOOKS.md)). |
 | 🔒 **Local-first and hardened** | No analytics, no Sentry, no CDN, no service worker, no hosted collaboration. Strict Content-Security-Policy, read-only containers, ports bound to `127.0.0.1`. One `docker compose` and it runs on your machine. See [docs/SECURITY.md](docs/SECURITY.md), and verify it yourself. |
 | 🧩 **Icon packs by source** | 450+ components grouped **by source**, never mixed, each credited to its author: architecture and system design, data processing, deep learning, networking, UML/ER, Microsoft Fabric… from 16 curated **community libraries** (downloaded from the official catalog at build time), plus **63 own neutral icons** (GIS & spatial data, data engineering, machine learning) and the **GIS pack** below. |
 | 🗺️ **GIS pack: live maps and Esri icons** | Embed interactive ArcGIS maps in the canvas: add layers by URL or item ID, browse _My content_ or search any portal, open Web Maps, sketch on top. Works with **ArcGIS Online and any number of ArcGIS Enterprise portals** at once. Official **Esri Architecture Center** icons and Utility Network concepts. Optional Utility Network trace (needs a Web Map with a Utility Network). |
@@ -145,6 +146,7 @@ What Docker runs:
 | --- | --- | --- |
 | `trazo-app:local` | the Trazo app (port 3000) | always, with `docker compose up` |
 | `nginx` (viewer) | the map viewer (port 3001) | always, with `docker compose up` |
+| `nginx` (notebooks) | Python notebooks in the browser (port 3002), see [docs/NOTEBOOKS.md](docs/NOTEBOOKS.md) | only if you built them: `docker compose --profile lite up -d` |
 | `trazo-mcp:local` | the MCP server | only if you built it, and only while Claude is using it. No ports, no network |
 
 Is it safe? Read [docs/SECURITY.md](docs/SECURITY.md): what is hardened, what the optional parts can and cannot do, and how to check it yourself.
@@ -170,6 +172,7 @@ Is it safe? Read [docs/SECURITY.md](docs/SECURITY.md): what is hardened, what th
 | [docs/ANIMATION.md](docs/ANIMATION.md) | Slides, transitions, MP4/GIF export |
 | [docs/HYPERFRAMES.md](docs/HYPERFRAMES.md) | HTML player export, 4K / 60 fps video with HyperFrames, and your own AI as director and composer |
 | [docs/RECORDER.md](docs/RECORDER.md) | Recording the canvas with your voice |
+| [docs/NOTEBOOKS.md](docs/NOTEBOOKS.md) | Python notebooks in the browser (JupyterLite): setup, what is included, how it stays offline |
 | [docs/IMPORT.md](docs/IMPORT.md) | docker-compose, Kubernetes, Terraform, OpenAPI, SQL (schemas and queries), dbt, n8n, Jupyter notebooks and any JSON to diagram |
 | [docs/AI.md](docs/AI.md) | Connecting Ollama / LM Studio / OpenAI-compatible / Claude |
 | [docs/AGENT.md](docs/AGENT.md) | The agent panel: ask or edit your diagram with AI |

@@ -149,6 +149,7 @@ import { useSimulatedCollaborators } from "./debugCollaborators";
 import { AIComponents } from "./components/AI";
 import { AnimationPanel } from "./animation/AnimationPanel";
 import { AgentPanel } from "./components/AgentPanel";
+import { NotebookPanel } from "./components/NotebookPanel";
 import { RecorderPanel } from "./components/RecorderPanel";
 import { BrandDialogs } from "./components/BrandDialogs";
 import { InfraDialog } from "./components/InfraDialog";
@@ -1020,6 +1021,7 @@ const ExcalidrawWrapper = () => {
         {excalidrawAPI && <AnimationPanel excalidrawAPI={excalidrawAPI} />}
         {excalidrawAPI && <RecorderPanel />}
         {excalidrawAPI && <AgentPanel excalidrawAPI={excalidrawAPI} />}
+        {excalidrawAPI && <NotebookPanel excalidrawAPI={excalidrawAPI} />}
 
         <TTDDialogTrigger />
         {isCollaborating && isOffline && (
@@ -1086,6 +1088,22 @@ const ExcalidrawWrapper = () => {
               predicate: true,
               keywords: ["agent", "ai", "assistant", "chat", "edit", "explain"],
               perform: () => window.dispatchEvent(new Event(EVENTS.openAgent)),
+            },
+            {
+              label: "Python notebook (runs in your browser)",
+              category: DEFAULT_CATEGORIES.app,
+              predicate: true,
+              keywords: [
+                "python",
+                "jupyter",
+                "jupyterlite",
+                "notebook",
+                "ipynb",
+                "pandas",
+                "pyodide",
+              ],
+              perform: () =>
+                window.dispatchEvent(new Event(EVENTS.openNotebook)),
             },
             {
               label: "Connect Claude (MCP)",

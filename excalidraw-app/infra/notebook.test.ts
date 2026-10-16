@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { columnsFromOutput, parseNotebook, splitStatements } from "./notebook";
 
 import type { Graph } from "./graph";
@@ -320,5 +322,28 @@ describe("helpers", () => {
       ["name", ""],
     ]);
     expect(columnsFromOutput("just some text")).toEqual([]);
+  });
+});
+
+describe("the starter notebooks of the Python-in-the-browser site", () => {
+  const read = (name: string) =>
+    readFileSync(`tools/lite-content/${name}`, "utf8");
+
+  it("welcome.ipynb: a table, an aggregation and a chart", () => {
+    const g = parseNotebook(read("welcome.ipynb"));
+    expect(flows(g, "📊 sales", "📊 by_region")).toBe(true);
+    expect(node(g, "📊 by_region").lines.slice(3)).toEqual([
+      "· region",
+      "· total",
+    ]);
+    expect(g.nodes.some((n) => n.lines[0].startsWith("📈"))).toBe(true);
+  });
+
+  it("churn.ipynb: from tables to a fitted model", () => {
+    const g = parseNotebook(read("churn.ipynb"));
+    expect(flows(g, "📊 customers", "📊 df")).toBe(true);
+    expect(flows(g, "📊 df", "📊 X")).toBe(true);
+    expect(node(g, "🤖 model")).toBeTruthy();
+    expect(node(g, "🔢 pred")).toBeTruthy();
   });
 });
