@@ -8,6 +8,7 @@ import type { Theme } from "@excalidraw/element/types";
 
 import { LanguageList } from "../app-language/LanguageList";
 import { EVENTS } from "../branding";
+import { openNotebookSite } from "../notebook/liteUrl";
 
 import { saveDebugState } from "./DebugCanvas";
 
@@ -30,6 +31,9 @@ export const AppMainMenu: React.FC<{
       <MainMenu.Separator />
       <MainMenu.Item onSelect={() => openDialog(EVENTS.openInfraImport)}>
         Import to diagram…
+      </MainMenu.Item>
+      <MainMenu.Item onSelect={openNotebookSite}>
+        Python notebook…
       </MainMenu.Item>
       <MainMenu.Item onSelect={() => openDialog(EVENTS.openMcp)}>
         Connect Claude (MCP)…

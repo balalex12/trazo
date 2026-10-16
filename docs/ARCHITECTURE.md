@@ -28,6 +28,7 @@ Two containers, both plain nginx serving static files (plus one optional pass-th
 | `packages/`, `excalidraw-app/` | the editor and the web app | upstream (patched, see below) |
 | `excalidraw-app/animation/` | slides → smart-animate → MP4/GIF | **new** |
 | `excalidraw-app/ai/`, `components/AI.tsx` | opt-in LLM connector, one saved setting per connection | **new** |
+| `excalidraw-app/notebook/` | the address of the JupyterLite site (Python notebooks in the browser), opened in a new tab; the site itself is built by `tools/build-jupyterlite.mjs` and served by the `lite` compose service | **new** |
 | `excalidraw-app/infra/` | importers (compose, Kubernetes, Terraform, OpenAPI, SQL schemas and queries, dbt, n8n, Jupyter notebooks, any JSON) to a graph, layout and shapes | **new** |
 | `excalidraw-app/agent/` | the diagram as a graph, the edit operations, the model instructions; no editor or DOM, shared by the panel and the MCP server | **new** |
 | `excalidraw-app/components/AgentPanel.tsx`, `McpDialog.tsx` | the ✦ Agent chat; the "Connect Claude (MCP)" guide | **new** |

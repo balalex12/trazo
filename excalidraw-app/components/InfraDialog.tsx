@@ -9,6 +9,8 @@ import { EVENTS } from "../branding";
 import { FORMAT_NAMES, detectFormat, importInfra } from "../infra/detect";
 import { layoutToSkeleton } from "../infra/graph";
 
+import { openNotebookSite } from "../notebook/liteUrl";
+
 import type { InfraFormat } from "../infra/detect";
 
 const EXAMPLES: Record<InfraFormat, string> = {
@@ -685,6 +687,13 @@ export const InfraDialog = () => {
           </button>
           <button style={ghost} onClick={() => fileRef.current?.click()}>
             Choose files…
+          </button>
+          <button
+            style={ghost}
+            onClick={openNotebookSite}
+            title="Opens Python notebooks that run in your browser (see docs/NOTEBOOKS.md); download the .ipynb and choose it here"
+          >
+            Python notebook…
           </button>
           <select
             style={select}

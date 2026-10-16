@@ -148,6 +148,7 @@ import DebugCanvas, {
 import { useSimulatedCollaborators } from "./debugCollaborators";
 import { AIComponents } from "./components/AI";
 import { AnimationPanel } from "./animation/AnimationPanel";
+import { openNotebookSite } from "./notebook/liteUrl";
 import { AgentPanel } from "./components/AgentPanel";
 import { RecorderPanel } from "./components/RecorderPanel";
 import { BrandDialogs } from "./components/BrandDialogs";
@@ -1086,6 +1087,21 @@ const ExcalidrawWrapper = () => {
               predicate: true,
               keywords: ["agent", "ai", "assistant", "chat", "edit", "explain"],
               perform: () => window.dispatchEvent(new Event(EVENTS.openAgent)),
+            },
+            {
+              label: "Python notebook (runs in your browser)",
+              category: DEFAULT_CATEGORIES.app,
+              predicate: true,
+              keywords: [
+                "python",
+                "jupyter",
+                "jupyterlite",
+                "notebook",
+                "ipynb",
+                "pandas",
+                "pyodide",
+              ],
+              perform: () => openNotebookSite(),
             },
             {
               label: "Connect Claude (MCP)",

@@ -34,3 +34,6 @@ viewer/libraries/
 public/arcgis.excalidrawlib
 
 assets/community/
+assets/jupyterlite/
+assets/jupyterlite-work/
+.jupyterlite.doit.db
