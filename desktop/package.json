@@ -82,7 +82,8 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "Trazo-Setup-${version}-${arch}.${ext}"
+      "artifactName": "Trazo-Setup-${version}-${arch}.${ext}",
+      "buildUniversalInstaller": false
     },
     "portable": {
       "artifactName": "Trazo-Portable-${version}-${arch}.${ext}"

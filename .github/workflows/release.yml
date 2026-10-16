@@ -1,0 +1,346 @@
+# Builds everything a release has and, when asked, publishes it: the desktop installers (Windows, Linux, macOS), the
+# portable web zip, the notebook pack, the Docker images and a DRAFT GitHub release with a SHA256SUMS file.
+#
+#   - Actions > Release > Run workflow, with a version (for example 0.2.0): with "publish" off (the default) it only
+#     builds, and the files can be downloaded from the run, to try them before anything is published.
+#   - With "publish" on, or when a tag v* is pushed, it also pushes the images to ghcr.io and creates a draft release
+#     that you read and publish by hand.
+#
+# Everything published is built with the public library (--profile=public: no Esri Calcite glyphs, no third-party brand
+# logos, see docs/LIBRARIES.md). Nothing is signed (docs/DESKTOP.md says what the systems will warn about).
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version without the v, for example 0.2.0 or 0.2.0-rc.1"
+        required: true
+        type: string
+      publish:
+        description: "Push the images and create the draft release (off: only build)"
+        required: false
+        default: false
+        type: boolean
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  meta:
+    name: Version
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      publish: ${{ steps.v.outputs.publish }}
+      latest: ${{ steps.v.outputs.latest }}
+    steps:
+      - id: v
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_PUBLISH: ${{ inputs.publish }}
+        run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            version="${GITHUB_REF_NAME#v}"
+            publish=true
+          else
+            version="$INPUT_VERSION"
+            publish="$INPUT_PUBLISH"
+          fi
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
+            echo "The version must look like 1.2.3 or 1.2.3-rc.1, not: $version" >&2
+            exit 1
+          fi
+          # a pre-release version does not take the "latest" image tag
+          if printf '%s' "$version" | grep -q -- '-'; then latest=false; else latest=true; fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "publish=$publish" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "Version $version, publish $publish, latest $latest"
+
+  # The site, built once with the public library. The desktop apps and the web zip use it as it is.
+  web:
+    name: Web build
+    needs: meta
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.x
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: node tools/build-library.js --profile=public
+      - run: yarn build:app:docker
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-build
+          path: excalidraw-app/build
+          retention-days: 7
+          if-no-files-found: error
+      - name: The portable web zip
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          out="Trazo-Web-$VERSION"
+          mkdir -p "release/$out"
+          node desktop/prepare.mjs
+          cp -r desktop/site "release/$out/site"
+          cp desktop/serve.cjs desktop/site-server.cjs LICENSE THIRD_PARTY_NOTICES.md "release/$out/"
+          cat > "release/$out/README.txt" <<'EOF'
+          Trazo, the web version, ready to serve from your own computer.
+
+            node serve.cjs          (Node.js 18 or newer) then open http://127.0.0.1:3000
+
+          It listens on 127.0.0.1 only. The folder "site" is plain static files: you can also serve it with any web
+          server (add the Content-Security-Policy that is in site/_csp.inc, written for nginx).
+          More: https://github.com/balalex12/trazo/blob/main/docs/INSTALL.md
+          Credits and licenses: LICENSE and THIRD_PARTY_NOTICES.md.
+          EOF
+          (cd release && zip -qr "$out.zip" "$out")
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-zip
+          path: release/Trazo-Web-*.zip
+          retention-days: 7
+          if-no-files-found: error
+
+  desktop:
+    name: Desktop (${{ matrix.name }})
+    needs: [meta, web]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            args: --win
+          - name: Linux
+            os: ubuntu-24.04
+            args: --linux
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.x
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: web-build
+          path: excalidraw-app/build
+      - run: node desktop/prepare.mjs
+      - name: rpm tools (the .rpm is built with rpmbuild)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm
+      - name: Installers
+        working-directory: desktop
+        shell: bash
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          npm ci
+          npx electron-builder ${{ matrix.args }} --publish never -c.extraMetadata.version="$VERSION"
+      # a smoke test of the app that was built: it starts, serves Trazo with its security headers and the public library
+      - name: Smoke test (Linux)
+        if: runner.os == 'Linux'
+        env:
+          SMOKE_ARGS: --no-sandbox
+        run: xvfb-run -a node desktop/smoke.mjs desktop/dist/linux-unpacked/trazo-desktop
+      # on Windows it reports a problem without stopping the release
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        continue-on-error: true
+        shell: bash
+        run: node desktop/smoke.mjs desktop/dist/win-unpacked/Trazo.exe
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: desktop-${{ matrix.name }}
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.zip
+            desktop/dist/*.AppImage
+            desktop/dist/*.deb
+            desktop/dist/*.rpm
+            desktop/dist/*.tar.gz
+          retention-days: 7
+          if-no-files-found: error
+
+  # macOS apart: it is built without a certificate (ad-hoc signed), and if it fails the rest of the release does not wait
+  # for it (the release notes say which files are there).
+  desktop-mac:
+    name: Desktop (macOS)
+    needs: [meta, web]
+    runs-on: macos-latest
+    continue-on-error: true
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.x
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: web-build
+          path: excalidraw-app/build
+      - run: node desktop/prepare.mjs
+      - name: Installers
+        working-directory: desktop
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          npm ci
+          npx electron-builder --mac --publish never -c.extraMetadata.version="$VERSION" -c.mac.identity=-
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: desktop-macOS
+          path: |
+            desktop/dist/*.dmg
+            desktop/dist/*.zip
+          retention-days: 7
+          if-no-files-found: error
+
+  # The notebook of the desktop app: Pyodide and the data science packages, pinned and checked against a SHA-256
+  notebook:
+    name: Notebook pack
+    needs: meta
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.x
+      - run: node tools/build-jupyterlite.mjs
+      - name: Zip
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          mkdir -p pack
+          cp -r assets/jupyterlite pack/jupyterlite
+          cp LICENSE THIRD_PARTY_NOTICES.md pack/
+          cat > pack/README.txt <<'EOF'
+          The notebook pack of Trazo's desktop app: Python in the app (Pyodide) with pandas, scikit-learn and more.
+          Unzip it so that the folder "jupyterlite" is in the app's data folder (Trazo: Help > Open the notebook pack
+          folder), then restart Trazo. More: https://github.com/balalex12/trazo/blob/main/docs/DESKTOP.md
+          EOF
+          (cd pack && zip -qr "../Trazo-Notebook-Pack-$VERSION.zip" .)
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: notebook-pack
+          path: Trazo-Notebook-Pack-*.zip
+          retention-days: 7
+          if-no-files-found: error
+
+  docker:
+    name: Docker images
+    needs: meta
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/trazo
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.x
+      # the Dockerfile builds the site from the folder: the library it finds there is the one that gets published
+      - run: node tools/build-library.js --profile=public
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Log in to ghcr.io
+        if: needs.meta.outputs.publish == 'true'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tags
+        id: tags
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+          LATEST: ${{ needs.meta.outputs.latest }}
+        run: |
+          app="$IMAGE:$VERSION"
+          mcp="$IMAGE-mcp:$VERSION"
+          if [ "$LATEST" = "true" ]; then app="$app,$IMAGE:latest"; mcp="$mcp,$IMAGE-mcp:latest"; fi
+          echo "app=$app" >> "$GITHUB_OUTPUT"
+          echo "mcp=$mcp" >> "$GITHUB_OUTPUT"
+      - name: The app (nginx, read-only, ports on 127.0.0.1 when run with the compose file)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ needs.meta.outputs.publish == 'true' }}
+          tags: ${{ steps.tags.outputs.app }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=Trazo: hand-drawn diagrams that move. A local-first diagram studio.
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.version=${{ needs.meta.outputs.version }}
+      - name: The MCP server
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: Dockerfile.mcp
+          platforms: linux/amd64,linux/arm64
+          push: ${{ needs.meta.outputs.publish == 'true' }}
+          tags: ${{ steps.tags.outputs.mcp }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=Trazo's MCP server: lets Claude and other MCP clients draw and edit diagrams.
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.version=${{ needs.meta.outputs.version }}
+
+  release:
+    name: Draft release
+    needs: [meta, web, desktop, desktop-mac, notebook, docker]
+    # the macOS job may fail without stopping the release; everything else must have worked
+    if: >-
+      ${{ !cancelled() && needs.meta.outputs.publish == 'true' && needs.web.result == 'success' && needs.desktop.result == 'success' && needs.notebook.result == 'success' && needs.docker.result == 'success' }}
+
+
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: "{web-zip,desktop-*,notebook-pack}"
+          path: files
+          merge-multiple: true
+      - name: Checksums
+        run: |
+          cd files
+          ls -1 | grep -v '^SHA256SUMS$' | xargs sha256sum > SHA256SUMS
+          cat SHA256SUMS
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.meta.outputs.version }}
+          MAC: ${{ needs.desktop-mac.result }}
+        run: |
+          notes="docs/releases/$VERSION.md"
+          if [ ! -f "$notes" ]; then
+            printf 'Trazo %s. See the commits since the last release.\n' "$VERSION" > "$notes"
+          fi
+          if [ "$MAC" != "success" ]; then
+            printf '\n> The macOS files are not in this release: their build failed. Use the Docker image, the web zip or build the app yourself (docs/DESKTOP.md).\n' >> "$notes"
+          fi
+          flags=""
+          if printf '%s' "$VERSION" | grep -q -- '-'; then flags="--prerelease"; fi
+          gh release create "v$VERSION" files/* --draft $flags --target "$GITHUB_SHA" \
+            --title "Trazo v$VERSION" --notes-file "$notes"

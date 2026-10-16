@@ -107,6 +107,8 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 ### Quick start
 
+**No setup:** download the desktop app for Windows, Linux or macOS from the [releases](https://github.com/balalex12/trazo/releases) ([how](docs/DESKTOP.md)), or run the published image: `docker run -d -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest`. The downloads use the public icon library; to build everything yourself (the full library, the notebook), use Docker:
+
 You only need **Docker** (with Compose v2). No Node.js, no account.
 
 ```bash
