@@ -1,6 +1,19 @@
 # Install and run Trazo
 
-Trazo runs on your own computer, in Docker. **You only need Docker.** No Node.js, no account, no cloud.
+Trazo runs on your own computer. Pick the way that suits you; they are all the same Trazo:
+
+| You are | Do this |
+| --- | --- |
+| **Just a user** | Download the **desktop app** for Windows, Linux or macOS from the [releases](https://github.com/balalex12/trazo/releases): see [DESKTOP.md](DESKTOP.md) |
+| **Docker user** | `docker run -d -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest`, then open http://localhost:3000 |
+| **Self-hosting** | the `Trazo-Web-X.Y.Z.zip` of a release (static files and a small launcher: `node serve.cjs`) |
+| **Developer** | build it from the repository, below (the full icon library, the notebook, everything) |
+
+The downloads are built with the **public icon library** (without the Esri Calcite glyphs and the libraries with third-party brand logos, see [LIBRARIES.md](LIBRARIES.md)); building from the repository gives you the full one. Every release has a `SHA256SUMS` file to check what you downloaded.
+
+## Build it from the repository
+
+Trazo runs in Docker. **You only need Docker.** No Node.js, no account, no cloud.
 
 ## What you need
 
