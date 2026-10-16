@@ -62,24 +62,68 @@ describe("validateComposition", () => {
   });
 
   it.each([
-    ['<img src="https://example.com/a.png">', /another address|http/],
-    ['<img src="//cdn.example.com/a.png">', /another address/],
+    ['<img src="https://example.com/a.png">', /outside the file \(src=/],
+    ['<img src="//cdn.example.com/a.png">', /outside the file \(src=/],
+    ['<img src="a.png">', /outside the file \(src=/],
+    ['<img srcset="https://x.test/a.png 1x">', /outside the file \(srcset=/],
+    ['<a href="https://x.test/">x</a>', /outside the file \(href=/],
+    ['<a href="javascript:alert(1)">x</a>', /outside the file \(href=/],
     [
-      '<div style="background:url(https://x.test/a.png)"></div>',
-      /url\(\)|http/,
+      '<svg><use href="https://x.test/s.svg#a"></use></svg>',
+      /outside the file \(href=/,
     ],
-    ['<script src="a.js"></script>', /script from a file/],
-    ['<link rel="stylesheet" href="a.css">', /<link>/],
+    ['<div style="background:url(https://x.test/a.png)"></div>', /url\(\)/],
+    ["<style>@font-face{src:url(https://x.test/f.woff2)}</style>", /url\(\)/],
     ["<style>@import 'a.css';</style>", /@import/],
-    ['<iframe src="about:blank"></iframe>', /forbidden element/],
-    ['<form action="x"></form>', /forbidden element/],
+    ['<script src="a.js"></script>', /script from a file/],
+    ['<link rel="stylesheet" href="a.css">', /forbidden element \(<link>/],
+    ['<iframe src="about:blank"></iframe>', /forbidden element \(<iframe>/],
+    ['<form action="x"></form>', /forbidden element \(<form>/],
+    ['<video src="a.mp4"></video>', /forbidden element \(<video>/],
+    ['<meta http-equiv="refresh" content="0;url=x">', /http-equiv/],
     ['<div onclick="x()"></div>', /inline event handler/],
+    ['<div ONMOUSEOVER="x()"></div>', /inline event handler/],
   ])("refuses %s", (snippet, why) => {
     const errors = validateComposition(
       modelOutput.replace("</body>", `${snippet}</body>`),
       FORMAT,
     ).errors;
     expect(errors.join(" | ")).toMatch(why);
+  });
+
+  it("allows data: images and #fragments", () => {
+    const html = modelOutput.replace(
+      "</body>",
+      '<img src="data:image/png;base64,AAAA"><svg><use href="#a"></use></svg><div style="background:url(data:image/png;base64,AAAA)"></div></body>',
+    );
+    expect(validateComposition(html, FORMAT).errors).toEqual([]);
+  });
+
+  // The file is read with the browser's own parser, so these tricks (the ones that fool a regular expression: end tags
+  // with spaces, odd case, HTML-style comments in a script) are seen as the browser would see them.
+  it.each([
+    ["<script>fetch('x')</script >"],
+    ["<script>fetch('x')</script\n>"],
+    ["<SCRIPT>fetch('x')</SCRIPT>"],
+    ["<ScRiPt>Math.random()</sCrIpT >"],
+    ["<script>\n<!--\nfetch('x')\n-->\n</script>"],
+    ["<script>//<!--\nnew Date()\n//--></script>"],
+    ["<!<!-- -->--><script>eval('1')</script>"],
+    ['<script type="text/plain">localStorage.x</script>'],
+  ])("sees through %s", (snippet) => {
+    const errors = validateComposition(
+      modelOutput.replace("</body>", `${snippet}</body>`),
+      FORMAT,
+    ).errors;
+    expect(errors.length).toBeGreaterThan(0);
+  });
+
+  it("does not take a forbidden word inside an HTML comment for code", () => {
+    const html = modelOutput.replace(
+      "</body>",
+      "<!-- <script>fetch('x')</script> -->\n</body>",
+    );
+    expect(validateComposition(html, FORMAT).errors).toEqual([]);
   });
 
   it("does not mind the words in on-screen text, only in scripts", () => {

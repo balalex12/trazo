@@ -166,32 +166,12 @@ export type Check = {
   seconds: number | null;
 };
 
-/** What may not appear anywhere in the file. */
-const HTML_RULES: [RegExp, string][] = [
-  [
-    /(?:src|href|data|poster|action|formaction|xlink:href)\s*=\s*["']?\s*(?:https?:)?\/\//i,
-    "it loads something from another address (src/href with // or http)",
-  ],
-  [
-    /url\(\s*["']?\s*(?:https?:)?\/\//i,
-    "a CSS url() points to another address",
-  ],
-  [
-    /https?:\/\//i,
-    "it contains an http or https address (everything must be inside the file)",
-  ],
-  [/@import\b/i, "it uses @import"],
-  [/<link\b/i, "it has a <link> element"],
-  [/<script\b[^>]*\bsrc\s*=/i, "it loads a script from a file or address"],
-  [
-    /<(?:iframe|object|embed|form|base|frame|meta\s+http-equiv)\b/i,
-    "it uses a forbidden element (iframe, object, embed, form, base)",
-  ],
-  [/\bon[a-z]{3,}\s*=\s*["']/i, "it has an inline event handler (onclick=...)"],
-];
-
 /** What may not appear in its scripts (the words are fine in on-screen text). */
 const SCRIPT_RULES: [RegExp, string][] = [
+  [
+    /https?:\/\/|(?:^|[^:\w])\/\/[a-z0-9.-]+\.[a-z]{2,}\//i,
+    "a script contains an http or https address (everything must be inside the file)",
+  ],
   [
     /\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon|importScripts|Worker|SharedWorker)\b/,
     "it uses the network or workers",
@@ -222,7 +202,56 @@ const SCRIPT_RULES: [RegExp, string][] = [
   ],
 ];
 
-/** Checks a composition as text. `errors` stop it being saved; `warnings` are shown. */
+/** attributes that point at a file or address: only `#fragment` and `data:` values are allowed */
+const URL_ATTRIBUTES = new Set([
+  "src",
+  "href",
+  "xlink:href",
+  "poster",
+  "data",
+  "action",
+  "formaction",
+  "srcset",
+  "background",
+  "ping",
+  "cite",
+  "manifest",
+]);
+/** elements that load or embed something, or navigate */
+const FORBIDDEN_TAGS = new Set([
+  "iframe",
+  "frame",
+  "frameset",
+  "object",
+  "embed",
+  "applet",
+  "portal",
+  "form",
+  "base",
+  "link",
+  "audio",
+  "video",
+  "source",
+  "track",
+]);
+
+/** CSS (a <style> element or a style attribute) that loads anything from outside the file */
+const cssProblems = (css: string): string[] => {
+  const out: string[] = [];
+  if (/@import\b/i.test(css)) {
+    out.push("it uses @import");
+  }
+  if (/url\(\s*(?!["']?\s*(?:data:|#))/i.test(css)) {
+    out.push("a CSS url() points to something outside the file");
+  }
+  return out;
+};
+
+/**
+ * Checks a composition. `errors` stop it being saved; `warnings` are shown. The file is read with the browser's own
+ * HTML parser (an inert document: nothing in it runs or loads), so the checks see the same elements, attributes and
+ * script text that a browser would, whatever tricks with comments, end tags or case the file plays.
+ */
 export const validateComposition = (
   html: string,
   expected: { width: number; height: number; seconds?: number },
@@ -232,6 +261,15 @@ export const validateComposition = (
   if (!html.trim()) {
     return { errors: ["The model returned no HTML."], warnings, seconds: null };
   }
+  if (typeof DOMParser === "undefined") {
+    return {
+      errors: [
+        "This environment cannot parse HTML, so the file cannot be checked.",
+      ],
+      warnings,
+      seconds: null,
+    };
+  }
   if (html.length > MAX_HTML) {
     errors.push(
       `it is too big (${Math.round(html.length / 1000)} KB; the limit is ${
@@ -239,19 +277,74 @@ export const validateComposition = (
       } KB)`,
     );
   }
-  if (!/<!doctype html|<html[\s>]/i.test(html)) {
+  if (!/^\s*(?:<!doctype html|<html[\s>])/i.test(html)) {
     errors.push(
       "it is not a complete HTML file (it must start with <!doctype html>)",
     );
   }
-  const id = /data-composition-id\s*=\s*["']([^"']+)["']/.exec(html)?.[1];
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const problems = new Set<string>();
+  const css: string[] = [];
+  const scripts: string[] = [];
+
+  for (const el of Array.from(doc.querySelectorAll("*"))) {
+    const tag = el.localName.toLowerCase();
+    if (FORBIDDEN_TAGS.has(tag)) {
+      problems.add(
+        `it uses a forbidden element (<${tag}>: nothing may be embedded, linked or loaded)`,
+      );
+    }
+    if (tag === "meta" && el.hasAttribute("http-equiv")) {
+      problems.add("it uses <meta http-equiv>");
+    }
+    if (tag === "style") {
+      css.push(el.textContent || "");
+    }
+    if (tag === "script") {
+      if (el.hasAttribute("src")) {
+        problems.add("it loads a script from a file or address");
+      }
+      scripts.push(el.textContent || "");
+    }
+    for (const attr of Array.from(el.attributes)) {
+      const name = attr.name.toLowerCase();
+      const value = attr.value.trim();
+      if (name.startsWith("on")) {
+        problems.add("it has an inline event handler (onclick=...)");
+      } else if (URL_ATTRIBUTES.has(name)) {
+        if (value && !value.startsWith("#") && !/^data:/i.test(value)) {
+          problems.add(
+            `it loads or links something outside the file (${name}="${value.slice(
+              0,
+              40,
+            )}")`,
+          );
+        }
+      } else if (name === "style") {
+        css.push(value);
+      }
+    }
+  }
+  for (const text of css) {
+    cssProblems(text).forEach((p) => problems.add(p));
+  }
+  const code = scripts.join("\n");
+  for (const [re, why] of SCRIPT_RULES) {
+    if (re.test(code)) {
+      problems.add(why);
+    }
+  }
+  errors.push(...problems);
+
+  const root = doc.querySelector("[data-composition-id]");
+  const id = root?.getAttribute("data-composition-id") || undefined;
   if (!id) {
     errors.push(
       'the main element has no data-composition-id (for example data-composition-id="main")',
     );
   }
-  const w = /data-width\s*=\s*["']?(\d+)/.exec(html)?.[1];
-  const h = /data-height\s*=\s*["']?(\d+)/.exec(html)?.[1];
+  const w = root?.getAttribute("data-width");
+  const h = root?.getAttribute("data-height");
   if (Number(w) !== expected.width || Number(h) !== expected.height) {
     errors.push(
       `data-width and data-height must be ${expected.width} and ${
@@ -260,7 +353,7 @@ export const validateComposition = (
     );
   }
   const call = /trazoTimeline\s*\(\s*["']([^"']+)["']\s*,\s*([\d.]+)\s*\)/.exec(
-    html,
+    code,
   );
   let seconds: number | null = null;
   if (!call) {
@@ -289,33 +382,16 @@ export const validateComposition = (
   }
   if (
     /\bfunction\s+trazoTimeline\b|window\.trazoTimeline\s*=|__timelines\s*\[[^\]]+\]\s*=/.test(
-      html,
+      code,
     )
   ) {
     errors.push(
       "it defines its own timeline; use the trazoTimeline helper that is provided",
     );
   }
-  // the checks below run on the text without HTML comments and the helper itself
-  const body = html.replace(/<!--[^]*?-->/g, "");
-  const scripts = [...body.matchAll(/<script\b[^>]*>([^]*?)<\/script>/gi)]
-    .map((m) => m[1])
-    .join("\n");
-  const seen = new Set<string>();
-  for (const [text, rules] of [
-    [body, HTML_RULES],
-    [scripts, SCRIPT_RULES],
-  ] as const) {
-    for (const [re, why] of rules) {
-      if (re.test(text) && !seen.has(why)) {
-        seen.add(why);
-        errors.push(why);
-      }
-    }
-  }
-  const tiny = [...body.matchAll(/font-size\s*:\s*(\d+(?:\.\d+)?)px/gi)].filter(
-    (m) => Number(m[1]) < 24,
-  );
+  const tiny = [
+    ...css.join("\n").matchAll(/font-size\s*:\s*(\d+(?:\.\d+)?)px/gi),
+  ].filter((m) => Number(m[1]) < 24);
   if (tiny.length) {
     warnings.push(
       `some text is smaller than 24 px (${tiny[0][1]} px): it will be hard to read on video`,
