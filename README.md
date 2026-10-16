@@ -91,7 +91,7 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 ### Quick start
 
-**No setup:** download the desktop app for Windows, Linux or macOS from the [releases](https://github.com/balalex12/trazo/releases) ([how](docs/DESKTOP.md)), or run the published image: `docker run -d -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest`. The downloads use the public icon library; to build everything yourself (the full library, the notebook), use Docker:
+**No setup:** download the desktop app for Windows, Linux or macOS from the [releases](https://github.com/balalex12/trazo/releases) ([how](docs/DESKTOP.md)), or run the published image: `docker run -d --name trazo --restart unless-stopped -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest`. The downloads use the public icon library; to build everything yourself (the full library, the notebook), use Docker:
 
 You only need **Docker** (with Compose v2). No Node.js, no account.
 
@@ -104,7 +104,9 @@ docker compose up -d --build                     # first build takes a few minut
 # open http://localhost:3000
 ```
 
-Stop with `docker compose down`. Everything listens on `127.0.0.1` only. Full guide, updating, removing and troubleshooting: **[docs/INSTALL.md](docs/INSTALL.md)**.
+Stop with `docker compose down`. Everything listens on `127.0.0.1` only. Full guide, removing and troubleshooting: **[docs/INSTALL.md](docs/INSTALL.md)**.
+
+**Updating:** Trazo never checks for updates by itself (no network by default). Watch the repository's releases, and update with the line for your install: **[How to update](docs/INSTALL.md#how-to-update)** (installers, `.deb`/`.rpm`, AppImage, Docker image, web zip, source).
 
 **What you get right away**, with nothing else to set up: drawing, the icon libraries, animation with MP4/GIF export, narration, the recorder and _Import to diagram_. They run in your browser and send nothing anywhere.
 
@@ -218,7 +220,9 @@ docker compose up -d --build                     # la primera vez tarda unos min
 # abre http://localhost:3000
 ```
 
-Todo escucha solo en `127.0.0.1`. Guía completa, actualizar, desinstalar y problemas comunes: [docs/INSTALL.md](docs/INSTALL.md) (en inglés).
+Todo escucha solo en `127.0.0.1`. Guía completa, desinstalar y problemas comunes: [docs/INSTALL.md](docs/INSTALL.md) (en inglés).
+
+**Actualizar:** Trazo nunca busca actualizaciones por su cuenta (no usa la red por defecto). Sigue los lanzamientos del repositorio y actualiza con la línea de tu instalación: [Cómo actualizar](docs/INSTALL.md#how-to-update) (instaladores, `.deb`/`.rpm`, AppImage, imagen Docker, zip web, código fuente).
 
 **Para usarlo con Claude Code o Claude Desktop (MCP):** el servidor MCP es una imagen aparte (`trazo-mcp:local`) que `docker compose up` **no** arranca; tu app de Claude la arranca cuando la necesita. Una sola vez: `docker compose --profile mcp build mcp` y luego, en Trazo, **Menú → Connect Claude (MCP)…**, que te da el comando exacto para tu sistema con botón de copiar. Detalles en [docs/MCP.md](docs/MCP.md) (en inglés).
 

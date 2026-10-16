@@ -1,27 +1,66 @@
-# Install and run Trazo
+# Install, update and run Trazo
 
-Trazo runs on your own computer. Pick the way that suits you; they are all the same Trazo:
+Trazo runs on your own computer. Pick the way that suits you; they are all the same Trazo.
 
-| You are | Do this |
+| You are | Do this | Details |
+| --- | --- | --- |
+| **Just a user** | Download the **desktop app** for Windows, Linux or macOS from the [releases](https://github.com/balalex12/trazo/releases) | [DESKTOP.md](DESKTOP.md) |
+| **Docker user** | `docker run -d --name trazo --restart unless-stopped -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest`, then open http://localhost:3000 | [Docker image](#docker-image) |
+| **Self-hosting, no Docker** | the `Trazo-Web-X.Y.Z.zip` of a release: unzip, `node serve.cjs` (Node.js 18+) | [Web zip](#web-zip) |
+| **Expert / developer** | build it from the repository: Docker Compose (everything) or Node.js (dev server) | [From the source](#from-the-source-for-experts) |
+
+The downloads are built with the **public icon library** (without the Esri Calcite glyphs and the libraries with third-party brand logos, see [LIBRARIES.md](LIBRARIES.md)); building from the repository gives you the full one. Every release has a `SHA256SUMS` file to check what you downloaded: `sha256sum -c SHA256SUMS --ignore-missing` (Linux), `shasum -a 256 -c SHA256SUMS --ignore-missing` (macOS), `Get-FileHash <file>` (Windows PowerShell) and compare by eye.
+
+## How to update
+
+Trazo **never checks for updates by itself** (it makes no network request on its own). To know when there is a new version, use **Watch → Custom → Releases** on the [GitHub repository](https://github.com/balalex12/trazo), or look at the releases page now and then. Your drawings are not touched by an update: they live in the app's storage (desktop app, browser) or in your own files. Save your work to a file first anyway.
+
+| How you installed it | To update |
 | --- | --- |
-| **Just a user** | Download the **desktop app** for Windows, Linux or macOS from the [releases](https://github.com/balalex12/trazo/releases): see [DESKTOP.md](DESKTOP.md) |
-| **Docker user** | `docker run -d -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest`, then open http://localhost:3000 |
-| **Self-hosting** | the `Trazo-Web-X.Y.Z.zip` of a release (static files and a small launcher: `node serve.cjs`) |
-| **Developer** | build it from the repository, below (the full icon library, the notebook, everything) |
+| **Windows installer** (`Trazo-Setup-...exe`) | download the new `Trazo-Setup-X.Y.Z-<arch>.exe` and run it: it replaces the old version |
+| **Windows portable** / **zip** | download the new file and use it in place of the old one (delete the old one) |
+| **macOS** (`.dmg`) | open the new `.dmg` and drag Trazo to Applications, replacing the old one |
+| **Linux `.deb`** | `sudo apt install ./Trazo-X.Y.Z-linux-<arch>.deb` |
+| **Linux `.rpm`** | `sudo dnf install ./Trazo-X.Y.Z-linux-<arch>.rpm` (or `sudo zypper install ./...` on openSUSE) |
+| **Linux AppImage** / **`.tar.gz`** | download the new file, make it executable again (`chmod +x`), delete the old one |
+| **Docker image** | `docker pull ghcr.io/balalex12/trazo:latest && docker rm -f trazo && docker run -d --name trazo --restart unless-stopped -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest` |
+| **Web zip** | unzip the new `Trazo-Web-X.Y.Z.zip` (it makes its own folder) and run `node serve.cjs` there; delete the old folder |
+| **Docker Compose, from the source** | `git pull`, then `docker compose up -d --build` (if icon libraries changed: `docker compose --profile setup run --rm setup` first) |
+| **Node.js dev server, from the source** | `git pull`, `yarn`, then `yarn start` |
+| **MCP image** (Claude Code / Desktop) | from the source: `git pull`, then `docker compose --profile mcp build mcp`; from the registry: `docker pull ghcr.io/balalex12/trazo-mcp:latest` |
+| **Notebook pack** | see [NOTEBOOKS.md](NOTEBOOKS.md): rebuild it from the source, or unzip the new `Trazo-Notebook-Pack-X.Y.Z.zip` of the release over the old one (see [DESKTOP.md](DESKTOP.md)) |
 
-The downloads are built with the **public icon library** (without the Esri Calcite glyphs and the libraries with third-party brand logos, see [LIBRARIES.md](LIBRARIES.md)); building from the repository gives you the full one. Every release has a `SHA256SUMS` file to check what you downloaded.
+To go back to a previous version, install that release's file instead (every release stays on the releases page) or pin the Docker tag: `ghcr.io/balalex12/trazo:X.Y.Z`.
 
-## Build it from the repository
+## Docker image
 
-Trazo runs in Docker. **You only need Docker.** No Node.js, no account, no cloud.
+```bash
+docker run -d --name trazo --restart unless-stopped -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest
+```
 
-## What you need
+Open **http://localhost:3000**. `127.0.0.1:` in front of the port means only this computer can reach it. Stop it with `docker stop trazo`, start it again with `docker start trazo`, remove it with `docker rm -f trazo`. Images exist for `amd64` and `arm64`. Pin a version (`:X.Y.Z`) if you do not want `latest` to move.
+
+## Web zip
+
+You need **Node.js 18 or newer** and nothing else (no `npm install`):
+
+```bash
+unzip Trazo-Web-X.Y.Z.zip && cd Trazo-Web-X.Y.Z
+node serve.cjs            # http://127.0.0.1:3000 ; another port: node serve.cjs 8080
+```
+
+It is the same local server as the desktop app, with the same security headers, bound to `127.0.0.1`. To run it as a service, use your system's usual way (systemd, launchd, a scheduled task) with `node /full/path/serve.cjs`.
+
+## From the source (for experts)
+
+Pick one. Both give you the **full** icon library (it is downloaded at build time from the official sources, see [LIBRARIES.md](LIBRARIES.md)).
+
+### A. Docker Compose (recommended: everything, hardened)
+
+**You only need Docker.** No Node.js, no account, no cloud.
 
 - **Docker** with Compose v2: Docker Desktop on Windows or macOS, or Docker Engine on Linux. Check with `docker compose version`.
 - About 4 GB of free disk space and a few minutes for the first build.
-- A modern browser (Chrome or Edge give you everything, including MP4 export; others work for drawing and the rest).
-
-## Install (3 commands)
 
 ```bash
 git clone https://github.com/balalex12/trazo.git
@@ -31,18 +70,41 @@ docker compose --profile setup run --rm setup   # once: downloads the icon libra
 docker compose up -d --build                     # first build takes a few minutes
 ```
 
-Open **http://localhost:3000**. That is the whole installation.
+Open **http://localhost:3000**.
 
-- The `setup` step downloads the icon libraries (Esri Calcite glyphs and the community libraries, at build time, from their official sources) and writes them into the folder. It is the only step that needs the internet, and it runs in a throwaway container. If you have Node.js 20+ you can run `node tools/build-library.js` instead.
-- The app and the map viewer listen on `127.0.0.1` only (ports 3000 and 3001): nobody else on your network can reach them.
+- The `setup` step downloads the icon libraries (Esri Calcite glyphs and the community libraries) and writes them into the folder. It is the only step that needs the internet, and it runs in a throwaway container. With Node.js 20+ you can run `node tools/build-library.js` instead.
+- The app, the map viewer and the (optional) notebook site listen on `127.0.0.1` only (ports 3000, 3001, 3002): nobody else on your network can reach them. Containers are read-only, run without extra privileges and have no write access outside their temporary folders.
 
-Daily use:
+| To              | Run                                             |
+| --------------- | ----------------------------------------------- |
+| stop            | `docker compose down`                           |
+| start again     | `docker compose up -d`                          |
+| update          | `git pull`, then `docker compose up -d --build` |
+| follow the logs | `docker compose logs -f`                        |
 
-| To          | Run                                             |
-| ----------- | ----------------------------------------------- |
-| stop        | `docker compose down`                           |
-| start again | `docker compose up -d`                          |
-| update      | `git pull`, then `docker compose up -d --build` |
+### B. Node.js, no Docker (dev server)
+
+For working on the code, with hot reload. It is **not** hardened like A (no security headers, Vite dev server): use it on your own machine only.
+
+- **Node.js 18 or newer** and **Yarn 1.22** (`corepack enable` gives you the right one).
+
+```bash
+git clone https://github.com/balalex12/trazo.git
+cd trazo
+yarn                          # install the dependencies
+node tools/build-library.js   # once: icon libraries (needs Node.js 20+ and the internet)
+yarn start                    # http://localhost:3000
+```
+
+Before sending a change: `yarn test:typecheck`, `yarn test:code`, `yarn test:other` and, after any UI change, `yarn test:e2e` ([TESTING.md](TESTING.md)).
+
+### C. Build the installers yourself
+
+Everything for Electron is in `desktop/` and has its own `package.json`: see [DESKTOP.md](DESKTOP.md). The release workflow (`.github/workflows/release.yml`) does exactly that for every platform.
+
+### D. Serve it behind your own web server
+
+Build the site (`yarn build:app:docker`, output in `excalidraw-app/build`) and use `deploy/nginx/app.conf` as the starting point: it has the Content-Security-Policy and the other headers, and `scripts/csp-hashes.mjs` computes the script hashes of your build. Check the result with `tools/audit/network-audit.cjs` ([SECURITY.md](SECURITY.md)).
 
 ## What works out of the box
 
