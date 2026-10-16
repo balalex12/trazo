@@ -51,13 +51,16 @@ const start = (port) =>
       if (requested.includes("\0")) {
         return notFound();
       }
+      // resolved against the site folder, and checked with startsWith(root + separator) before every use of the disk
       let file = path.resolve(ROOT, `.${requested.startsWith("/") ? requested : `/${requested}`}`);
-      const inside = path.relative(ROOT, file);
-      if (inside.startsWith("..") || path.isAbsolute(inside)) {
+      if (file !== ROOT && !file.startsWith(ROOT + path.sep)) {
         return notFound();
       }
       if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {
-        file = path.join(file, "index.html");
+        file = path.resolve(file, "index.html");
+        if (!file.startsWith(ROOT + path.sep)) {
+          return notFound();
+        }
       }
       if (path.basename(file) === "_csp.conf" || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
         return notFound();
