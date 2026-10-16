@@ -23,6 +23,10 @@ The installers are **not signed** (a code signing certificate costs money and th
 
 Verify the checksum if you want to be sure the file is the one the project built.
 
+## Updating
+
+The app does not check for updates (it makes no network request on its own). Watch the repository's releases, then install the new file over the old one: the one-line recipe for every format is in [INSTALL.md](INSTALL.md#how-to-update). Your drawings and settings stay in the app's data folder.
+
 ## What is different from the browser
 
 - Your drawings and settings are stored by the app itself (in your user folder), not by a browser profile, and are not shared with it. **Save your work to a file** now and then, as everywhere.
