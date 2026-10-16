@@ -168,6 +168,7 @@ Is it safe? Read [docs/SECURITY.md](docs/SECURITY.md): what is hardened, what th
 | [docs/SECURITY.md](docs/SECURITY.md) | Threat model, hardening, how to verify |
 | [docs/VIEWER.md](docs/VIEWER.md) | ArcGIS viewer: portals, sign-in, layers, Utility Network |
 | [docs/ANIMATION.md](docs/ANIMATION.md) | Slides, transitions, MP4/GIF export |
+| [docs/HYPERFRAMES.md](docs/HYPERFRAMES.md) | HTML player export, and 4K / 60 fps video with HyperFrames |
 | [docs/RECORDER.md](docs/RECORDER.md) | Recording the canvas with your voice |
 | [docs/IMPORT.md](docs/IMPORT.md) | docker-compose, Kubernetes, Terraform, OpenAPI, SQL (schemas and queries), dbt, n8n and any JSON to diagram |
 | [docs/AI.md](docs/AI.md) | Connecting Ollama / LM Studio / OpenAI-compatible / Claude |

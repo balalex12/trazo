@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   CaptureUpdateAction,
+  exportToSvg,
   loadFromBlob,
   restoreElements,
   serializeAsJSON,
@@ -13,6 +14,7 @@ import { MicSelect, useMics } from "../components/MicSelect";
 import { useMobileBarOffset } from "../components/useMobileBarOffset";
 
 import { downloadBlob, exportAnimation } from "./exporter";
+import { buildPlayerHtml, resample } from "./htmlPlayer";
 import {
   buildNarrationTrack,
   deleteClip,
@@ -826,6 +828,61 @@ export const AnimationPanel = ({
     }
   };
 
+  // One .html file: a standalone player and a HyperFrames composition (docs/HYPERFRAMES.md)
+  const doExportHtml = async () => {
+    const s = snapshot();
+    if (s.length < 2) {
+      setError("You need at least 2 slides (frames) to export an animation.");
+      return;
+    }
+    setError("");
+    setNote("");
+    setJob({ format: "mp4", done: 0, total: 1 });
+    try {
+      const files = excalidrawAPI.getFiles();
+      const useNarration = withNarration && Object.keys(clips).length > 0;
+      // the fonts the slides use, inlined once (the player draws with them, it never fetches anything)
+      const svg = await exportToSvg({
+        elements: s.flatMap((sl) => [sl.frame, ...sl.children]) as any,
+        appState: { exportBackground: false },
+        files,
+      });
+      const fontCss = svg.querySelector("style.style-fonts")?.textContent ?? "";
+      const full = useNarration ? await buildNarrationTrack(s, timeline) : null;
+      const audio = full
+        ? {
+            samples: resample(full.samples, full.sampleRate, 24000),
+            sampleRate: 24000,
+          }
+        : null;
+      const px = outputSize(s, width);
+      const runtime = (await import("./playerRuntime")).default;
+      const html = buildPlayerHtml({
+        title: "Trazo animation",
+        slides: s,
+        files,
+        settings: useNarration ? timeline : settings,
+        width: px.width,
+        height: px.height,
+        fps,
+        background: "#ffffff",
+        fontCss,
+        audio,
+        runtime,
+      });
+      downloadBlob(new Blob([html], { type: "text/html" }), "animation.html");
+      setNote(
+        `Saved animation.html (${(html.length / 1048576).toFixed(
+          1,
+        )} MB): open it in any browser, or render a video from it with HyperFrames.`,
+      );
+    } catch (e: any) {
+      setError(e?.message || String(e));
+    } finally {
+      setJob(null);
+    }
+  };
+
   const num = (v: string, d: number) =>
     Number.isFinite(+v) && +v >= 0 ? +v : d;
   const totalSec = (totalDurationMs(slides, timeline) / 1000).toFixed(1);
@@ -1150,6 +1207,14 @@ export const AnimationPanel = ({
               onClick={() => doExport("gif")}
             >
               Export GIF
+            </button>
+            <button
+              style={btn}
+              disabled={!!job}
+              title="One .html file that plays anywhere and that HyperFrames can render to 4K or 60 fps video"
+              onClick={doExportHtml}
+            >
+              Export HTML player
             </button>
             {job && (
               <button

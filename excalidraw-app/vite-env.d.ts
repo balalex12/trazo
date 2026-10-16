@@ -47,3 +47,9 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+// `import src from "./file.ts?bundle"`: the file bundled for the browser, as a string (see animation/player/vitePlugin.ts)
+declare module "*?bundle" {
+  const source: string;
+  export default source;
+}

@@ -85,6 +85,10 @@ Risks that remain, and what to do about them:
 | **A model decides to overwrite or delete.** Deleting a box or replacing a diagram is a normal request | Overwriting needs an explicit flag, edits keep a `.bak`, and your diagrams belong in version control or a backup like any other file |
 | **Resource use** by a huge request | the size limits above; the container can be stopped at any time with the client or `docker stop` |
 
+### 4.2b HyperFrames render (optional command)
+
+`tools/hyperframes-render.mjs` turns an exported `animation.html` into a video with the open source [HyperFrames](https://github.com/heygen-com/hyperframes) renderer, on your machine. See [HYPERFRAMES.md](HYPERFRAMES.md). It is not part of the app and nothing in the app calls it. It runs `npx hyperframes@<pinned version>`, so the first run downloads that package from the npm registry (the only network use); HyperFrames' anonymous telemetry and update check are switched off by the script (`HYPERFRAMES_NO_TELEMETRY`, `DO_NOT_TRACK`, `HYPERFRAMES_NO_UPDATE_CHECK`), and its cloud and Lambda render modes are not used. The animation file is read locally and copied to a temporary folder that is deleted afterwards. The exported player itself makes no requests: slides, images, fonts and narration are inside the file, and it runs with no `fetch`.
+
 ### 4.3 CLI bridge (experimental, advanced)
 
 A small Node script (`tools/cli-bridge.mjs`) you install or start yourself, that lets Trazo use your own signed-in Claude Code or Codex. Full description in [CLI_BRIDGE.md](CLI_BRIDGE.md). Its protections:
