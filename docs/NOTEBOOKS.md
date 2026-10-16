@@ -33,6 +33,21 @@ The panel header has five buttons that connect the notebook with the canvas, and
 
 ![Slides from notebook: three steps in the Animation panel, each adding the boxes of its cell](media/v5-notebooks-slides.png)
 
+### A narrated video from a notebook
+
+The slides are ordinary Animation slides, so the rest of the chain already exists; nothing here needs more than what the Animation panel and `tools/hyperframes-render.mjs` already use:
+
+1. **Diagram this notebook**, then **Slides from notebook** (frames are 16:9, the shape of a video).
+2. Optional: **Direct with AI** writes a narration script for each slide in the language you ask for (your own model, see [AI.md](AI.md)). You can also type the scripts by hand in the **Narration script** field of each slide.
+3. **Export HTML player**, then, on your computer:
+
+```
+pip install kokoro-onnx soundfile          # once: the local voice
+node tools/hyperframes-render.mjs animation.html --tts --lang es --size 1920x1080 -o analysis.mp4
+```
+
+It needs Node.js 22, FFmpeg and a Chrome or Chromium. The first run downloads the HyperFrames package and the voice model (about 330 MB); after that everything runs offline and nothing is uploaded. Tried with the three-cell example notebook: scripts in Spanish from a cloud model, a 33 s, 1920 x 1080 H.264 video with an AAC voice track, about 2.5 minutes to render at draft quality without a GPU. A very wide diagram stays a band in the middle of the picture; a notebook with a narrower diagram fills it better.
+
 ![A notebook next to the canvas: the notebook's tables are on the canvas, each with its size](media/v5-notebooks-live.png)
 
 **The diagram follows your notebook.** For a diagram drawn from a notebook, each box knows its cell and its variable. While a cell runs, its boxes light up in orange; when it finishes they flash green and go back. After every run the kernel is asked, quietly (not stored in the history), what its tables and arrays are, and each box shows the real size next to it (`400 × 3`, `(400,)`). So the diagram is a live view of the analysis, not a drawing that goes stale. These labels are not part of the diagram: they are skipped when the canvas is sent to a notebook or to the Agent.
