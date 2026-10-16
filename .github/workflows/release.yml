@@ -154,7 +154,7 @@ jobs:
         env:
           SMOKE_ARGS: --no-sandbox
         run: xvfb-run -a node desktop/smoke.mjs desktop/dist/linux-unpacked/trazo-desktop
-      # not tried yet on Windows: it reports a problem without stopping the release
+      # on Windows it reports a problem without stopping the release
       - name: Smoke test (Windows)
         if: runner.os == 'Windows'
         continue-on-error: true
@@ -173,8 +173,8 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-  # macOS apart: it is built without a certificate (ad-hoc signed) and cannot be tried here, so if it fails the rest of the
-  # release does not wait for it (the release notes say which files are there).
+  # macOS apart: it is built without a certificate (ad-hoc signed), and if it fails the rest of the release does not wait
+  # for it (the release notes say which files are there).
   desktop-mac:
     name: Desktop (macOS)
     needs: [meta, web]
