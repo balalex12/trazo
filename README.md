@@ -36,7 +36,7 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 |  |  |
 | --- | --- |
-| 🎞️ **Diagrams that move** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). You can **narrate it with your voice**: talk while it builds, press → for the next slide, and the MP4 keeps voice and picture in sync. Each slide has its own timing, transition (smart, fade, cut, **build** where elements appear one by one and arrows draw themselves, or **pan** where the camera travels over the canvas) and caption, and unchanged elements stay still. Preview, present with ← →, and **export MP4 or GIF**, rendered in your browser, nothing uploaded. |
+| 🎞️ **Diagrams that move** | Frames are slides. Duplicate a slide, change things, and elements **animate between slides** (position, size, colour, opacity…). You can **narrate it with your voice**: talk while it builds, press → for the next slide, and the MP4 keeps voice and picture in sync. Each slide has its own timing, transition (smart, fade, cut, **build** where elements appear one by one and arrows draw themselves, or **pan** where the camera travels over the canvas) and caption, and unchanged elements stay still. Preview, present with ← →, and **export MP4 or GIF**, rendered in your browser, nothing uploaded. Or **export one offline HTML player** that [HyperFrames](docs/HYPERFRAMES.md) can render to 4K or 60 fps video, and let **your own AI direct it** (captions, narration scripts, timing, transitions, with a local voice) or **compose** a motion graphic. |
 | 🤖 **Bring your own LLM** | "Text to diagram" connects to **your** model: Ollama / LM Studio locally, **Ollama Cloud**, any OpenAI-compatible server, or Anthropic. Off by default; nothing is sent until you configure it. Output is a Mermaid diagram turned into editable shapes, colored by role with symbols (see [docs/AI.md](docs/AI.md#styling-diagrams-colors-symbols)). |
 | ✨ **Agent panel** | A chat inside Trazo that **explains your diagram or edits it** with your own model: "add a cache between the API and the database", "rename this box", "what is missing here?". It shows what it will do before it does it, and every change is one **Ctrl+Z** away (see [docs/AGENT.md](docs/AGENT.md)). |
 | 🔌 **MCP server** | Let **Claude Desktop, Claude Code** or any MCP client draw and edit Trazo diagrams with their own login, no API key needed. A tiny container with **no network** that only touches one folder (see [docs/MCP.md](docs/MCP.md)). |
@@ -168,7 +168,7 @@ Is it safe? Read [docs/SECURITY.md](docs/SECURITY.md): what is hardened, what th
 | [docs/SECURITY.md](docs/SECURITY.md) | Threat model, hardening, how to verify |
 | [docs/VIEWER.md](docs/VIEWER.md) | ArcGIS viewer: portals, sign-in, layers, Utility Network |
 | [docs/ANIMATION.md](docs/ANIMATION.md) | Slides, transitions, MP4/GIF export |
-| [docs/HYPERFRAMES.md](docs/HYPERFRAMES.md) | HTML player export, and 4K / 60 fps video with HyperFrames |
+| [docs/HYPERFRAMES.md](docs/HYPERFRAMES.md) | HTML player export, 4K / 60 fps video with HyperFrames, and your own AI as director and composer |
 | [docs/RECORDER.md](docs/RECORDER.md) | Recording the canvas with your voice |
 | [docs/IMPORT.md](docs/IMPORT.md) | docker-compose, Kubernetes, Terraform, OpenAPI, SQL (schemas and queries), dbt, n8n and any JSON to diagram |
 | [docs/AI.md](docs/AI.md) | Connecting Ollama / LM Studio / OpenAI-compatible / Claude |

@@ -33,6 +33,7 @@ git diff HEAD~1 -- . ':!yarn.lock' | grep -n "^+.*https\?://" | grep -v -E "w3.o
 | `excalidraw-app/App.tsx` | collab off, Plus/Share/AI backends removed, command palette, mounts `AnimationPanel`, `BrandDialogs`, `InfraDialog`, `McpDialog`, `RecorderPanel`, `AgentPanel`, library preload, `eid` handling is in the package App (below) |
 | `excalidraw-app/index.html`, `index.tsx`, `sentry.ts`, `vite.config.mts` | no analytics/redirect/preconnect, local fonts, no service worker; `vite.config.mts` also registers `trazoBundlePlugin()` (the `?bundle` imports of the HTML player) |
 | `excalidraw-app/vite-env.d.ts` | declares the `*?bundle` module type |
+| `excalidraw-app/ai/llm.ts` (ours) | `maxTokens` option for long answers (a whole HTML composition) |
 | `excalidraw-app/components/{AppMainMenu,AppWelcomeScreen,AppFooter,AI,TopErrorBoundary}.tsx` | rewritten / trimmed |
 | `packages/excalidraw/components/App.tsx` | adds `eid` to viewer iframes, recognizes viewer links via `isArcGISViewerOrigin` (configurable, see below) |
 | `packages/excalidraw/components/{LibraryMenuItems,LibraryMenuSection,LibraryMenuHeaderContent}.tsx`, `hooks/useLibraryItemSvg.ts` | library grouping, short names, images in thumbnails, Publish hidden |

@@ -13,6 +13,7 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { MicSelect, useMics } from "../components/MicSelect";
 import { useMobileBarOffset } from "../components/useMobileBarOffset";
 
+import { ComposerPanel } from "./ComposerPanel";
 import { DirectorPanel } from "./DirectorPanel";
 import { downloadBlob, exportAnimation } from "./exporter";
 import { buildPlayerHtml, resample } from "./htmlPlayer";
@@ -1140,6 +1141,7 @@ export const AnimationPanel = ({
               setNote(m);
             }}
           />
+          <ComposerPanel slides={slides} styles={{ btn, ghost, field }} />
           <MicSelect
             style={{ ...field, marginBottom: 8 }}
             mics={micChoice.mics}

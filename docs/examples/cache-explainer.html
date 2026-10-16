@@ -1,0 +1,162 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #0f1220; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: radial-gradient(circle at 20% 10%, #1b2140 0%, #0f1220 60%); font-family: system-ui, "Segoe UI", Roboto, sans-serif; color: #f4f1ec; }
+  .scene { position: absolute; inset: 0; }
+  .title { position: absolute; left: 144px; top: 110px; font-size: 84px; font-weight: 700; letter-spacing: -0.02em; }
+  .sub { position: absolute; left: 148px; top: 222px; font-size: 40px; color: #aab2d5; }
+  .box { position: absolute; width: 360px; height: 150px; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 600; border: 4px solid; }
+  .client { left: 144px; top: 470px; background: #1e2a52; border-color: #5b8cff; }
+  .api { left: 780px; top: 470px; background: #2b2250; border-color: #9a7bff; }
+  .db { left: 1416px; top: 470px; background: #173a2c; border-color: #3ddc97; }
+  .cache { left: 1098px; top: 470px; width: 280px; background: #4a2c12; border-color: #ff9b3d; }
+  svg.wires { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+  .wire { fill: none; stroke: #8f98c4; stroke-width: 8; stroke-linecap: round; }
+  .pill { position: absolute; left: 144px; top: 800px; padding: 22px 40px; border-radius: 999px; font-size: 48px; font-weight: 700; }
+  .slow { background: #5a1f2b; color: #ff8f9c; }
+  .fast { background: #14472f; color: #6df0b0; }
+  .card { position: absolute; left: 144px; top: 330px; width: 1632px; padding: 70px 90px; border-radius: 36px; background: #1a1f3a; border: 4px solid #313a6b; }
+  .card h2 { margin: 0 0 40px; font-size: 76px; }
+  .card p { margin: 18px 0; font-size: 50px; color: #cdd3f0; }
+  .card b { color: #ff9b3d; }
+</style>
+</head>
+<body>
+<div id="stage" data-composition-id="main" data-start="0" data-duration="12" data-width="1920" data-height="1080">
+
+  <div id="s1" class="scene">
+    <div class="title" id="t1">Slow reads?</div>
+    <div class="sub" id="st1">Every request goes all the way to the database.</div>
+    <div class="box client" id="b-client">Client</div>
+    <div class="box api" id="b-api">API</div>
+    <div class="box db" id="b-db">Database</div>
+    <svg class="wires" viewBox="0 0 1920 1080">
+      <path id="w1" class="wire" d="M 510 545 L 770 545" style="stroke-dasharray:260"/>
+      <path id="w2" class="wire" d="M 1146 545 L 1406 545" style="stroke-dasharray:260"/>
+    </svg>
+    <div class="pill slow" id="p-slow">240 ms per request</div>
+  </div>
+
+  <div id="s2" class="scene">
+    <div class="title" id="t2">Add a cache</div>
+    <div class="sub" id="st2">Hot data is answered from memory.</div>
+    <div class="box client" id="c-client">Client</div>
+    <div class="box api" id="c-api" style="width: 280px; left: 700px">API</div>
+    <div class="box cache" id="c-cache" style="left: 1056px; width: 260px">Cache</div>
+    <div class="box db" id="c-db" style="left: 1476px; width: 300px">Database</div>
+    <svg class="wires" viewBox="0 0 1920 1080">
+      <path id="x1" class="wire" d="M 510 545 L 690 545" style="stroke-dasharray:180"/>
+      <path id="x2" class="wire" d="M 990 545 L 1046 545" style="stroke-dasharray:56"/>
+      <path id="x3" class="wire" d="M 1326 545 L 1466 545" style="stroke-dasharray:140"/>
+    </svg>
+    <div class="pill fast" id="p-fast">35 ms per request</div>
+  </div>
+
+  <div id="s3" class="scene">
+    <div class="card" id="card">
+      <h2>Cache first, database second</h2>
+      <p id="l1">Most reads never reach the database.</p>
+      <p id="l2">Latency drops from <b>240 ms</b> to <b>35 ms</b>.</p>
+      <p id="l3">The database keeps its energy for writes.</p>
+    </div>
+  </div>
+
+</div>
+<script>
+(function () {
+  window.trazoTimeline = function (id, seconds) {
+    var now = 0;
+    var anims = [];
+    // for every element and CSS property: the earliest animation, which is the only one that also applies BEFORE its
+    // start (so a later animation of the same property never shows its first keyframe too early)
+    var first = new WeakMap();
+    var RESERVED = { offset: 1, easing: 1, composite: 1 };
+    var tl = {
+      /** add(target, keyframes, { start, duration, easing, stagger }): target is a selector, an element or a list */
+      add: function (target, keyframes, o) {
+        o = o || {};
+        var els = typeof target === "string" ? [].slice.call(document.querySelectorAll(target)) : target && target.length !== undefined ? [].slice.call(target) : [target];
+        var duration = Math.max(1, (o.duration === undefined ? 0.5 : o.duration) * 1000);
+        var props = {};
+        keyframes.forEach(function (k) { Object.keys(k).forEach(function (p) { if (!RESERVED[p]) props[p] = 1; }); });
+        els.forEach(function (el, i) {
+          var delay = ((o.start || 0) + i * (o.stagger || 0)) * 1000;
+          var seen = first.get(el) || {};
+          first.set(el, seen);
+          Object.keys(props).forEach(function (p) {
+            var frames = keyframes.filter(function (k) { return k[p] !== undefined; }).map(function (k) {
+              var f = {}; f[p] = k[p];
+              if (k.offset !== undefined) f.offset = k.offset;
+              return f;
+            });
+            if (frames.length < 2) return;
+            var a = el.animate(frames, { duration: duration, delay: delay, easing: o.easing || "ease", fill: "forwards" });
+            a.pause();
+            a.currentTime = now * 1000;
+            var prev = seen[p];
+            if (!prev || delay < prev.delay) {
+              a.effect.updateTiming({ fill: "both" });
+              if (prev) prev.anim.effect.updateTiming({ fill: "forwards" });
+              seen[p] = { delay: delay, anim: a };
+            }
+            anims.push(a);
+          });
+        });
+        return tl;
+      },
+      duration: function () { return seconds; },
+      totalDuration: function () { return seconds; },
+      seek: function (t) {
+        now = Math.max(0, Math.min(seconds, +t || 0));
+        anims.forEach(function (a) { a.currentTime = now * 1000; });
+        return tl;
+      },
+      time: function (t) { return t === undefined ? now : tl.seek(t); },
+      totalTime: function (t) { return t === undefined ? now : tl.seek(t); },
+      progress: function (p) { return p === undefined ? now / seconds : tl.seek(p * seconds); },
+      pause: function () { return tl; },
+      play: function () { return tl; },
+      paused: function () { return true; },
+      eventCallback: function () { return tl; }
+    };
+    window.__timelines = window.__timelines || {};
+    window.__timelines[id] = tl;
+    return tl;
+  };
+})();
+</script>
+<script>
+var tl = trazoTimeline("main", 12);
+var out = { easing: "cubic-bezier(.2,.8,.2,1)" };
+
+// scene 1
+tl.add("#t1", [{ opacity: 0, transform: "translateY(40px)" }, { opacity: 1, transform: "none" }], { start: 0.2, duration: 0.8, easing: out.easing });
+tl.add("#st1", [{ opacity: 0 }, { opacity: 1 }], { start: 0.7, duration: 0.6 });
+tl.add("#b-client, #b-api, #b-db", [{ opacity: 0, transform: "scale(0.85)" }, { opacity: 1, transform: "none" }], { start: 1.0, duration: 0.6, stagger: 0.25, easing: out.easing });
+tl.add("#w1", [{ strokeDashoffset: 260 }, { strokeDashoffset: 0 }], { start: 1.8, duration: 0.6, easing: "ease-out" });
+tl.add("#w2", [{ strokeDashoffset: 260 }, { strokeDashoffset: 0 }], { start: 2.2, duration: 0.6, easing: "ease-out" });
+tl.add("#p-slow", [{ opacity: 0, transform: "translateY(24px)" }, { opacity: 1, transform: "none" }], { start: 2.7, duration: 0.6, easing: out.easing });
+tl.add("#s1", [{ opacity: 1, visibility: "visible" }, { opacity: 0, visibility: "hidden" }], { start: 3.6, duration: 0.5 });
+
+// scene 2
+tl.add("#s2", [{ opacity: 0, visibility: "hidden" }, { opacity: 1, visibility: "visible" }], { start: 3.6, duration: 0.5 });
+tl.add("#t2", [{ opacity: 0, transform: "translateY(40px)" }, { opacity: 1, transform: "none" }], { start: 3.8, duration: 0.8, easing: out.easing });
+tl.add("#st2", [{ opacity: 0 }, { opacity: 1 }], { start: 4.3, duration: 0.6 });
+tl.add("#c-cache", [{ opacity: 0, transform: "translateY(-120px) scale(0.9)" }, { opacity: 1, transform: "none" }], { start: 4.8, duration: 0.8, easing: "cubic-bezier(.3,1.4,.5,1)" });
+tl.add("#x1", [{ strokeDashoffset: 180 }, { strokeDashoffset: 0 }], { start: 5.5, duration: 0.4, easing: "ease-out" });
+tl.add("#x2", [{ strokeDashoffset: 56 }, { strokeDashoffset: 0 }], { start: 5.8, duration: 0.3, easing: "ease-out" });
+tl.add("#x3", [{ strokeDashoffset: 140 }, { strokeDashoffset: 0 }], { start: 6.1, duration: 0.4, easing: "ease-out" });
+tl.add("#p-fast", [{ opacity: 0, transform: "translateY(24px)" }, { opacity: 1, transform: "none" }], { start: 6.6, duration: 0.6, easing: out.easing });
+tl.add("#s2", [{ opacity: 1, visibility: "visible" }, { opacity: 0, visibility: "hidden" }], { start: 8.0, duration: 0.5 });
+
+// scene 3
+tl.add("#s3", [{ opacity: 0, visibility: "hidden" }, { opacity: 1, visibility: "visible" }], { start: 8.0, duration: 0.5 });
+tl.add("#card", [{ opacity: 0, transform: "translateY(60px)" }, { opacity: 1, transform: "none" }], { start: 8.2, duration: 0.8, easing: out.easing });
+tl.add("#l1, #l2, #l3", [{ opacity: 0, transform: "translateX(-40px)" }, { opacity: 1, transform: "none" }], { start: 9.0, duration: 0.5, stagger: 0.6, easing: out.easing });
+</script>
+</body>
+</html>
