@@ -54,6 +54,8 @@ export type GraphNode = {
   /** placed under this node (a volume, a config map…), not in a column of its own */
   attachedTo?: string;
   dashed?: boolean;
+  /** what the box stands for, kept on the drawn shape (customData.trazo) so other parts of the app can find it again */
+  meta?: Record<string, string | number>;
 };
 
 export type GraphEdge = {
@@ -82,6 +84,7 @@ export type LayoutNode = {
   kind: "service" | "external" | "attached";
   role?: Role;
   dashed?: boolean;
+  meta?: Record<string, string | number>;
   lines: string[];
   x: number;
   y: number;
@@ -180,6 +183,7 @@ export const layoutGraph = (g: Graph): Layout => {
       kind: "service",
       role: n.role,
       dashed: n.dashed,
+      meta: n.meta,
       lines: n.lines,
       ...sizeOf(n.lines),
       col,
@@ -331,6 +335,7 @@ export const layoutToSkeleton = (
       height: n.height,
       strokeWidth: 2,
       fillStyle: "solid",
+      ...(n.meta ? { customData: { trazo: n.meta } } : {}),
       label: {
         text: n.lines.join("\n"),
         fontSize: 16,

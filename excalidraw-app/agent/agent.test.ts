@@ -462,3 +462,33 @@ describe("talking to the model", () => {
     expect(parseAgentReply('{"ops":"nope"}').ops).toEqual([]);
   });
 });
+
+describe("buildIndex: labels the notebook panel writes next to boxes", () => {
+  it("does not count a size label as a box", () => {
+    const els = [
+      {
+        id: "b1",
+        type: "rectangle",
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 50,
+        isDeleted: false,
+        groupIds: [],
+      },
+      {
+        id: "t1",
+        type: "text",
+        text: "400 × 3",
+        x: 0,
+        y: -22,
+        width: 50,
+        height: 18,
+        isDeleted: false,
+        groupIds: [],
+        customData: { trazoBadge: "b1" },
+      },
+    ];
+    expect([...buildIndex(els as any).nodes.keys()]).toEqual(["b1"]);
+  });
+});

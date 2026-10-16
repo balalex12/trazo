@@ -37,3 +37,4 @@ assets/community/
 assets/jupyterlite/
 assets/jupyterlite-work/
 .jupyterlite.doit.db
+__pycache__/

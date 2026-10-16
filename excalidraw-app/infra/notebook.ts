@@ -214,6 +214,8 @@ type NodeInfo = {
   /** a short description of what it is: DataFrame, GeoDataFrame, RandomForestClassifier… */
   what: string;
   cell: number;
+  /** the position of its code cell among the code cells (1 for the first): stable, unlike the execution count */
+  ord: number;
   heading: string;
   ops: string[];
   cols: Map<string, string>; // column -> dtype ("" when unknown)
@@ -383,6 +385,7 @@ export const parseNotebook = (raw: string): Graph => {
       name,
       what,
       cell,
+      ord: ordinal,
       heading,
       ops: [],
       cols: new Map(),
@@ -889,7 +892,20 @@ export const parseNotebook = (raw: string): Graph => {
     if (cols.length > MAX_COLUMNS) {
       lines.push(`… +${cols.length - MAX_COLUMNS} more columns`);
     }
-    return { id: n.id, lines, role: ROLE[n.kind] };
+    // the variable a table, array or model is bound to (a re-read one is named "df (2)")
+    const variable = /^[A-Za-z_]\w*/.exec(n.name)?.[0];
+    return {
+      id: n.id,
+      lines,
+      role: ROLE[n.kind],
+      meta: {
+        cell: n.ord,
+        kind: n.kind,
+        ...(variable && n.kind !== "source" && n.kind !== "sink"
+          ? { var: variable }
+          : {}),
+      },
+    };
   });
   if (skippedCells) {
     notes.push(

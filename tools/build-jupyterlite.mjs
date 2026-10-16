@@ -20,7 +20,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import path from "node:path";
@@ -41,6 +41,9 @@ export const PARENT_ORIGINS = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
 ];
+
+/** the version of tools/lite-python/make_wheel.py */
+export const TRAZO_VERSION = "0.2.0";
 
 /** pure-Python wheels the kernel needs that Pyodide itself does not include (pinned) */
 export const KERNEL_WHEELS = ["comm==0.2.3"];
@@ -230,6 +233,26 @@ const main = async () => {
   lock.packages = Object.fromEntries(
     Object.entries(lock.packages).filter(([n]) => keep.has(n)),
   );
+  // our own `trazo` module (tools/lite-python), built as a wheel and listed like any Pyodide package, so every kernel
+  // starts with `import trazo` available
+  const wheelName = execFileSync("python3", [
+    "tools/lite-python/make_wheel.py",
+    "tools/lite-python/trazo",
+    slim,
+  ])
+    .toString()
+    .trim();
+  lock.packages.trazo = {
+    name: "trazo",
+    version: TRAZO_VERSION,
+    file_name: wheelName,
+    install_dir: "site",
+    sha256: sha256(path.join(slim, wheelName)),
+    package_type: "package",
+    imports: ["trazo"],
+    depends: [],
+    unvendored_tests: false,
+  };
   writeFileSync(path.join(slim, "pyodide-lock.json"), JSON.stringify(lock));
   console.log(`Kept ${keep.size} packages.`);
 
@@ -270,6 +293,8 @@ const main = async () => {
   const kernel = (plugins["@jupyterlite/pyodide-kernel-extension:kernel"] ||=
     {});
   kernel.pyodideUrl = "./static/pyodide/pyodide.mjs";
+  // every kernel starts with our `trazo` module installed
+  kernel.loadPyodideOptions = { packages: ["trazo"] };
   // the bridge to the Trazo app (tools/lite-bridge.js) needs JupyterLab's app object on `window`
   cfg["jupyter-config-data"].exposeAppInBrowser = true;
   writeFileSync(cfgFile, JSON.stringify(cfg, null, 2));

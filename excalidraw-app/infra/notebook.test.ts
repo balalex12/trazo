@@ -325,6 +325,34 @@ describe("helpers", () => {
   });
 });
 
+describe("parseNotebook: what each box stands for", () => {
+  it("keeps the code cell and the variable of a box, for the live view", () => {
+    const g = parseNotebook(
+      book([
+        code("import pandas as pd\ndf = pd.read_csv('a.csv')", [], 7),
+        md("# Next"),
+        code("out = df.dropna()\nout.to_csv('b.csv')", [], 9),
+      ]),
+    );
+    // the position among the code cells, not the execution count shown as [n]
+    expect(g.nodes.find((n) => n.lines[0] === "📊 df")?.meta).toEqual({
+      cell: 1,
+      kind: "frame",
+      var: "df",
+    });
+    expect(g.nodes.find((n) => n.lines[0] === "📊 out")?.meta).toEqual({
+      cell: 2,
+      kind: "frame",
+      var: "out",
+    });
+    // a file has no variable
+    expect(g.nodes.find((n) => n.lines[0].includes("a.csv"))?.meta).toEqual({
+      cell: 1,
+      kind: "source",
+    });
+  });
+});
+
 describe("the starter notebooks of the Python-in-the-browser site", () => {
   const read = (name: string) =>
     readFileSync(`tools/lite-content/${name}`, "utf8");

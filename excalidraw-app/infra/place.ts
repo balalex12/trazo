@@ -12,7 +12,15 @@ import type { Layout } from "./graph";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export const drawLayout = (api: ExcalidrawImperativeAPI, layout: Layout) => {
+/**
+ * `rightInset`: pixels on the right of the view that something covers (a panel), so the new diagram is fitted into
+ * the free part to its left instead of hiding behind it.
+ */
+export const drawLayout = (
+  api: ExcalidrawImperativeAPI,
+  layout: Layout,
+  rightInset = 0,
+) => {
   // drop the new diagram below whatever is already on the canvas
   const live = api.getSceneElements();
   const offset = live.length
@@ -29,9 +37,22 @@ export const drawLayout = (api: ExcalidrawImperativeAPI, layout: Layout) => {
     elements: [...api.getSceneElementsIncludingDeleted(), ...created],
     captureUpdate: CaptureUpdateAction.IMMEDIATELY, // so the import can be undone
   });
-  const [x1, y1, x2, y2] = layout.bounds;
+  const [bx1, by1, bx2, by2] = layout.bounds;
+  // some air around the drawing, so it does not touch the edges of the view
+  const pad = Math.max(30, 0.04 * Math.max(bx2 - bx1, by2 - by1));
+  const [x1, y1, x2, y2] = [bx1 - pad, by1 - pad, bx2 + pad, by2 + pad];
+  // fitting into (width - inset) pixels means the target is wider by inset / zoom, and zoom = (width - inset) / w
+  const width = api.getAppState().width;
+  const free = width - rightInset;
+  const extra =
+    rightInset > 0 && free > 100 ? (rightInset * (x2 - x1)) / free : 0;
   api.setViewport({
-    target: [x1 + offset.x, y1 + offset.y, x2 + offset.x, y2 + offset.y],
+    target: [
+      x1 + offset.x,
+      y1 + offset.y,
+      x2 + offset.x + extra,
+      y2 + offset.y,
+    ],
     fit: "scale-down",
   } as any);
 };
