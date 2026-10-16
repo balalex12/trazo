@@ -254,6 +254,8 @@ jobs:
 
   docker:
     name: Docker images
+    # the environment "release" (Settings > Environments) makes a person approve before images are built or pushed
+    environment: release
     needs: meta
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -319,6 +321,7 @@ jobs:
 
   release:
     name: Draft release
+    environment: release
     needs: [meta, web, desktop, desktop-mac, notebook, docker]
     # the macOS job may fail without stopping the release; everything else must have worked
     if: >-
