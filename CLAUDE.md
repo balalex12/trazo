@@ -54,6 +54,8 @@ This repository is a **derivative of Excalidraw** (MIT) published as an independ
 
 ## How to build / run / test
 
+Browser tests (`yarn test:e2e`, `tools/e2e/`, see `docs/TESTING.md`) run the app in a real Chrome and check, among other things, that nothing leaves the machine and that the credits are in the About dialog; run them after UI changes.
+
 ```
 node tools/build-library.js          # fetch Calcite + generate public/arcgis.excalidrawlib (git-ignored)
 docker compose up -d --build         # app :3000, viewer :3001, both 127.0.0.1 only; TypeScript errors fail the build
@@ -78,4 +80,4 @@ The viewer folder is mounted read-only: edit `viewer/*` and reload, no rebuild. 
 
 ## Open items (see docs/ROADMAP.md)
 
-Per-font license audit, Playwright suite, self-hosted ArcGIS SDK, validation against a real private Enterprise portal and a real Utility Network web map.
+Per-font license audit, self-hosted ArcGIS SDK, validation against a real private Enterprise portal and a real Utility Network web map.
