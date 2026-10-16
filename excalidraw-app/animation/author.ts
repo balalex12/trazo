@@ -130,9 +130,25 @@ export const buildAuthorTurn = (o: {
   height: number;
   seconds: number;
   slideTexts?: string[][];
+  /** what the author (or the director) wrote for each slide, by position: their words come before the drawing's labels */
+  slideNotes?: { caption?: string; script?: string }[];
 }): string => {
+  const notes = o.slideNotes || [];
+  const written = notes.some((n) => n?.caption || n?.script);
   const slides = (o.slideTexts || [])
-    .map((t, i) => `${i + 1}. ${t.join(" | ")}`)
+    .map((t, i) => {
+      const parts: string[] = [];
+      if (notes[i]?.caption) {
+        parts.push(`CAPTION: ${notes[i].caption}`);
+      }
+      if (notes[i]?.script) {
+        parts.push(`SCRIPT: ${notes[i].script}`);
+      }
+      if (t.length) {
+        parts.push(`${written ? "LABELS ON THE SLIDE: " : ""}${t.join(" | ")}`);
+      }
+      return `${i + 1}. ${parts.join(" | ")}`;
+    })
     .filter((l) => l.length > 3);
   return `BRIEF:\n${
     o.brief.trim() ||
@@ -145,7 +161,11 @@ FORMAT: ${o.width} x ${o.height} px, ${o.seconds} seconds (DURATION = ${
 
 ${
   slides.length
-    ? `THE AUTHOR'S DIAGRAM, slide by slide (texts only; build the video from this content and add nothing that is not in it):\n${slides.join(
+    ? `THE AUTHOR'S DIAGRAM, slide by slide (${
+        written
+          ? "the captions and scripts are the author's own words: tell the story with them and use them as the headlines; the labels are only what is written on the drawing, use the ones that help and do not copy them all. "
+          : "texts only; "
+      }build the video from this content and add nothing that is not in it):\n${slides.join(
         "\n",
       )}`
     : "THE AUTHOR'S DIAGRAM: (not given)"
