@@ -36,6 +36,12 @@ export const PIP_PINS = [
   "jupyter-server==2.21.1", // only needed to add the starter notebooks at build time
 ];
 
+/** The pages that may embed this site (the Trazo app). Used by the CSP (`frame-ancestors`) and by the bridge script. */
+export const PARENT_ORIGINS = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
+
 /** pure-Python wheels the kernel needs that Pyodide itself does not include (pinned) */
 export const KERNEL_WHEELS = ["comm==0.2.3"];
 
@@ -133,8 +139,28 @@ export const buildCsp = (hashes) =>
     "base-uri 'self'",
     "form-action 'self'",
     // the Trazo app may embed it; change this if you move the app (deploy/nginx/lite.conf explains)
-    "frame-ancestors 'self' http://localhost:3000 http://127.0.0.1:3000",
+    `frame-ancestors 'self' ${PARENT_ORIGINS.join(" ")}`,
   ].join("; ");
+
+/** Copies the bridge script into the site and loads it from the JupyterLab page (an external script: no CSP hash needed) */
+export const installBridge = (outDir) => {
+  const source = readFileSync("tools/lite-bridge.js", "utf8").replace(
+    "__TRAZO_PARENT_ORIGINS__",
+    JSON.stringify(PARENT_ORIGINS),
+  );
+  writeFileSync(path.join(outDir, "trazo-bridge.js"), source);
+  const page = path.join(outDir, "lab", "index.html");
+  const html = readFileSync(page, "utf8");
+  if (!html.includes("</head>"))
+    throw new Error("lab/index.html has no <head>");
+  writeFileSync(
+    page,
+    html.replace(
+      "</head>",
+      '<script defer src="../trazo-bridge.js"></script></head>',
+    ),
+  );
+};
 
 const run = (cmd, args, opts = {}) => {
   const r = spawnSync(cmd, args, { stdio: "inherit", ...opts });
@@ -244,7 +270,10 @@ const main = async () => {
   const kernel = (plugins["@jupyterlite/pyodide-kernel-extension:kernel"] ||=
     {});
   kernel.pyodideUrl = "./static/pyodide/pyodide.mjs";
+  // the bridge to the Trazo app (tools/lite-bridge.js) needs JupyterLab's app object on `window`
+  cfg["jupyter-config-data"].exposeAppInBrowser = true;
   writeFileSync(cfgFile, JSON.stringify(cfg, null, 2));
+  installBridge(OUT);
   // nginx reads the policy from here (deploy/nginx/lite.conf includes it)
   const hashes = walk(OUT)
     .filter((f) => f.endsWith(".html"))

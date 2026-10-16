@@ -42,7 +42,8 @@ git diff HEAD~1 -- . ':!yarn.lock' | grep -n "^+.*https\?://" | grep -v -E "w3.o
 | `scripts/woff2/woff2-vite-plugins.js` | fonts from `/` |
 | `packages/excalidraw/renderer/interactiveScene.ts` | one canvas highlight color (`highlightPoint`) in the brand orange |
 | `excalidraw-app/index.tsx` | imports `brand.scss` after the editor styles (new file: the palette) |
-| `excalidraw-app/components/InfraDialog.tsx`, `AppMainMenu.tsx`, `excalidraw-app/App.tsx` | a "Python notebook" entry in the menu, the command palette and the import dialog (opens `notebook/liteUrl.ts`) |
+| `excalidraw-app/components/InfraDialog.tsx`, `AppMainMenu.tsx`, `excalidraw-app/App.tsx` | a "Python notebook" entry in the menu, the command palette and the import dialog, and `<NotebookPanel>` mounted in App |
+| `scripts/csp-hashes.mjs` | `frame-src` also allows the notebook site (localhost / 127.0.0.1 port 3002, or `VITE_APP_JUPYTERLITE_ORIGIN`) |
 | `Dockerfile`, `docker-compose.yml`, `.env.production`, `.env.development`, `.gitignore`, `.dockerignore` | hardening / no hosted URLs |
 
 Files **deleted** from upstream (a merge will report "deleted by us" if upstream edits them; keep them deleted): `.github/FUNDING.yml`, `crowdin.yml`, `vercel.json`, `firebase-project/`, `.github/assets/`, workflows `autorelease-excalidraw`, `publish-docker`, `sentry-production`, `locales-coverage`, `size-limit`, `lint`, `test`, `build-docker`, `cancel`, `semantic-pr-title`, `test-coverage-pr` (replaced by our `ci.yml`), and the promo images in `public/`.

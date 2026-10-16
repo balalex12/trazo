@@ -148,8 +148,8 @@ import DebugCanvas, {
 import { useSimulatedCollaborators } from "./debugCollaborators";
 import { AIComponents } from "./components/AI";
 import { AnimationPanel } from "./animation/AnimationPanel";
-import { openNotebookSite } from "./notebook/liteUrl";
 import { AgentPanel } from "./components/AgentPanel";
+import { NotebookPanel } from "./components/NotebookPanel";
 import { RecorderPanel } from "./components/RecorderPanel";
 import { BrandDialogs } from "./components/BrandDialogs";
 import { InfraDialog } from "./components/InfraDialog";
@@ -1021,6 +1021,7 @@ const ExcalidrawWrapper = () => {
         {excalidrawAPI && <AnimationPanel excalidrawAPI={excalidrawAPI} />}
         {excalidrawAPI && <RecorderPanel />}
         {excalidrawAPI && <AgentPanel excalidrawAPI={excalidrawAPI} />}
+        {excalidrawAPI && <NotebookPanel excalidrawAPI={excalidrawAPI} />}
 
         <TTDDialogTrigger />
         {isCollaborating && isOffline && (
@@ -1101,7 +1102,8 @@ const ExcalidrawWrapper = () => {
                 "pandas",
                 "pyodide",
               ],
-              perform: () => openNotebookSite(),
+              perform: () =>
+                window.dispatchEvent(new Event(EVENTS.openNotebook)),
             },
             {
               label: "Connect Claude (MCP)",

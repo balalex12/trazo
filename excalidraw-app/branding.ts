@@ -20,4 +20,5 @@ export const EVENTS = {
   openInfraImport: "brand:open-infra-import",
   openAgent: "brand:open-agent",
   openMcp: "brand:open-mcp",
+  openNotebook: "brand:open-notebook",
 } as const;

@@ -11,15 +11,24 @@ node tools/build-jupyterlite.mjs          # once: about 230 MB, needs python3, t
 docker compose --profile lite up -d       # then open http://127.0.0.1:3002
 ```
 
-Then in Trazo: **Menu → Python notebook…** (or the command palette, or the **Python notebook…** button of **Import to diagram**). It opens in a new tab with two starter notebooks, `welcome.ipynb` and `churn.ipynb`.
+Then in Trazo press **🐍 Notebook** (bottom bar), or **Menu → Python notebook…**, or the command palette, or the **Python notebook…** button of **Import to diagram**. The notebook opens in a **panel next to the canvas**, inside Trazo, with two starter notebooks, `welcome.ipynb` and `churn.ipynb`. **✕** hides the panel without stopping anything (the kernel and its variables stay), **⇔** makes it wider and **↗** opens the same notebook site in its own tab.
 
 The first start of a notebook takes some seconds (Pyodide loads), then it is quick. Files you create live in your browser (IndexedDB) for that site: use **File → Download** to keep a notebook as an `.ipynb`.
 
 ![A notebook running in the browser: a table, an aggregation and a matplotlib chart](media/v5-notebooks-jupyterlite.png)
 
-## From a notebook to a diagram
+## Notebook and diagram, in both directions
 
-Download the `.ipynb` (**File → Download**) and choose it in **Import to diagram**: Trazo draws where the data goes (reads, tables, models, files written). See [IMPORT.md](IMPORT.md#jupyter-notebook). Trazo reads the notebook as text; it does not run it.
+![The notebook panel next to the canvas: the notebook, the diagram it produced, and the cell sent back](media/v5-notebooks-panel.png)
+
+The panel header has two buttons that connect the notebook with the canvas:
+
+- **Diagram this notebook** draws where the data goes in the notebook that is open (files read, tables, models, files written), **as it is now, saved or not**, with no download. Trazo only reads the notebook as text: it is not run. Ctrl+Z undoes the drawing. The rules are in [IMPORT.md](IMPORT.md#jupyter-notebook), and the same importer takes any `.ipynb` you paste or choose in **Import to diagram**.
+- **Send diagram to notebook** adds a code cell at the end of the open notebook with the boxes and arrows on the canvas as two pandas tables (`nodes`: id, label, details, role; `edges`: from, to, label). It is **not run**: you run it. From there you can join the diagram with your data, count, filter or redraw it with NetworkX. So a research loop is: draw or import an architecture, send it to the notebook, analyse it, and diagram the notebook back.
+
+How they talk: the notebook runs in an iframe on its own origin (port 3002), so it cannot read Trazo's storage (settings, AI keys). The two sides exchange a few `postMessage` messages (`excalidraw-app/notebook/protocol.ts` and `tools/lite-bridge.js`), each side checking the origin and the window of the other and the shape of every message. The notebook side answers only to the Trazo origins listed in `PARENT_ORIGINS` (`tools/build-jupyterlite.mjs`, the same list as `frame-ancestors`); if some other page embeds the site, it stays silent. A cell sent to the notebook is only text: a label cannot turn into code, because every label is written as an escaped string literal.
+
+![A notebook running in the browser: a table, an aggregation and a matplotlib chart](media/v5-notebooks-jupyterlite.png)
 
 ## Local-first: how it stays offline
 
@@ -36,7 +45,7 @@ Not possible in the browser sandbox: GDAL command-line tools, FME, PyTorch/Tenso
 
 ## Moving the site
 
-The app opens `http://<same host>:3002/lab/index.html`. For another port or a domain, set `VITE_APP_JUPYTERLITE_ORIGIN` when building the app, and update `frame-ancestors` in `tools/build-jupyterlite.mjs` if you want the notebook embedded by an app on another origin.
+The app embeds `http://<same host>:3002/lab/index.html`. For another port or a domain, set `VITE_APP_JUPYTERLITE_ORIGIN` when building the app (the app's `frame-src` follows it). If the app itself is not on `localhost:3000`, add its origin to `PARENT_ORIGINS` in `tools/build-jupyterlite.mjs` and rebuild the site: that list is both `frame-ancestors` and who the notebook talks to.
 
 ## Updating Pyodide or JupyterLite
 

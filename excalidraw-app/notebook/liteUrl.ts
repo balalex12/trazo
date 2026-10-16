@@ -17,6 +17,10 @@ export const jupyterLiteUrl = (
   return `${origin}/lab/index.html`;
 };
 
+/** The origin of the notebook site: the only one the panel talks to and the only one its iframe may load. */
+export const jupyterLiteOrigin = (url: string = jupyterLiteUrl()): string =>
+  new URL(url).origin;
+
 /** Opens the notebook site in a new tab (no opener, no referrer: it is another origin). */
 export const openNotebookSite = () => {
   window.open(jupyterLiteUrl(), "_blank", "noopener,noreferrer");
