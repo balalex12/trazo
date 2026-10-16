@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!-- The image GitHub shows when the repository link is shared (Settings > Social preview, 1280x640).
+     Edit this page, then: node tools/social-preview/render.cjs   (writes docs/media/social-preview.png) -->
+<meta charset="utf-8" />
+<title>Trazo social preview</title>
+<style>
+  @font-face {
+    font-family: Virgil;
+    src: url(../../packages/excalidraw/fonts/Virgil/Virgil-Regular.woff2);
+  }
+  @font-face {
+    font-family: Assistant;
+    font-weight: 400;
+    src: url(../../packages/excalidraw/fonts/Assistant/Assistant-Regular.woff2);
+  }
+  @font-face {
+    font-family: Assistant;
+    font-weight: 600;
+    src: url(../../packages/excalidraw/fonts/Assistant/Assistant-SemiBold.woff2);
+  }
+  @font-face {
+    font-family: Assistant;
+    font-weight: 700;
+    src: url(../../packages/excalidraw/fonts/Assistant/Assistant-Bold.woff2);
+  }
+  :root {
+    --orange: #cc440c;
+    --ink: #1b1b1b;
+    --muted: #5c4a3f;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    width: 1280px;
+    height: 640px;
+    position: relative;
+    overflow: hidden;
+    background-color: #fff4ea;
+    background-image: radial-gradient(circle, #e9d3c2 1.6px, transparent 1.7px);
+    background-size: 28px 28px;
+    font-family: Assistant, sans-serif;
+    color: var(--ink);
+  }
+  .logo {
+    position: absolute;
+    left: 72px;
+    top: 72px;
+    width: 112px;
+    height: 112px;
+    border-radius: 28px;
+    box-shadow: 0 14px 30px rgba(204, 68, 12, 0.28);
+  }
+  .name {
+    position: absolute;
+    left: 205px;
+    top: 60px;
+    font: 400 112px/1 Virgil;
+    -webkit-text-stroke: 2.5px var(--ink);
+    letter-spacing: 1px;
+  }
+  .tag {
+    position: absolute;
+    left: 72px;
+    top: 236px;
+    font: 400 46px/1.2 Virgil;
+    -webkit-text-stroke: 1.2px var(--ink);
+  }
+  .tag em {
+    font-style: normal;
+    color: var(--orange);
+    -webkit-text-stroke-color: var(--orange);
+    position: relative;
+  }
+  .tag em::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -10px;
+    height: 8px;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='8'><path d='M0 4 Q4 0 8 4 T16 4' fill='none' stroke='%23e8a07c' stroke-width='2'/></svg>")
+      repeat-x;
+  }
+  .sub {
+    position: absolute;
+    left: 72px;
+    top: 376px;
+    width: 535px;
+    font: 400 24px/1.45 Assistant;
+    color: var(--muted);
+  }
+  .chips {
+    position: absolute;
+    left: 72px;
+    top: 500px;
+    width: 600px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 14px;
+  }
+  .chip {
+    border: 2.5px solid var(--orange);
+    color: #a8360a;
+    border-radius: 999px;
+    padding: 9px 18px;
+    font: 700 20px/1 Assistant;
+    background: #fff8f2;
+  }
+  .url {
+    position: absolute;
+    left: 72px;
+    top: 586px;
+    font: 400 21px/1 Assistant;
+    color: #8a7a6f;
+  }
+  .shadow {
+    position: absolute;
+    left: 656px;
+    top: 166px;
+    width: 590px;
+    height: 312px;
+    background: var(--orange);
+    border-radius: 22px;
+  }
+  .card {
+    position: absolute;
+    left: 640px;
+    top: 150px;
+    width: 590px;
+    height: 312px;
+    background: #fff;
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 0% 50%;
+    display: block;
+  }
+</style>
+<img class="logo" src="../../docs/media/trazo-logo.svg" alt="" />
+<div class="name">Trazo</div>
+<div class="tag">Hand-drawn diagrams<br />that <em>move</em></div>
+<div class="sub">
+  Animate and narrate slides, run Python notebooks beside the canvas, and turn
+  code into diagrams.
+</div>
+<div class="chips">
+  <span class="chip">Local-first</span><span class="chip">Desktop app</span
+  ><span class="chip">Notebooks</span><span class="chip">Your own AI</span>
+</div>
+<div class="url">github.com/balalex12/trazo</div>
+<div class="shadow"></div>
+<div class="card"><img src="../../docs/media/tour/06-map.png" alt="" /></div>
