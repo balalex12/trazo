@@ -1,6 +1,6 @@
-// Builds public/arcgis.excalidrawlib (git-ignored: generated).
+// Builds public/arcgis.excalidrawlib (git-ignored: generated; LIBRARY_OUT writes it elsewhere, LIBRARY_OFFLINE=1 downloads nothing).
 // Run from the repository root:
-//   node tools/build-library.js
+//   node tools/build-library.js [--profile=public]
 // Official Esri Architecture Center icons are committed in assets/esri-icons (CC BY 4.0, converted once with
 // tools/visio_to_svg.py). Calcite glyphs are downloaded on demand by tools/fetch-calcite.mjs (not redistributed).
 //
@@ -11,8 +11,14 @@ const fs = require("fs");
 const crypto = require("crypto");
 const { execFileSync } = require("child_process");
 
+// --profile=public (or LIBRARY_PROFILE=public) is the library of anything that is PUBLISHED (a release, an image): no
+// Esri Calcite glyphs (their redistribution terms are not settled, docs/LIBRARIES.md) and no libraries flagged brandLogos
+// (third-party trademarks). The default profile (local) includes everything, for your own computer.
+const profile = process.env.LIBRARY_PROFILE || (process.argv.includes("--profile=public") ? "public" : "local");
+const PUBLIC = profile === "public";
+
 // Calcite glyphs are fetched, not committed (license). Download them if any is missing.
-if (!fs.existsSync("assets/calcite/utility-network.svg")) {
+if (!PUBLIC && !fs.existsSync("assets/calcite/utility-network.svg")) {
   console.log("Downloading Esri Calcite glyphs (not redistributed in this repo)...");
   execFileSync(process.execPath, ["tools/fetch-calcite.mjs"], { stdio: "inherit" });
 }
@@ -93,6 +99,7 @@ function embed(cat, name, link, w = 760, h = 480) {
 }
 
 function calcite(cat, name, file, color) {
+  if (PUBLIC) return; // not in what is published
   // Embedded byte-for-byte as downloaded (Esri MLA: redistribution without modification). The label text
   // carries the section color; the glyph keeps Calcite's default (black).
   const svg = fs.readFileSync(`assets/calcite/${file}.svg`, "utf-8");
@@ -139,19 +146,19 @@ for (const ic of sorted) {
 // so they are native Excalidraw rectangles with a title instead of near-invisible SVG hairlines.
 function container(name, strokeStyle, color, svg, aspect = 1) {
   const g = rid();
-  const w = 360, h = 240, ih = 40, iw = Math.round(ih * aspect);
+  const w = 360, h = 240, ih = 40, iw = svg ? Math.round(ih * aspect) : -10; // no glyph: the title starts at the margin
   const rect = { ...base(), id: rid(), type: "rectangle", x: 0, y: 0, width: w, height: h, groupIds: [g],
     strokeColor: color, backgroundColor: "transparent", fillStyle: "solid", strokeStyle, strokeWidth: 2, roundness: null };
-  const image = { ...base(), id: rid(), type: "image", x: 14, y: 12, width: iw, height: ih, groupIds: [g],
+  const image = !svg ? null : { ...base(), id: rid(), type: "image", x: 14, y: 12, width: iw, height: ih, groupIds: [g],
     strokeColor: "transparent", backgroundColor: "transparent", roundness: null, fileId: registerSvg(svg),
     status: "saved", scale: [1, 1], crop: null };
   const text = { ...base(), id: rid(), type: "text", groupIds: [g], strokeColor: color, backgroundColor: "transparent",
     text: name, originalText: name, fontSize: 18, fontFamily: 2, textAlign: "left", verticalAlign: "middle",
     width: name.length * 10, height: 23, x: 14 + iw + 10, y: 12 + (ih - 23) / 2, containerId: null, autoResize: true,
     lineHeight: 1.25, roundness: null };
-  push(CAT.containers, name, [rect, image, text]);
+  push(CAT.containers, name, [rect, ...(image ? [image] : []), text]);
 }
-const glyph = (file) => fs.readFileSync(`assets/calcite/${file}.svg`, "utf-8"); // unmodified (see calcite())
+const glyph = (file) => (PUBLIC ? null : fs.readFileSync(`assets/calcite/${file}.svg`, "utf-8")); // unmodified (see calcite())
 const enterpriseIcon = index.find((i) => i.name === "ArcGIS Enterprise");
 container("Data Center", "solid", "#000000", glyph("all-servers"));
 container("Private Network", "dotted", "#000000", glyph("server-lock"));
@@ -193,14 +200,13 @@ function fingerprint(elements) {
 // 5. Community libraries (libraries/community.json). Downloaded from the official catalog at build time, never
 //    committed. Each library becomes its own section "Community · <name> (<author>)" so sources never mix.
 //    --profile=public (or LIBRARY_PROFILE=public) skips libraries flagged brandLogos (third-party trademarks).
-const profile = process.env.LIBRARY_PROFILE || (process.argv.includes("--profile=public") ? "public" : "local");
 const communityOriginalIds = []; // ids of the same items as imported by users earlier: the app purges those copies
 const communityFingerprints = new Set(); // ...and copies recognised by content (their ids differ)
 let communityCount = 0;
 if (fs.existsSync("libraries/community.json")) {
   const man = JSON.parse(fs.readFileSync("libraries/community.json", "utf-8"));
-  const wanted = man.libraries.filter((l) => !(profile === "public" && l.brandLogos));
-  if (wanted.some((l) => !fs.existsSync(`assets/community/${l.slug}.excalidrawlib`))) {
+  const wanted = man.libraries.filter((l) => !(PUBLIC && l.brandLogos));
+  if (!process.env.LIBRARY_OFFLINE && wanted.some((l) => !fs.existsSync(`assets/community/${l.slug}.excalidrawlib`))) {
     console.log("Downloading community libraries from the official catalog (not redistributed in this repo)...");
     try {
       execFileSync(process.execPath, ["tools/fetch-community-libraries.mjs"], { stdio: "inherit" });
@@ -243,5 +249,5 @@ const legacy = [
 
 const out = JSON.stringify({ type: "excalidrawlib", version: 2, source: "local-arcgis-lib",
   legacyNames: legacy, communityOriginalIds, communityFingerprints: [...communityFingerprints], libraryItems: items, files });
-fs.writeFileSync("public/arcgis.excalidrawlib", out);
+fs.writeFileSync(process.env.LIBRARY_OUT || "public/arcgis.excalidrawlib", out);
 console.log("OK:", items.length, "items,", Object.keys(files).length, "image files,", (out.length / 1024).toFixed(0), "KB");
