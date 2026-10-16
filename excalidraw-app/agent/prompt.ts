@@ -39,6 +39,47 @@ export type AgentReply = {
   plain: boolean;
 };
 
+/**
+ * The first JSON object in a text, with the stray closing brackets some models leave behind dropped ("…}]]}" where one
+ * "]" too many ends the array twice). Brackets inside strings are left alone. Null when no object closes.
+ */
+const firstObject = (text: string): string | null => {
+  const start = text.indexOf("{");
+  if (start < 0) {
+    return null;
+  }
+  const stack: string[] = [];
+  let out = "";
+  let inString = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      out += c;
+      if (c === "\\") {
+        out += text[++i] ?? "";
+      } else if (c === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (c === '"') {
+      inString = true;
+    } else if (c === "{" || c === "[") {
+      stack.push(c === "{" ? "}" : "]");
+    } else if (c === "}" || c === "]") {
+      if (stack[stack.length - 1] !== c) {
+        continue; // a closer that closes nothing here
+      }
+      stack.pop();
+    }
+    out += c;
+    if (!stack.length) {
+      return out;
+    }
+  }
+  return null;
+};
+
 /** Models wrap JSON in fences or add a sentence around it; take the object, or fall back to showing the text. */
 export const parseAgentReply = (raw: string): AgentReply => {
   const text = raw.trim();
@@ -46,11 +87,10 @@ export const parseAgentReply = (raw: string): AgentReply => {
     .replace(/^```[a-zA-Z]*\s*/, "")
     .replace(/\s*```\s*$/, "")
     .trim();
-  const first = unfenced.indexOf("{");
-  const last = unfenced.lastIndexOf("}");
-  if (first >= 0 && last > first) {
+  const object = firstObject(unfenced);
+  if (object) {
     try {
-      const j = JSON.parse(unfenced.slice(first, last + 1));
+      const j = JSON.parse(object);
       if (j && typeof j === "object" && !Array.isArray(j)) {
         return {
           message: typeof j.message === "string" ? j.message : "",

@@ -447,6 +447,20 @@ describe("talking to the model", () => {
     );
   });
 
+  it("reads an answer with a closing bracket too many, as a real model once sent it", () => {
+    const reply = parseAgentReply(
+      '{"message":"Added","ops":[{"op":"add_node","id":"e","label":"Eval ]"},{"op":"add_edge","from":"a","to":"e"}]]}',
+    );
+    expect(reply.plain).toBe(false);
+    expect(reply.message).toBe("Added");
+    expect(reply.ops).toHaveLength(2);
+    // brackets inside a string are text, not structure
+    expect((reply.ops[0] as { label: string }).label).toBe("Eval ]");
+    expect(
+      parseAgentReply('{"message":"a \\"quoted\\" }","ops":[]}').message,
+    ).toBe('a "quoted" }');
+  });
+
   it("falls back to showing the text when the answer is not the JSON shape", () => {
     expect(parseAgentReply("It is a three tier web app.")).toEqual({
       message: "It is a three tier web app.",
