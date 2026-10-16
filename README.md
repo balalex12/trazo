@@ -59,19 +59,20 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 <p align="center"><img src="docs/media/tour/07-compare.png" alt="Planned diagram compared with the notebook" width="860"><br><sub><b>6. Compare</b>: what is planned but not coded, and the reverse</sub></p>
 
-<p align="center"><img src="docs/media/tour/06-map.png" alt="Live map in the canvas" width="860"><br><sub><b>7. Maps</b>: GIS pack, a live map inside the canvas</sub></p>
+<p align="center"><img src="docs/media/tour/06-map.png" alt="A GeoPandas map drawn on the canvas next to its notebook" width="860"><br><sub><b>7. Maps from Python</b>: <code>trazo.map</code> draws a GeoDataFrame as an editable hand-drawn map with a legend</sub></p>
+<p align="center"><img src="docs/media/tour/06-live-map.png" alt="A live ArcGIS map inside the canvas" width="860"><br><sub><b>8. Live maps</b>: GIS pack, an interactive ArcGIS map inside the canvas</sub></p>
 
-<p align="center"><img src="docs/media/tour/08-slides.png" alt="Slides generated from a notebook" width="860"><br><sub><b>8. Slides</b>: an analysis turned into an animated explainer</sub></p>
+<p align="center"><img src="docs/media/tour/08-slides.png" alt="Slides generated from a notebook" width="860"><br><sub><b>9. Slides</b>: an analysis turned into an animated explainer</sub></p>
 
-<p align="center"><img src="docs/media/tour/09-narrated-video.png" alt="Frames of a narrated MP4" width="860"><br><sub><b>9. Narrated video</b>: MP4 with your voice or a local one, made in the browser</sub></p>
+<p align="center"><img src="docs/media/tour/09-narrated-video.png" alt="Frames of a narrated MP4" width="860"><br><sub><b>10. Narrated video</b>: MP4 with your voice or a local one, made in the browser</sub></p>
 
-<p align="center"><img src="docs/media/tour/10-agent.png" alt="Agent panel drawing a diagram" width="860"><br><sub><b>10. Agent</b>: asks, explains and edits with your own model (Ctrl+Z undoes it)</sub></p>
+<p align="center"><img src="docs/media/tour/10-agent.png" alt="Agent panel drawing a diagram" width="860"><br><sub><b>11. Agent</b>: asks, explains and edits with your own model (Ctrl+Z undoes it)</sub></p>
 
-<p align="center"><img src="docs/media/tour/11-director.png" alt="AI director proposal applied" width="860"><br><sub><b>11. Direct with AI</b>: a proposal for the animation you review first</sub></p>
+<p align="center"><img src="docs/media/tour/11-director.png" alt="AI director proposal applied" width="860"><br><sub><b>12. Direct with AI</b>: a proposal for the animation you review first</sub></p>
 
-<p align="center"><img src="docs/media/tour/12-compose.png" alt="Frames of an AI-composed video" width="860"><br><sub><b>12. Compose</b>: slides, captions and narration from one diagram</sub></p>
+<p align="center"><img src="docs/media/tour/12-compose.png" alt="Frames of an AI-composed video" width="860"><br><sub><b>13. Compose</b>: slides, captions and narration from one diagram</sub></p>
 
-<p align="center"><img src="docs/media/tour/13-desktop.png" alt="The desktop app" width="860"><br><sub><b>13. Desktop app</b>: the same Trazo as a Windows, macOS or Linux app</sub></p>
+<p align="center"><img src="docs/media/tour/13-desktop.png" alt="The desktop app" width="860"><br><sub><b>14. Desktop app</b>: the same Trazo as a Windows, macOS or Linux app</sub></p>
 
 <details>
 <summary>See the GIS pack animated</summary>
