@@ -1,0 +1,27 @@
+# The browser tests of the notebook (tools/e2e/lite.e2e.cjs): Python in the page, the bridge between notebook and canvas,
+# maps, slides. They need the notebook site built (a few hundred MB of Pyodide, downloaded once here, pinned and checked
+# against a SHA-256), so they are not part of the CI on every pull request: run them by hand when the notebook changes
+# (Actions > Notebook tests > Run workflow). Read-only token, no secrets.
+name: Notebook tests
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  notebook:
+    name: Notebook browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.x
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: node tools/build-jupyterlite.mjs
+      # starts the app itself and uses the Chrome that comes with the runner; the notebook tests run because the site is built
+      - run: yarn test:e2e
