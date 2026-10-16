@@ -267,6 +267,50 @@ describe("notebook site", { skip: lite.built() ? false : "the notebook site is n
       await waitFor(async () => !(await elements(s.page)).some((x) => x.strokeColor === "#e03131" && x.type !== "text"), { what: "undo to remove the red marks" });
     });
 
+    it("turns the diagram of the notebook into slides for the Animation panel, one per step", SLOW, async () => {
+      await clearCanvas();
+      await openNotebook("churn.ipynb");
+      await clickButton(s.page, "Diagram this notebook");
+      await waitFor(async () => (await elements(s.page)).filter((x) => x.meta && x.type !== "text").length >= 10, { what: "the diagram" });
+      const boxesNow = (await elements(s.page)).filter((x) => x.meta && x.type !== "text");
+      const boxesBefore = boxesNow.length;
+      // one step per code cell that has boxes (earlier tests added cells to this notebook, so do not assume three)
+      const cells = [...new Set(boxesNow.map((x) => x.meta.cell))].sort((x, y) => x - y);
+      assert.ok(cells.length >= 3);
+      await clickButton(s.page, "Slides from notebook");
+      const els = await waitFor(
+        async () => {
+          const e = await elements(s.page);
+          return e.filter((x) => x.type === "frame").length === cells.length ? e : null;
+        },
+        { what: `${cells.length} slides` },
+      );
+      const frames = els.filter((x) => x.type === "frame");
+      assert.deepEqual(frames.map((f) => f.name), cells.map((c, i) => `Step ${i + 1} · cell ${c}`));
+      assert.ok(frames.every((f) => f.width === frames[0].width && f.height === frames[0].height), "all slides have the same size");
+      assert.deepEqual(frames.map((f) => f.custom.transition), frames.map((_, i) => (i === 0 ? "cut" : "build")));
+      assert.match(frames[1].custom.caption, /^Cell \d+: /);
+      // each slide holds the boxes built so far: later slides have more elements, and the last one every box
+      const count = (f) => els.filter((x) => x.frameId === f.id).length;
+      assert.ok(frames.every((f, i) => i === 0 || count(f) > count(frames[i - 1])), `elements per slide: ${frames.map(count)} ${JSON.stringify(els.filter((x) => x.type !== "frame").slice(0, 4).map((x) => [x.type, x.frameId]))} frames ${JSON.stringify(frames.map((f) => f.id))}`);
+      const last = frames[frames.length - 1];
+      const inLast = els.filter((x) => x.frameId === last.id && x.type !== "text" && x.type !== "arrow").length;
+      assert.equal(inLast, boxesBefore);
+      // matching copies share a key, so the animation panel can morph and build between slides
+      assert.ok(els.filter((x) => x.frameId === last.id && x.custom && x.custom.animKey).length >= inLast);
+      // the animation panel sees them as slides
+      await clickButton(s.page, "🎞 Animation");
+      const panel = await waitFor(
+        async () => {
+          const t = await s.page.evaluate(() => document.body.innerText);
+          return /1\. Step 1 · cell/.test(t) && new RegExp(`${cells.length}\\. Step ${cells.length} · cell`).test(t) ? t : null;
+        },
+        { what: "the slides in the Animation panel" },
+      );
+      assert.match(panel, /s total/);
+      await clickButton(s.page, "🎞 Animation");
+    });
+
     it("draws a GeoDataFrame as a hand-drawn map with trazo.map, coloured by a column, with a legend", SLOW, async () => {
       await clearCanvas();
       const out = await py(

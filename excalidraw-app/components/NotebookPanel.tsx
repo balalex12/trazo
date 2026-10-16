@@ -24,6 +24,7 @@ import {
   summarize as summarizeDrift,
 } from "../notebook/drift";
 import { mapToSkeleton } from "../notebook/geomap";
+import { makeSlides, planStory } from "../notebook/story";
 import {
   DEFAULT_SERVER_URL,
   loadEnvironment,
@@ -395,6 +396,18 @@ export const NotebookPanel = ({
       )} Ctrl+Z undoes the marks.`;
     });
 
+  const makeStory = () =>
+    run(async () => {
+      const plan = planStory(
+        excalidrawAPI.getSceneElementsIncludingDeleted() as unknown as El[],
+      );
+      if (typeof plan === "string") {
+        throw new Error(plan);
+      }
+      const made = makeSlides(excalidrawAPI, plan);
+      return `Made ${made} slides, one per step of the notebook, under the diagram. Open Animation to play or export them (Ctrl+Z undoes it).`;
+    });
+
   const draftNotebook = () =>
     run(async () => {
       const cells = diagramToCells(index());
@@ -512,6 +525,13 @@ export const NotebookPanel = ({
             title="Compare the diagram with what the open notebook really does: what is planned but not in the code (red, dashed), what the code does and is not drawn (added in orange), arrows without code. The notebook is only read."
           >
             Compare with notebook
+          </button>
+          <button
+            style={{ ...ghost, padding: "3px 9px" }}
+            onClick={makeStory}
+            title="Turn the diagram of the notebook into slides for the Animation panel: one per step (code cell), each adding its boxes to what was built before, with a caption. Then play it, export an MP4, GIF or HTML player, or let the AI director write the narration."
+          >
+            Slides from notebook
           </button>
           <button
             style={{ ...ghost, padding: "3px 9px" }}
