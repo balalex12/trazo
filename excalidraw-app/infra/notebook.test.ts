@@ -367,6 +367,12 @@ describe("the starter notebooks of the Python-in-the-browser site", () => {
     expect(g.nodes.some((n) => n.lines[0].startsWith("📈"))).toBe(true);
   });
 
+  it("geo.ipynb: GeoDataFrames become tables of the flow", () => {
+    const g = parseNotebook(read("geo.ipynb"));
+    expect(node(g, "📊 districts")).toBeTruthy();
+    expect(node(g, "📊 river")).toBeTruthy();
+  });
+
   it("churn.ipynb: from tables to a fitted model", () => {
     const g = parseNotebook(read("churn.ipynb"));
     expect(flows(g, "📊 customers", "📊 df")).toBe(true);

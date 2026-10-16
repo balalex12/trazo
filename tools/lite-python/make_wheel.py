@@ -10,7 +10,7 @@ import sys
 import zipfile
 
 NAME = "trazo"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 STAMP = (2020, 1, 1, 0, 0, 0)  # fixed, so the same source always gives the same wheel
 
 
