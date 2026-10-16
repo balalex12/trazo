@@ -50,7 +50,7 @@ Prompts that exploit it:
 
 `excalidraw-app/ai/llm.ts` implements Excalidraw's `onTextSubmit` contract: it sends a system prompt (Mermaid only, diagram-type guidance) plus the chat messages, reads the SSE stream (OpenAI `choices[].delta.content` or Anthropic `content_block_delta`), strips ```mermaid fences while streaming, and returns the final Mermaid text.
 
-Tested against a mock OpenAI-compatible streaming server (request shape, streaming, fenced output → rendered diagram). Not yet tested against real Ollama/LM Studio/OpenAI/Anthropic endpoints, reports welcome.
+Tested against a mock OpenAI-compatible streaming server (request shape, streaming, fenced output → rendered diagram). Also tried against a real model, Ollama Cloud with `gpt-oss:120b`: **Direct with AI** (scripts in Spanish for slides made from a notebook), **Compose with AI** (a file that passes the HyperFrames checks) and the **Agent** panel (an answer about the diagram, a box added and linked). Not yet tested against real LM Studio, OpenAI or Anthropic endpoints, reports welcome.
 
 ## Ideas (roadmap)
 

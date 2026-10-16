@@ -27,6 +27,7 @@ With a **local** connection (Ollama or LM Studio on this computer) the text neve
 - Name what you mean the way the boxes are named on the canvas ("the database", "orders"). The model matches names to boxes.
 - For big diagrams, select the part you care about.
 - If a model answers in plain text instead of the expected shape, the panel shows the text as an answer and changes nothing.
+- Models sometimes leave a stray closing bracket in the JSON (`…}]]}`); the panel reads past it instead of dropping the whole answer.
 - Small local models can be unreliable with structured answers. If edits are often skipped, try a larger model.
 
 ## The same engine as the MCP server
