@@ -80,4 +80,4 @@ The viewer folder is mounted read-only: edit `viewer/*` and reload, no rebuild. 
 
 ## Open items (see docs/ROADMAP.md)
 
-Per-font license audit, self-hosted ArcGIS SDK, validation against a real private Enterprise portal and a real Utility Network web map.
+Self-hosted ArcGIS SDK, validation against a real private Enterprise portal and a real Utility Network web map.

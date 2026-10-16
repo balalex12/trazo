@@ -20,7 +20,7 @@ Audited on 2026-10-02 from the license data embedded in each font file (`package
 | Cascadia Code | SIL OFL 1.1 | © 2020 Microsoft Corporation. The embedded text is generic and its license URL points to the OFL; the upstream project ([microsoft/cascadia-code](https://github.com/microsoft/cascadia-code)) is OFL 1.1 |
 | Comic Shanns | MIT | © 2018 Shannon Miwa and later contributors; the MIT notice is embedded in the font |
 | Excalifont | SIL OFL 1.1 | © 2024 Excalidraw. The file has no license text; the [official Excalifont page](https://plus.excalidraw.com/excalifont) states OFL 1.1 |
-| Liberation Sans 1.05 | **GPL v2 with the font exception (not OFL)** | © 2007 Ascender Corporation. Versions 2.00 and later are OFL; this file is 1.05. See the open item in [docs/ROADMAP.md](docs/ROADMAP.md) |
+| Arimo (used as "Liberation Sans") | SIL OFL 1.1 | © 2020 The Arimo Project Authors. Unmodified subsets (latin, latin-ext, cyrillic, cyrillic-ext, greek, greek-ext, vietnamese) from [@fontsource/arimo](https://fontsource.org/fonts/arimo) 5.3.0; the license text is `packages/excalidraw/fonts/Liberation/OFL-Arimo.txt`. Metric-compatible with Liberation Sans 2 and Arial. It replaces Liberation Sans 1.05 (GPL v2 with the font exception), which was the only font here that was not OFL or MIT. It is the private fallback family for Helvetica in exports |
 | Lilita One | SIL OFL 1.1 | © 2011 Juan Montoreano, reserved name "Lilita One" |
 | Nunito | SIL OFL 1.1 | © The Nunito Project Authors |
 | Virgil | SIL OFL 1.1 | © 2011 Your Own Font Foundry; full license embedded |
