@@ -10,6 +10,7 @@ import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { buildIndex } from "../agent/canvas";
 import { EVENTS } from "../branding";
 import { importInfra } from "../infra/detect";
+import { parseNotebook } from "../infra/notebook";
 import { layoutGraph } from "../infra/graph";
 import { drawBuilt, drawLayout } from "../infra/place";
 import {
@@ -17,6 +18,11 @@ import {
   jupyterLiteUrl,
   openNotebookSite,
 } from "../notebook/liteUrl";
+import {
+  compare,
+  markDrift,
+  summarize as summarizeDrift,
+} from "../notebook/drift";
 import { mapToSkeleton } from "../notebook/geomap";
 import {
   DEFAULT_SERVER_URL,
@@ -366,6 +372,29 @@ export const NotebookPanel = ({
     }
   };
 
+  const compareWithNotebook = () =>
+    run(async () => {
+      const idx = index();
+      if (!idx.nodes.size) {
+        throw new Error("There is nothing on the canvas to compare.");
+      }
+      const reply = await ask((id) => ({
+        proto: PROTOCOL,
+        type: "get-notebook",
+        id,
+      }));
+      if (reply.type !== "notebook") {
+        throw new Error("Unexpected answer from the notebook.");
+      }
+      // what the notebook does, as the data flow the importer reads (the notebook is only read, never run)
+      const drift = compare(idx, parseNotebook(reply.text));
+      markDrift(excalidrawAPI, drift);
+      return `${reply.path}: ${summarizeDrift(
+        drift,
+        idx.nodes.size,
+      )} Ctrl+Z undoes the marks.`;
+    });
+
   const draftNotebook = () =>
     run(async () => {
       const cells = diagramToCells(index());
@@ -433,7 +462,7 @@ export const NotebookPanel = ({
             flexWrap: "wrap",
           }}
         >
-          <span style={{ flex: 1, minWidth: 90 }}>
+          <span style={{ flex: "1 1 100%" }}>
             <select
               value={env.kind}
               onChange={(e) => {
@@ -475,6 +504,14 @@ export const NotebookPanel = ({
             title="Add a cell to the open notebook with the boxes and arrows of this diagram as pandas tables (it is not run)"
           >
             Send diagram to notebook
+          </button>
+          <button
+            style={{ ...ghost, padding: "3px 9px" }}
+            disabled={busy || !ready}
+            onClick={compareWithNotebook}
+            title="Compare the diagram with what the open notebook really does: what is planned but not in the code (red, dashed), what the code does and is not drawn (added in orange), arrows without code. The notebook is only read."
+          >
+            Compare with notebook
           </button>
           <button
             style={{ ...ghost, padding: "3px 9px" }}
