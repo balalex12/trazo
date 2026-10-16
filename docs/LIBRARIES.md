@@ -45,7 +45,7 @@ To add or change a glyph, edit `tools/own-icons/icons.cjs` (the kit in `kit()` h
 2. adds each as its own panel section **"Community · <name> (<author>)"** with stable ids `lib:<slug>:<id>`;
 3. records the original item ids and a content fingerprint of every item, so on load the app **replaces copies you had imported by hand** (same items, different ids) instead of duplicating them. Items that are not in the pack (your own drawings) are never touched.
 
-**Profiles.** The default profile (`local`) includes everything. `--profile=public` (or `LIBRARY_PROFILE=public`) skips libraries flagged `brandLogos` in the manifest because their logos are third-party trademarks the MIT license of the library does not cover. Use the public profile for any published image/artifact.
+**Profiles.** The default profile (`local`) includes everything. `--profile=public` (or `LIBRARY_PROFILE=public`) skips libraries flagged `brandLogos` in the manifest because their logos are third-party trademarks the MIT license of the library does not cover, **and the Esri Calcite glyphs** (the Utility Network and Services & SDKs sections; the container boxes keep their title without the glyph), whose redistribution is not settled (see below). Use the public profile for **anything you publish**: the releases and the published images are built with it. `LIBRARY_OUT=file` writes the library somewhere else and `LIBRARY_OFFLINE=1` downloads nothing.
 
 ### Adding or removing a library
 
