@@ -19,11 +19,19 @@ The first start of a notebook takes some seconds (Pyodide loads), then it is qui
 
 ## Notebook and diagram, in both directions
 
-The panel header has three buttons that connect the notebook with the canvas, and two things happen on their own while you work:
+The panel header has five buttons that connect the notebook with the canvas, and two things happen on their own while you work:
 
 - **Diagram this notebook** draws where the data goes in the notebook that is open (files read, tables, models, files written), **as it is now, saved or not**, with no download. Trazo only reads the notebook as text: it is not run. Ctrl+Z undoes the drawing, and the drawing is fitted into the free space next to the panel. The rules are in [IMPORT.md](IMPORT.md#jupyter-notebook), and the same importer takes any `.ipynb` you paste or choose in **Import to diagram**.
 - **Send diagram to notebook** adds a code cell at the end of the open notebook with the boxes and arrows on the canvas as two pandas tables (`nodes`: id, label, details, role; `edges`: from, to, label). It is **not run**: you run it.
 - **Draft notebook from diagram** is the importer the other way round: it writes a first draft of a notebook from the diagram, one code cell per box in the order the data flows (imports first). Boxes named like a file become a read (`pd.read_csv`, `read_parquet`, `gpd.read_file`, `rasterio.open`…), a box that ends the flow and is named like a file becomes a write, the steps in between are `TODO`s that keep the box's name and details as comments, and a box with two inputs becomes a `merge`. No AI: the same diagram gives the same cells, which are valid Python and are **not run**.
+
+- **Compare with notebook** is the design against the reality: the diagram is what you planned, the notebook is what the code does. Trazo reads the open notebook (it is not run), matches each box with a part of the notebook by name and marks the differences on the canvas: boxes **planned but not in the code** in dashed red, arrows **drawn but with no code behind** in dashed red, and what **the code does but is not drawn** added below in dashed orange. It also says, in one sentence, what it found (and data flows that are in the code and not drawn). Matching is deliberately conservative and local (no AI): a box drawn _from_ a variable matches that variable for certain; otherwise the same name, or all the words of the shorter name inside the longer one, and a name that does not decide between two candidates (or a one-letter name such as `x` against `x_train`) is left unmatched rather than guessed. A box and its notebook part need not be called exactly the same: `customers.csv`, `customers` and `📊 customers` match. Compare again after you change the diagram or the notebook: the previous marks are replaced, not piled up, and each comparison is one Ctrl+Z.
+
+![Compare with notebook: boxes planned but not in the code in red, the code's chart not drawn added in orange](media/v5-notebooks-compare.png)
+
+- **Slides from notebook** turns the diagram of a notebook into an **explainer**: one slide (a frame of the Animation panel) per step of the analysis, that is, per code cell that made something. Each slide shows everything built so far and the boxes that the cell added appear one after another (the **Build** transition; arrows draw themselves), with a caption that says what the cell added (`Cell 2: df: merge, dropna`). The slides are ordinary frames under the diagram, so the **Animation** panel plays them, exports them (MP4, GIF, HTML player), records narration, and **Direct with AI** / **Compose with AI** can rewrite the captions and write the script with your own model. It needs a diagram made by _Diagram this notebook_ (or the notebook import), whose boxes know their cell. No AI is involved in making the slides. Ctrl+Z removes them.
+
+![Slides from notebook: three steps in the Animation panel, each adding the boxes of its cell](media/v5-notebooks-slides.png)
 
 ![A notebook next to the canvas: the notebook's tables are on the canvas, each with its size](media/v5-notebooks-live.png)
 
