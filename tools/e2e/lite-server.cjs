@@ -37,14 +37,30 @@ const start = (port) =>
   new Promise((resolve, reject) => {
     const csp = policy();
     const server = http.createServer((req, res) => {
-      let file = path.join(ROOT, decodeURIComponent(req.url.split("?")[0]));
+      const notFound = () => {
+        res.writeHead(404);
+        res.end();
+      };
+      // the requested path is resolved against the site folder and checked to stay inside it BEFORE the disk is touched
+      let requested;
+      try {
+        requested = decodeURIComponent(req.url.split("?")[0]);
+      } catch {
+        return notFound();
+      }
+      if (requested.includes("\0")) {
+        return notFound();
+      }
+      let file = path.resolve(ROOT, `.${requested.startsWith("/") ? requested : `/${requested}`}`);
+      const inside = path.relative(ROOT, file);
+      if (inside.startsWith("..") || path.isAbsolute(inside)) {
+        return notFound();
+      }
       if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {
         file = path.join(file, "index.html");
       }
-      if (!file.startsWith(ROOT) || path.basename(file) === "_csp.conf" || !fs.existsSync(file)) {
-        res.writeHead(404);
-        res.end();
-        return;
+      if (path.basename(file) === "_csp.conf" || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
+        return notFound();
       }
       res.writeHead(200, {
         "Content-Type": MIME[file.split(".").pop()] || "application/octet-stream",

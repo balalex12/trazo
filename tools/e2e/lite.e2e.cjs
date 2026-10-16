@@ -16,6 +16,19 @@ describe("notebook site", { skip: lite.built() ? false : "the notebook site is n
   });
   after(() => new Promise((r) => server.close(r)));
 
+  it("serves only its own folder, and never its policy file", async () => {
+    const http = require("node:http");
+    const get = (p) =>
+      new Promise((resolve) => http.get({ host: "127.0.0.1", port: LITE_PORT, path: p }, (res) => {
+          res.resume();
+          resolve(res.statusCode);
+        }));
+    assert.equal(await get("/lab/index.html"), 200);
+    for (const p of ["/../../package.json", "/%2e%2e/%2e%2e/package.json", "/lab%00/x", "/_csp.conf", "/missing"]) {
+      assert.equal(await get(p), 404, p);
+    }
+  });
+
   describe("on its own", () => {
     let s;
     before(async () => {
