@@ -288,6 +288,7 @@ describe("notebook site", { skip: lite.built() ? false : "the notebook site is n
       const frames = els.filter((x) => x.type === "frame");
       assert.deepEqual(frames.map((f) => f.name), cells.map((c, i) => `Step ${i + 1} · cell ${c}`));
       assert.ok(frames.every((f) => f.width === frames[0].width && f.height === frames[0].height), "all slides have the same size");
+      assert.ok(Math.abs(frames[0].width / frames[0].height - 16 / 9) < 0.01, "slides are 16:9, the shape of a video");
       assert.deepEqual(frames.map((f) => f.custom.transition), frames.map((_, i) => (i === 0 ? "cut" : "build")));
       assert.match(frames[1].custom.caption, /^Cell \d+: /);
       // each slide holds the boxes built so far: later slides have more elements, and the last one every box

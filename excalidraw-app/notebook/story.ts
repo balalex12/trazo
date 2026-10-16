@@ -19,6 +19,7 @@ import type { El } from "../agent/elements";
 export const MAX_STEPS = 24;
 export const MAX_CAPTION = 120;
 const PAD = 60;
+const ASPECT = 16 / 9;
 const GAP = 120;
 const HOLD_MS = 2800;
 
@@ -152,15 +153,23 @@ export const makeSlides = (
   const scene = api.getSceneElementsIncludingDeleted() as any[];
   const live = scene.filter((e) => !e.isDeleted);
   const byId = new Map(live.map((e) => [e.id, e]));
-  const frameW = plan.bounds.width + PAD * 2;
-  const frameH = plan.bounds.height + PAD * 2;
-  const left = plan.bounds.x - PAD;
+  // a video is 16:9: the frame is the diagram plus a margin, widened or heightened to that shape and centered on it,
+  // so the picture fills the screen instead of being a thin strip in the middle
+  let frameW = plan.bounds.width + PAD * 2;
+  let frameH = plan.bounds.height + PAD * 2;
+  if (frameW / frameH > ASPECT) {
+    frameH = frameW / ASPECT;
+  } else {
+    frameW = frameH * ASPECT;
+  }
+  const left = plan.bounds.x + plan.bounds.width / 2 - frameW / 2;
+  const top = plan.bounds.y + plan.bounds.height / 2 - frameH / 2;
   const bottom = Math.max(...live.map((e) => e.y + e.height));
   const created: any[] = [];
 
   plan.steps.forEach((step, i) => {
     const frameY = bottom + GAP + i * (frameH + GAP);
-    const dy = frameY - (plan.bounds.y - PAD);
+    const dy = frameY - top;
     const frameId = uid();
     const idMap = new Map(step.ids.map((id) => [id, uid()]));
     const groupMap = new Map<string, string>();
