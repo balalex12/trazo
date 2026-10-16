@@ -10,6 +10,7 @@
 - **SQL queries** (`SELECT`, `WITH`, `INSERT`, `UPDATE`, `DELETE`, `MERGE`, `CREATE VIEW … AS`), as a diagram of how the query runs,
 - a **dbt `manifest.json`**, as a lineage graph,
 - an **n8n workflow** (the JSON you export from n8n),
+- a **Jupyter notebook** (`.ipynb`),
 - **any other JSON** (an API response, a config, an export, GeoJSON…), as a diagram of its shape.
 
 It is **deterministic and offline**: the text is parsed in your browser and laid out by plain code. No AI is involved, nothing is sent anywhere, and the same input always gives the same diagram.
@@ -130,6 +131,12 @@ Paste the JSON of a workflow (the workflow menu in n8n, Download). Every node is
 
 Nothing is executed and no credentials are read; only names, types and connections.
 
+## Jupyter notebook
+
+Paste or choose an `.ipynb` file (Python kernels). Trazo follows the **data**, not the order of the cells: every file read (`pd.read_csv`, `read_parquet`, `gpd.read_file`, `rasterio.open`, `spark.read…`, `requests.get`, `read_sql`) is a source box, every variable that holds a table, array or model is a box, and arrows go from what a variable was built from to the variable (merge, groupby, `train_test_split`, `fit`/`predict`…). Files written (`to_csv`, `to_parquet`, `joblib.dump`, `savefig`…) are boxes on the right and plots become a chart box. Each box says in which cell it appears and the operations applied; tables list their columns, taken from `usecols`, `DataFrame({...})`, `df['new'] = …`, `assign`, aggregations and from the outputs saved in the notebook (`df.head()`, `df.info()`). A name that is read again becomes `name (2)`. Function and class bodies, magics and non-data cells are skipped (the note says what). Kernels other than Python are refused, as are notebooks with no data steps or too many boxes. Nothing is executed: the code is only read as text.
+
+![A notebook turned into a data-flow diagram](media/v5-import-notebook.png)
+
 ## Roles and colors
 
 The role is guessed from the image and the name (compose, Kubernetes), from the resource type (Terraform), from the name (dbt) or from the node type (n8n), for example `postgres`, `mysql`, `aws_db_instance` → database; `redis`, `aws_elasticache_cluster` → cache; `rabbitmq`, `kafka`, `aws_sqs_queue` → queue; `nginx`, `traefik`, `aws_lb`, `aws_cloudfront_distribution` → proxy; `grafana`, `prometheus`, `aws_cloudwatch_*` → monitoring; `keycloak`, `vault`, `aws_iam_*` → auth; `minio`, `aws_s3_bucket` → storage; `aws_lambda_function`, CronJobs → function. Anything else is an application. The rules are in `excalidraw-app/infra/compose.ts` (`ROLE_RULES`), `terraform.ts` (`ROLE_RULES`), `dbt.ts` (`dbtLayer`) and `n8n.ts` (`rules`), and the colors in `graph.ts` (`ROLE_STYLE`).
@@ -143,4 +150,4 @@ The role is guessed from the image and the name (compose, Kubernetes), from the 
 
 ## Where the code is
 
-`excalidraw-app/infra/`: `detect.ts` (which format it is, and the single entry point), one reader per format (`compose.ts`, `sqlQuery.ts`, `json.ts`, `kubernetes.ts`, `terraform.ts` and `terraformJson.ts`, `openapi.ts`, `sql.ts`, `dbt.ts`, `n8n.ts`, all producing the same graph), `graph.ts` (the graph, the layout and the Excalidraw elements), and the tests next to them. The dialog is `excalidraw-app/components/InfraDialog.tsx`. YAML is read with `js-yaml`, already in the lockfile; the Terraform and SQL readers are small scanners written for this (no HCL or SQL library).
+`excalidraw-app/infra/`: `detect.ts` (which format it is, and the single entry point), one reader per format (`compose.ts`, `sqlQuery.ts`, `json.ts`, `kubernetes.ts`, `terraform.ts` and `terraformJson.ts`, `openapi.ts`, `sql.ts`, `dbt.ts`, `n8n.ts`, `notebook.ts`, all producing the same graph), `graph.ts` (the graph, the layout and the Excalidraw elements), and the tests next to them. The dialog is `excalidraw-app/components/InfraDialog.tsx`. YAML is read with `js-yaml`, already in the lockfile; the Terraform and SQL readers are small scanners written for this (no HCL or SQL library).

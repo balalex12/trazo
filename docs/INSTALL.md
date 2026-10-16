@@ -33,7 +33,7 @@ Daily use:
 
 ## What works out of the box
 
-Drawing, the icon libraries, the GIS pack, **animation and MP4/GIF export**, **narration**, the **recorder** and **Import to diagram** (docker-compose, Kubernetes, Terraform, OpenAPI, SQL, dbt, n8n) need nothing else. They run in your browser and send nothing anywhere.
+Drawing, the icon libraries, the GIS pack, **animation and MP4/GIF export**, **narration**, the **recorder** and **Import to diagram** (docker-compose, Kubernetes, Terraform, OpenAPI, SQL, dbt, n8n, Jupyter notebooks) need nothing else. They run in your browser and send nothing anywhere.
 
 ## Add an AI (optional)
 

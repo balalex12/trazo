@@ -388,6 +388,37 @@ ALTER TABLE payments ADD CONSTRAINT fk_pay_order FOREIGN KEY (order_id) REFERENC
     null,
     2,
   ),
+  notebook: JSON.stringify(
+    {
+      nbformat: 4,
+      nbformat_minor: 5,
+      metadata: { kernelspec: { language: "python", name: "python3" } },
+      cells: [
+        {
+          cell_type: "code",
+          source:
+            "import pandas as pd\ncustomers = pd.read_csv('data/customers.csv', usecols=['id', 'plan', 'signup'])\norders = pd.read_csv('data/orders.csv')",
+        },
+        {
+          cell_type: "code",
+          source:
+            "df = customers.merge(orders, on='id', how='left')\ndf = df.dropna()\ndf['total'] = df['price'] * df['qty']",
+        },
+        {
+          cell_type: "code",
+          source:
+            "from sklearn.model_selection import train_test_split\nfrom sklearn.ensemble import RandomForestClassifier\nX = df[['total', 'qty']]\ny = df['plan']\nX_train, X_test, y_train, y_test = train_test_split(X, y)\nmodel = RandomForestClassifier()\nmodel.fit(X_train, y_train)\npred = model.predict(X_test)",
+        },
+        {
+          cell_type: "code",
+          source:
+            "import joblib\njoblib.dump(model, 'model.pkl')\ndf.to_csv('out/clean.csv')",
+        },
+      ],
+    },
+    null,
+    2,
+  ),
   sqlquery: `-- Top customers by revenue this year, with their latest order
 WITH paid AS (
   SELECT o.id, o.customer_id, o.placed_at, SUM(i.quantity * i.unit_price) AS total
@@ -581,9 +612,10 @@ export const InfraDialog = () => {
           Paste a <code>docker-compose.yml</code>, Kubernetes manifests,
           Terraform (<code>.tf</code> or JSON), an OpenAPI file, SQL{" "}
           <code>CREATE TABLE</code> statements or SQL queries (to see how they
-          run), a dbt <code>manifest.json</code>, an n8n workflow or any other
-          JSON, or choose the files. Trazo works out which it is and draws it.
-          It is read in your browser and nothing is sent anywhere. No AI
+          run), a dbt <code>manifest.json</code>, an n8n workflow, a Jupyter
+          notebook (<code>.ipynb</code>, to see where the data goes) or any
+          other JSON, or choose the files. Trazo works out which it is and draws
+          it. It is read in your browser and nothing is sent anywhere. No AI
           involved.
         </div>
         <textarea
@@ -674,6 +706,7 @@ export const InfraDialog = () => {
             <option value="sqlquery">SQL query (SELECT, WITH, UPDATE…)</option>
             <option value="dbt">dbt lineage (manifest.json)</option>
             <option value="n8n">n8n workflow</option>
+            <option value="notebook">Jupyter notebook</option>
             <option value="json">Any JSON</option>
           </select>
           <button style={ghost} onClick={() => setOpen(false)}>

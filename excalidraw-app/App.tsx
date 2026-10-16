@@ -1053,7 +1053,7 @@ const ExcalidrawWrapper = () => {
             },
             {
               label:
-                "Import to diagram (infrastructure, API, SQL, JSON, dbt, n8n)",
+                "Import to diagram (infrastructure, API, SQL, JSON, dbt, n8n, notebook)",
               category: DEFAULT_CATEGORIES.app,
               predicate: true,
               keywords: [
@@ -1069,6 +1069,9 @@ const ExcalidrawWrapper = () => {
                 "select",
                 "dbt",
                 "n8n",
+                "notebook",
+                "jupyter",
+                "ipynb",
                 "json",
                 "yaml",
                 "architecture",
