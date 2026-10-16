@@ -15,6 +15,7 @@ viewer/
 tools/
 assets/
 public/vendor/
+desktop/site/
 
 # a finished AI composition, kept byte for byte (a test compares it with what the app produces)
 docs/examples/cache-explainer.html

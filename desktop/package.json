@@ -1,0 +1,145 @@
+{
+  "name": "trazo-desktop",
+  "productName": "Trazo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Trazo: hand-drawn diagrams that move. A local-first diagram studio.",
+  "author": {
+    "name": "balalex12",
+    "email": "68713463+balalex12@users.noreply.github.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/balalex12/trazo",
+  "main": "main.cjs",
+  "scripts": {
+    "prepare-site": "node prepare.mjs",
+    "start": "electron .",
+    "dist": "electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.8.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "app.trazo.desktop",
+    "productName": "Trazo",
+    "copyright": "MIT. Built on Excalidraw (MIT, © 2020 Excalidraw contributors).",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.cjs",
+      "site-server.cjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "site",
+        "to": "site"
+      },
+      {
+        "from": "../LICENSE",
+        "to": "LICENSE"
+      },
+      {
+        "from": "../THIRD_PARTY_NOTICES.md",
+        "to": "THIRD_PARTY_NOTICES.md"
+      }
+    ],
+    "artifactName": "Trazo-${version}-${os}-${arch}.${ext}",
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "grantFileProtocolExtraPrivileges": false,
+      "onlyLoadAppFromAsar": true
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "Trazo-Setup-${version}-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Trazo-Portable-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "rpm",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "tar.gz",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "Graphics",
+      "synopsis": "Hand-drawn diagrams that move",
+      "description": "A local-first diagram studio: architecture, data, GIS and machine learning diagrams that animate into video. It makes no network request unless you connect something."
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.graphics-design"
+    }
+  }
+}
