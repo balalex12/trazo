@@ -1,75 +1,35 @@
 # Hardened, local-only deployment (see docs/SECURITY.md).
 #   - ports are bound to 127.0.0.1: not reachable from your LAN
 #   - read-only root filesystem, all capabilities dropped except what nginx needs, no privilege escalation
-#   - the app image is built from this repository (Dockerfile); nothing is pulled from Excalidraw services
+#   - everything is built from this repository, inside Docker: `docker compose up -d --build` is the whole installation
+#     (one image: the app on 3000, the ArcGIS map viewer on 3001, the Python notebooks on 3002). Nothing is pulled from Excalidraw.
 name: trazo
 
 services:
-  app:
+  # The whole product in one image: the app (3000), the ArcGIS map viewer (3001) and the Python notebooks (3002).
+  # The first build downloads the icon libraries and about 230 MB for the notebooks (checked against pinned hashes).
+  trazo:
     build:
       context: .
       args:
         - NODE_ENV=production
         # Optional: move the ArcGIS viewer off its default origin (same host, port 3001).
-        # Uncomment and set if you changed the "viewer" service's port below, or put the
-        # viewer behind its own domain/tunnel. See the Dockerfile and docs/VIEWER.md.
+        # Uncomment and set if you changed the viewer's port below, or put the viewer behind its own
+        # domain/tunnel. See the Dockerfile and docs/VIEWER.md (and frame-ancestors in deploy/nginx/viewer.conf).
         # - ARCGIS_VIEWER_ORIGIN=http://localhost:3400
-    image: trazo-app:local
-    container_name: trazo-app
+    image: trazo:local
+    container_name: trazo
     ports:
-      - "127.0.0.1:3000:80"
-    volumes:
-      - ./deploy/nginx/app.conf:/etc/nginx/conf.d/default.conf:ro
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3001:3001"
+      - "127.0.0.1:3002:3002"
     read_only: true
     tmpfs:
       - /var/cache/nginx
       - /var/run
       - /tmp
     cap_drop: [ALL]
-    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
-
-  viewer:
-    image: nginx:stable-alpine-slim
-    container_name: trazo-viewer
-    # If you change the host port here, also set ARCGIS_VIEWER_ORIGIN on the app build above and
-    # update frame-ancestors in deploy/nginx/viewer.conf to match.
-    ports:
-      - "127.0.0.1:3001:80"
-    volumes:
-      - ./viewer:/usr/share/nginx/html:ro
-      - ./deploy/nginx/viewer.conf:/etc/nginx/conf.d/default.conf:ro
-    read_only: true
-    tmpfs:
-      - /var/cache/nginx
-      - /var/run
-      - /tmp
-    cap_drop: [ALL]
-    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
-
-  # Optional Python notebooks in the browser (docs/NOTEBOOKS.md): not started by a plain `docker compose up`.
-  #   node tools/build-jupyterlite.mjs && docker compose --profile lite up -d       (then http://127.0.0.1:3002)
-  lite:
-    profiles: ["lite"]
-    image: nginx:stable-alpine-slim
-    container_name: trazo-lite
-    ports:
-      - "127.0.0.1:3002:80"
-    volumes:
-      - ./assets/jupyterlite:/usr/share/nginx/html:ro
-      - ./deploy/nginx/lite.conf:/etc/nginx/conf.d/default.conf:ro
-    read_only: true
-    tmpfs:
-      - /var/cache/nginx
-      - /var/run
-      - /tmp
-    cap_drop: [ALL]
-    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
+    cap_add: [CHOWN, SETGID, SETUID]
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
@@ -88,21 +48,6 @@ services:
     volumes:
       - ./diagrams:/work
     read_only: true
-    cap_drop: [ALL]
-    security_opt:
-      - no-new-privileges:true
-
-  # One-time setup for people who only have Docker (no Node.js): downloads the icon libraries and builds
-  # public/arcgis.excalidrawlib. It needs the network once, only for this step, and only writes inside this folder.
-  #   docker compose --profile setup run --rm setup
-  setup:
-    profiles: ["setup"]
-    image: node:24@sha256:8530f76a96d88820d288761f022e318970dda93d01536919fbc16076b7983e63
-    working_dir: /repo
-    user: node
-    volumes:
-      - .:/repo
-    command: ["node", "tools/build-library.js"]
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true

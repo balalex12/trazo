@@ -33,8 +33,7 @@ describe("notebook panel without the notebook site", () => {
       },
       { timeout: 30000, what: "the hint" },
     );
-    assert.match(text, /node tools\/build-jupyterlite\.mjs/);
-    assert.match(text, /docker compose --profile lite up -d/);
+    assert.match(text, /docker compose up -d --build/);
     const disabled = await s.page.evaluate(() =>
       [...document.querySelectorAll("button")]
         .filter((b) => ["Diagram this notebook", "Send diagram to notebook", "Draft notebook from diagram"].includes(b.textContent.trim()))

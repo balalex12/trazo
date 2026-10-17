@@ -629,11 +629,10 @@ export const NotebookPanel = ({
             {env.kind === "browser" ? (
               <>
                 The notebook site does not answer at{" "}
-                <code>{jupyterLiteUrl()}</code>. Build it once and start it:
+                <code>{jupyterLiteUrl()}</code>. It starts with the rest of
+                Trazo:
                 <pre style={{ margin: "4px 0 0", whiteSpace: "pre-wrap" }}>
-                  {
-                    "node tools/build-jupyterlite.mjs\ndocker compose --profile lite up -d"
-                  }
+                  {"docker compose up -d --build"}
                 </pre>
               </>
             ) : (

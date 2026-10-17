@@ -3,7 +3,7 @@
 // machine. Once built, the notebook site makes no network request.
 //
 //   node tools/build-jupyterlite.mjs              (run from the repository root; needs Python 3 (python3, or python on Windows), tar with bzip2, node 18+)
-//   docker compose --profile lite up -d           (then http://127.0.0.1:3002)
+//   docker compose up -d                          (then http://127.0.0.1:3002; with Docker the site is built by `docker compose up -d --build`)
 //
 // What it does: downloads the official Pyodide distribution (pinned, checked against a SHA-256), keeps the core plus a
 // short list of data-science packages (and what they depend on), builds JupyterLite from pinned pip packages in a
@@ -311,7 +311,7 @@ const main = async () => {
     `add_header Content-Security-Policy "${buildCsp(hashes)}" always;\n`,
   );
   console.log(
-    `\nDone: ${OUT}. Start it with: docker compose --profile lite up -d  (http://127.0.0.1:3002)`,
+    `\nDone: ${OUT}. Serve it with any static server using deploy/nginx/lite.conf, or run: docker compose up -d --build  (http://127.0.0.1:3002)`,
   );
 };
 

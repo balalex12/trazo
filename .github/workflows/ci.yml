@@ -56,9 +56,45 @@ jobs:
   docker:
     name: Docker image builds
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           persist-credentials: false
-      - run: docker build -t trazo-app:ci .
+      - name: Build every image (the app with the viewer and the notebooks, and the MCP server)
+        run: docker compose --profile mcp build
+      - name: Start the stack and check that every part answers
+        run: |
+          docker compose up -d
+          for port in 3000 3001 3002; do
+            ok=false
+            for i in $(seq 1 30); do
+              if curl -fsS -o /dev/null "http://127.0.0.1:$port/"; then ok=true; break; fi
+              sleep 2
+            done
+            "$ok" || { echo "Nothing answered on port $port"; docker compose logs; exit 1; }
+            echo "port $port answers"
+          done
+          # the headers come from the server configuration inside the image
+          for port in 3000 3001 3002; do
+            curl -fsSI "http://127.0.0.1:$port/" | grep -i '^content-security-policy' > /dev/null || { echo "no Content-Security-Policy on $port"; exit 1; }
+          done
+          # the icon libraries are in the image (the full library, with the Esri Architecture Center icons)
+          curl -fsS http://127.0.0.1:3000/arcgis.excalidrawlib | grep -c "Esri Architecture Center" | grep -qv '^0$'
+          # nginx got the DNS server for the Ollama Cloud route
+          docker compose exec -T trazo cat /tmp/trazo-resolver.conf
+          docker compose down
+      - name: The image runs the same with plain docker run (the way it is published)
+        run: |
+          docker run -d --name trazo-plain -p 127.0.0.1:3000:3000 -p 127.0.0.1:3001:3001 -p 127.0.0.1:3002:3002 trazo:local
+          for port in 3000 3001 3002; do
+            ok=false
+            for i in $(seq 1 30); do
+              if curl -fsSI "http://127.0.0.1:$port/" | grep -qi '^content-security-policy'; then ok=true; break; fi
+              sleep 2
+            done
+            "$ok" || { echo "Nothing answered with its policy on port $port"; docker logs trazo-plain; exit 1; }
+            echo "port $port answers with its policy"
+          done
+          docker exec trazo-plain cat /tmp/trazo-resolver.conf
+          docker rm -f trazo-plain

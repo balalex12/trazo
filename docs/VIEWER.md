@@ -44,9 +44,9 @@ The trace widget needs a **Web Map that has a Utility Network registered**: a pl
 By default the app assumes the viewer is reachable at **the same host, port 3001** (same-origin, different port) — this needs no configuration. If your deployment puts the viewer somewhere else — a different port (another container already uses 3001), behind a reverse proxy, on its own tunnel/domain — set `ARCGIS_VIEWER_ORIGIN` when building the app image:
 
 ```
-docker compose build app --build-arg ARCGIS_VIEWER_ORIGIN=http://localhost:3400
+docker compose build trazo --build-arg ARCGIS_VIEWER_ORIGIN=http://localhost:3400
 # or, for a viewer on its own domain/tunnel:
-docker compose build app --build-arg ARCGIS_VIEWER_ORIGIN=https://viewer.example.com
+docker compose build trazo --build-arg ARCGIS_VIEWER_ORIGIN=https://viewer.example.com
 ```
 
 This needs two more updates to match, both already commented in the files:
@@ -56,7 +56,7 @@ This needs two more updates to match, both already commented in the files:
 
 An `http://` override needs the CSP in `scripts/csp-hashes.mjs` to list it explicitly (it already does this automatically from the same build arg). An `https://` override needs nothing extra there: `frame-src` already allows `https:` broadly, for ArcGIS app embeds.
 
-If you also run `node tools/build-library.js` (or `docker compose --profile setup run setup`) to (re)generate `public/arcgis.excalidrawlib`, set the same `VITE_APP_ARCGIS_VIEWER_ORIGIN` in that shell first, so the **Interactive Map** library item points at the right place too:
+If you also run `node tools/build-library.js` to (re)generate `public/arcgis.excalidrawlib`, set the same `VITE_APP_ARCGIS_VIEWER_ORIGIN` in that shell first, so the **Interactive Map** library item points at the right place too:
 
 ```
 VITE_APP_ARCGIS_VIEWER_ORIGIN=http://localhost:3400 node tools/build-library.js
