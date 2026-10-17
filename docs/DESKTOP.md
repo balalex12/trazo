@@ -31,7 +31,7 @@ The app does not check for updates (it makes no network request on its own). Wat
 
 - Your drawings and settings are stored by the app itself (in your user folder), not by a browser profile, and are not shared with it. **Save your work to a file** now and then, as everywhere.
 - The Ollama Cloud connection works from the app, as in Docker.
-- **Screen recording of the whole app** (a recorder mode that asks the system to share the screen) is not available in the desktop app yet; the canvas recorder, the MP4/GIF export and the narration work.
+- **The recorder works with all its modes** (canvas, canvas with live maps, and the whole app), like in a browser: "share this tab" becomes "share this page", handed over by the app itself, with no list of windows or screens. Other programs on your computer are never recorded, in the app or in a browser.
 - Only one Trazo runs at a time, and port 3000 must be free (close Trazo in Docker first): the notebook site and the map viewer list that address as the one that may embed them.
 
 ## The notebooks and the maps are inside

@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | **Canvas only** (default) | Just the canvas: no toolbars, panels, countdown, recording bar, other windows or notifications. The sharpest. Maps and embedded pages show only the outline of their box. | none (microphone only) |
 | **Canvas and embedded pages (maps)** | The same, plus the **live image of maps and embedded pages**. The toolbars are still left out. | share this tab |
-| **Whole app** | This tab exactly as you see it: menus, panels, toolbars and maps. The recording bar is part of the video unless you tick **Hide the recording bar** (then stop with **Alt+Shift+R**). | share this tab |
+| **Whole app** | This tab (in the desktop app, this window's page) exactly as you see it: menus, panels, toolbars and maps. The recording bar is part of the video unless you tick **Hide the recording bar** (then stop with **Alt+Shift+R**). | share this tab |
 
 Why a permission for the map modes: a map is a web page inside the canvas, and the browser does not let one page read the pixels of another. The only allowed way is to capture the tab with the browser's own share dialog. The recorder then copies only the map rectangles from it (mode 2) or records the tab as is (mode 3).
 
@@ -54,7 +54,7 @@ Video is MP4 (H.264 + AAC) when the browser can encode it, otherwise WebM (VP9 o
 - The system cursor shape is not recorded, the highlight is drawn instead. The laser pointer trail (a separate layer) is not captured in the canvas modes.
 - The recording is built in memory until you download it, so very long recordings at high quality use a lot of RAM. Record long sessions in parts.
 - Files written by the browser's recorder are fragmented. If a player has trouble seeking in one, saving a copy without re-encoding in a video tool rebuilds the index.
-- Tested in Chrome: MP4 with H.264 and AAC, microphone, pause, and all three modes (the tab modes in a Chrome window with its tab auto-selected). Other browsers fall back to WebM or to their own supported format and have not been tested. In Chrome, tab capture also prints a harmless "camera is not allowed in this document" message in the console.
+- In the desktop app the page shares itself (there is no tab to pick); the release workflow records a second and a half of it on every build. Tested in Chrome: MP4 with H.264 and AAC, microphone, pause, and all three modes (the tab modes in a Chrome window with its tab auto-selected). Other browsers fall back to WebM or to their own supported format and have not been tested. In Chrome, tab capture also prints a harmless "camera is not allowed in this document" message in the console.
 
 ## Where the code is
 
