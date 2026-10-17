@@ -22,7 +22,12 @@ const page = `(async () => {
   r.stop();
   await new Promise((x) => (r.onstop = x));
   t.stop();
-  return JSON.stringify({ surface: st.displaySurface, width: st.width, height: st.height,
+  // the size of the frames that were recorded (the track's settings can report the screen instead of the page)
+  const v = document.createElement("video");
+  v.muted = true;
+  v.src = URL.createObjectURL(new Blob(chunks, { type: "video/webm" }));
+  await new Promise((ok, no) => { v.onloadedmetadata = ok; v.onerror = () => no(new Error("the recording cannot be played")); });
+  return JSON.stringify({ surface: st.displaySurface, width: v.videoWidth, height: v.videoHeight,
     bytes: chunks.reduce((a, c) => a + c.size, 0), innerWidth: window.innerWidth, innerHeight: window.innerHeight });
 })()`;
 
