@@ -1,15 +1,17 @@
 # Install, update and run Trazo
 
-Trazo runs on your own computer. Pick the way that suits you; they are all the same Trazo.
+Trazo runs on your own computer. Pick the way that suits you: **they are all the same product**. Each one has the app, the full icon library, the ArcGIS map viewer and the Python notebooks, nothing left out.
 
 | You are | Do this | Details |
 | --- | --- | --- |
-| **Just a user** | Download the **desktop app** for Windows, Linux or macOS from the [releases](https://github.com/balalex12/trazo/releases) | [DESKTOP.md](DESKTOP.md) |
-| **Docker user** | `docker run -d --name trazo --restart unless-stopped -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest`, then open http://localhost:3000 | [Docker image](#docker-image) |
-| **Self-hosting, no Docker** | the `Trazo-Web-X.Y.Z.zip` of a release: unzip, `node serve.cjs` (Node.js 18+) | [Web zip](#web-zip) |
-| **Expert / developer** | build it from the repository: Docker Compose (everything) or Node.js (dev server) | [From the source](#from-the-source-for-experts) |
+| **Just a user** | Download the **desktop app** for Windows, Linux or macOS from the [releases](https://github.com/balalex12/trazo/releases) and open it | [DESKTOP.md](DESKTOP.md) |
+| **Docker user** | Download `docker-compose.yml` from the latest release, then `docker compose up -d` (or one `docker run`) | [Docker](#docker) |
+| **Self-hosting, no Docker** | the `Trazo-Web-X.Y.Z.zip` of a release: unzip it and double click `start-trazo.bat` (Windows) or run `./start-trazo.sh` (Node.js 18+) | [Web zip](#web-zip) |
+| **Expert / developer** | clone the repository: `docker compose up -d --build` builds everything inside Docker | [From the source](#from-the-source-for-experts) |
 
-The downloads are built with the **public icon library** (without the Esri Calcite glyphs and the libraries with third-party brand logos, see [LIBRARIES.md](LIBRARIES.md)); building from the repository gives you the full one. Every release has a `SHA256SUMS` file to check what you downloaded: `sha256sum -c SHA256SUMS --ignore-missing` (Linux), `shasum -a 256 -c SHA256SUMS --ignore-missing` (macOS), `Get-FileHash <file>` (Windows PowerShell) and compare by eye.
+Every release has a `SHA256SUMS` file to check what you downloaded: `sha256sum -c SHA256SUMS --ignore-missing` (Linux), `shasum -a 256 -c SHA256SUMS --ignore-missing` (macOS), `Get-FileHash <file>` (Windows PowerShell) and compare by eye.
+
+In every way the app is http://localhost:3000, the map viewer 3001 and the notebooks 3002, all reachable only from your own computer.
 
 ## How to update
 
@@ -23,33 +25,42 @@ Trazo **never checks for updates by itself** (it makes no network request on its
 | **Linux `.deb`** | `sudo apt install ./Trazo-X.Y.Z-linux-<arch>.deb` |
 | **Linux `.rpm`** | `sudo dnf install ./Trazo-X.Y.Z-linux-<arch>.rpm` (or `sudo zypper install ./...` on openSUSE) |
 | **Linux AppImage** / **`.tar.gz`** | download the new file, make it executable again (`chmod +x`), delete the old one |
-| **Docker image** | `docker pull ghcr.io/balalex12/trazo:latest && docker rm -f trazo && docker run -d --name trazo --restart unless-stopped -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest` |
-| **Web zip** | unzip the new `Trazo-Web-X.Y.Z.zip` (it makes its own folder) and run `node serve.cjs` there; delete the old folder |
+| **Docker** (release compose file) | `docker compose pull && docker compose up -d` in the folder of your `docker-compose.yml` (download the new file of the release if you pinned a version). With `docker run`: `docker rm -f trazo`, `docker pull ghcr.io/balalex12/trazo:latest`, then the same `docker run` again |
+| **Web zip** | unzip the new `Trazo-Web-X.Y.Z.zip` (it makes its own folder) and start it the same way; delete the old folder |
 | **Docker Compose, from the source** | `git pull`, then `docker compose up -d --build` (it rebuilds the icon libraries, the app, the map viewer and the notebooks that changed) |
 | **Node.js dev server, from the source** | `git pull`, `yarn`, then `yarn start` |
 | **MCP image** (Claude Code / Desktop) | from the source: `git pull`, then `docker compose --profile mcp build mcp`; from the registry: `docker pull ghcr.io/balalex12/trazo-mcp:latest` |
-| **Notebook pack** | see [NOTEBOOKS.md](NOTEBOOKS.md): rebuild it from the source, or unzip the new `Trazo-Notebook-Pack-X.Y.Z.zip` of the release over the old one (see [DESKTOP.md](DESKTOP.md)) |
 
-To go back to a previous version, install that release's file instead (every release stays on the releases page) or pin the Docker tag: `ghcr.io/balalex12/trazo:X.Y.Z`.
+To go back to a previous version, install that release's file instead (every release stays on the releases page), or use the `docker-compose.yml` of that release: it names the images of its own version.
 
-## Docker image
+## Docker
+
+One image, `ghcr.io/balalex12/trazo`, has the whole product: the app (3000), the ArcGIS map viewer (3001) and the Python notebooks (3002), for `amd64` and `arm64`. It is public: nothing to log in to.
+
+**With Compose (recommended):** download `docker-compose.yml` from the [latest release](https://github.com/balalex12/trazo/releases/latest) into a folder of your own, and in that folder:
 
 ```bash
-docker run -d --name trazo --restart unless-stopped -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest
+docker compose up -d
 ```
 
-Open **http://localhost:3000**. `127.0.0.1:` in front of the port means only this computer can reach it. Stop it with `docker stop trazo`, start it again with `docker start trazo`, remove it with `docker rm -f trazo`. Images exist for `amd64` and `arm64`. Pin a version (`:X.Y.Z`) if you do not want `latest` to move.
+Open **http://localhost:3000**. The file of a release names the image of that version (for example `ghcr.io/balalex12/trazo:0.3.0`), so a version never changes under you. Stop with `docker compose down`, start again with `docker compose up -d`, remove everything with `docker compose down --rmi all`.
+
+**Without a file, one command:**
+
+```bash
+docker run -d --name trazo --restart unless-stopped -p 127.0.0.1:3000:3000 -p 127.0.0.1:3001:3001 -p 127.0.0.1:3002:3002 ghcr.io/balalex12/trazo:latest
+```
+
+`127.0.0.1:` in front of each port means only this computer can reach it. Stop it with `docker stop trazo`, start it again with `docker start trazo`, remove it with `docker rm -f trazo`. Compose adds a read-only filesystem and dropped privileges (the file has them); `docker run` is the simple way to try it.
 
 ## Web zip
 
-You need **Node.js 18 or newer** and nothing else (no `npm install`):
+You need **Node.js 18 or newer** (https://nodejs.org) and nothing else (no `npm install`). Unzip `Trazo-Web-X.Y.Z.zip`, then:
 
-```bash
-unzip Trazo-Web-X.Y.Z.zip && cd Trazo-Web-X.Y.Z
-node serve.cjs            # http://127.0.0.1:3000 ; another port: node serve.cjs 8080
-```
+- **Windows:** double click `start-trazo.bat`. It starts Trazo and opens it in your browser; the window stays open while Trazo runs.
+- **Linux and macOS:** `./start-trazo.sh` (or `node serve.cjs`) in the unzipped folder, then open http://127.0.0.1:3000.
 
-It is the same local server as the desktop app, with the same security headers, bound to `127.0.0.1`. To run it as a service, use your system's usual way (systemd, launchd, a scheduled task) with `node /full/path/serve.cjs`.
+It is the same set of local servers as the desktop app (the app, the map viewer and the notebooks), with the same security headers, bound to `127.0.0.1`. To run it as a service, use your system's usual way (systemd, launchd, a scheduled task) with `node /full/path/serve.cjs`.
 
 ## From the source (for experts)
 

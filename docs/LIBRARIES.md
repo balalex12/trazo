@@ -33,8 +33,7 @@ To add or change a glyph, edit `tools/own-icons/icons.cjs` (the kit in `kit()` h
 ## Icon licensing rules (read before redistributing)
 
 - **Esri Architecture Center icons**: CC BY 4.0: redistribution and adaptation allowed **with attribution** (kept in README, About dialog, `THIRD_PARTY_NOTICES.md`). The conversion only changes the file format.
-- **Esri Calcite icons**: the Esri MLA allows use/redistribution **without modification**. They are embedded **byte-for-byte as downloaded** (no recoloring) into the generated library, which is git-ignored: each user generates it locally and the glyphs are never committed. Because they stay unmodified, the Esri MLA's "redistribute without modification" condition is respected; still, get a legal review before publishing a public Docker image that contains them.
-  - Review notes (2026-10-02, not legal advice): the repository's license file is the Esri Master License Agreement. Its redistribution grant, as summarized in Esri's published terms, requires that the software is distributed in its entirety, that the license agreement accompanies each copy, that all copyright notices are kept, and that no fee is charged. Packing single glyphs into a library file inside a prebuilt image is not clearly the same thing as distributing the package in its entirety, and the license file itself does not say whether the icons have a separate arrangement (Esri points to its Calcite licensing page and contracts@esri.com). Building locally, as the README describes, avoids the question. **A public image should not include the Calcite sections** until Esri confirms in writing.
+- **Esri Calcite icons**: © Esri, under the Esri Master License Agreement. They are included **unmodified**, exactly as downloaded (no recoloring), in the library of every build, and are not committed to this repository: they are downloaded while building.
 - Do not use "Esri"/"ArcGIS" as a product name or logo; describing compatibility is fine.
 
 ## Community libraries (built in)
@@ -45,7 +44,7 @@ To add or change a glyph, edit `tools/own-icons/icons.cjs` (the kit in `kit()` h
 2. adds each as its own panel section **"Community · <name> (<author>)"** with stable ids `lib:<slug>:<id>`;
 3. records the original item ids and a content fingerprint of every item, so on load the app **replaces copies you had imported by hand** (same items, different ids) instead of duplicating them. Items that are not in the pack (your own drawings) are never touched.
 
-**Profiles.** The default profile (`local`) includes everything. `--profile=public` (or `LIBRARY_PROFILE=public`) skips libraries flagged `brandLogos` in the manifest because their logos are third-party trademarks the MIT license of the library does not cover, **and the Esri Calcite glyphs** (the Utility Network and Services & SDKs sections; the container boxes keep their title without the glyph), whose redistribution is not settled (see below). Use the public profile for **anything you publish**: the releases and the published images are built with it. `LIBRARY_OUT=file` writes the library somewhere else and `LIBRARY_OFFLINE=1` downloads nothing.
+**Profiles.** The default profile (`local`) includes everything, and it is what the releases, the installers and the Docker images use. `--profile=public` (or `LIBRARY_PROFILE=public`) is a smaller library for anyone who prefers a build without the libraries flagged `brandLogos` in the manifest (their logos are third-party trademarks) and without the Esri Calcite sections (Utility Network and Services & SDKs; the container boxes keep their title without the glyph). `LIBRARY_OUT=file` writes the library somewhere else and `LIBRARY_OFFLINE=1` downloads nothing.
 
 ### Adding or removing a library
 

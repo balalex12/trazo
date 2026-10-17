@@ -58,7 +58,7 @@ Housekeeping:
 - ✅ Liberation Sans 1.05 (GPL v2 with font exception) replaced with Arimo (OFL 1.1, metric-compatible), OFL text shipped next to the fonts. Every bundled font is now OFL or MIT
 - ✅ Committed browser test suite (real Chrome through `puppeteer-core`, `yarn test:e2e`, a CI job; see [TESTING.md](TESTING.md)). Next: run the notebook tests in CI too (needs the 350 MB Pyodide download cached) and add the map viewer
 - Self-hosted ArcGIS SDK option (fully offline except for map data)
-- Source releases with a changelog and versioning; pin the viewer's nginx image by digest. **Releases now publish downloads and images** (desktop installers, a web zip, a notebook pack, Docker images, see [DESKTOP.md](DESKTOP.md) and the `Release` workflow), all built with `--profile=public`, which keeps the Esri Calcite icons (Esri MLA) and third-party brand logos out of anything we redistribute (see [LIBRARIES.md](LIBRARIES.md)). Still open: signing the installers, and Esri's written answer on the Calcite glyphs
+- Source releases with a changelog and versioning; pin the viewer's nginx image by digest. **Releases publish the same product in every format** (desktop installers, a web zip, and Docker images with a compose file; each has the app, the full icon library, the map viewer and the notebooks, see [DESKTOP.md](DESKTOP.md) and the `Release` workflow), including the Esri Calcite icons (Esri MLA) and the libraries with third-party brand logos (see [LIBRARIES.md](LIBRARIES.md)). Still open: signing the installers
 - Replace the remaining upstream docs (`dev-docs/`, `examples/`) or move them out of the root
 - Spanish/English UI strings for the new dialogs (i18n)
 

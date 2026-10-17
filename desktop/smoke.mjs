@@ -51,14 +51,36 @@ if (
   fail("the Content-Security-Policy is missing or weak");
 if (res.headers.get("x-content-type-options") !== "nosniff")
   fail("nosniff is missing");
+// the whole product is in the installer: the full library, the map viewer (3001) and the Python notebooks (3002)
 const lib = await fetch("http://127.0.0.1:3000/arcgis.excalidrawlib");
 const text = await lib.text();
-if (lib.status !== 200 || /calcite/i.test(text))
+if (
+  lib.status !== 200 ||
+  !/Esri Architecture Center/.test(text) ||
+  !/Esri Calcite icons/.test(text)
+)
   fail(
-    "the library is missing or carries Calcite glyphs (a published build must use --profile=public)",
+    "the library is missing, or it lacks the Esri icons or the Calcite glyphs",
   );
+for (const [name, url, expected] of [
+  ["the map viewer", "http://127.0.0.1:3001/", /<title>/i],
+  ["the notebooks", "http://127.0.0.1:3002/lab/index.html", /jupyter/i],
+]) {
+  let r = null;
+  try {
+    r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+  } catch {
+    /* handled below */
+  }
+  if (!r || r.status !== 200) fail(`${name} does not answer on ${url}`);
+  const body = await r.text();
+  if (!expected.test(body))
+    fail(`${name} answers with something else at ${url}`);
+  if (!(r.headers.get("content-security-policy") || "").includes("default-src"))
+    fail(`${name} has no Content-Security-Policy`);
+}
 child.kill();
 console.log(
-  "OK: the desktop app serves Trazo with its security headers and the public library.",
+  "OK: the desktop app serves Trazo, the map viewer and the notebooks with their security headers, and the full library.",
 );
 process.exit(0);

@@ -91,7 +91,7 @@ Excalidraw is a great hand-drawn whiteboard. Trazo keeps everything that makes i
 
 ### Quick start
 
-**No setup:** download the desktop app for Windows, Linux or macOS from the [releases](https://github.com/balalex12/trazo/releases) ([how](docs/DESKTOP.md)), or run the published image: `docker run -d --name trazo --restart unless-stopped -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest`. The downloads use the public icon library; to build everything yourself (the full library, the notebook), use Docker:
+**No setup:** download the desktop app for Windows, Linux or macOS from the [releases](https://github.com/balalex12/trazo/releases) ([how](docs/DESKTOP.md)), or the `docker-compose.yml` of a release and run `docker compose up -d` (one image with everything). Every way of installing is the same product: the app, the full icon library, the map viewer and the Python notebooks. To build everything yourself, one command with Docker:
 
 You only need **Docker** (with Compose v2). No Node.js, no account.
 
@@ -174,7 +174,7 @@ Is it safe? Read [docs/SECURITY.md](docs/SECURITY.md): what is hardened, what th
 - **Excalidraw**: © 2020 Excalidraw, MIT. This project is a derivative work; the upstream license and copyright are kept in [LICENSE](LICENSE) and the full upstream git history is preserved.
 - **Esri ArcGIS Architecture Center icons**: © Esri, CC BY 4.0, converted from the official Visio toolkit to SVG.
 - **Esri Calcite UI icons**: © Esri, Esri Master License Agreement. **Downloaded at build time, embedded unmodified, never committed here.**
-- **Community libraries**: authors credited in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); MIT via the Excalidraw libraries catalog; downloaded at build time, **not committed** (`--profile=public` skips the ones with third-party brand logos).
+- **Community libraries**: authors credited in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md); MIT via the Excalidraw libraries catalog; downloaded at build time and included in every build, **not committed** (`--profile=public` leaves out the ones with third-party brand logos).
 - **ArcGIS Maps SDK for JavaScript**: © Esri, loaded at runtime from Esri's CDN.
 - **mp4-muxer**, **gifenc**: MIT (vendored, hashes in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).
 
@@ -230,7 +230,7 @@ La app, el dibujo, la animación y la exportación **no hacen ninguna conexión 
 
 ### Créditos y licencias
 
-Excalidraw (MIT, © 2020 Excalidraw) · íconos de Esri Architecture Center (CC BY 4.0, © Esri) · íconos Calcite (licencia de Esri, se descargan al construir y **no** se redistribuyen) · 16 librerías comunitarias con sus autores acreditados (se descargan del catálogo oficial al construir; el perfil `--profile=public` omite las que traen logos de marcas) · ArcGIS Maps SDK (© Esri, se carga en ejecución) · mp4-muxer y gifenc (MIT). Detalle en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Proyecto independiente, no afiliado ni respaldado por Excalidraw ni por Esri.
+Excalidraw (MIT, © 2020 Excalidraw) · íconos de Esri Architecture Center (CC BY 4.0, © Esri) · íconos Calcite (licencia de Esri, sin modificar) · 16 librerías comunitarias con sus autores acreditados (se descargan del catálogo oficial al construir y van incluidas; el perfil `--profile=public` omite las que traen logos de marcas) · ArcGIS Maps SDK (© Esri, se carga en ejecución) · mp4-muxer y gifenc (MIT). Detalle en [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Proyecto independiente, no afiliado ni respaldado por Excalidraw ni por Esri.
 
 ### Estado
 

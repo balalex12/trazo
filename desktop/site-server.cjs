@@ -81,6 +81,7 @@ const siteFiles = (root, exclude) => {
  * @param {boolean} [o.ollamaCloud] the pass-through /llm/ollama-cloud/* -> ollama.com (the app only)
  * @param {string} [o.ollamaOrigin] where that pass-through goes (a test points it at a fake)
  * @param {string} [o.permissions]  Permissions-Policy
+ * @param {string} [o.referrer]     Referrer-Policy (default no-referrer)
  */
 const createSiteServer = (o) => {
   const files = siteFiles(o.root, new Set(o.exclude || []));
@@ -88,7 +89,7 @@ const createSiteServer = (o) => {
   const headers = {
     "Content-Security-Policy": o.csp,
     "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "no-referrer",
+    "Referrer-Policy": o.referrer || "no-referrer",
     "Permissions-Policy":
       o.permissions ||
       "camera=(), microphone=(self), geolocation=(), payment=(), usb=()",

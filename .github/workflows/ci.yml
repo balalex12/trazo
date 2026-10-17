@@ -63,6 +63,8 @@ jobs:
           persist-credentials: false
       - name: Build every image (the app with the viewer and the notebooks, and the MCP server)
         run: docker compose --profile mcp build
+      - name: The compose file of a release is valid
+        run: sed "s/__VERSION__/latest/" deploy/docker-compose.release.yml | docker compose -f - config --quiet
       - name: Start the stack and check that every part answers
         run: |
           docker compose up -d

@@ -2,8 +2,8 @@
 // 127.0.0.1:3000 with the same security headers (site-server.cjs). Nothing is contacted unless you configure it, exactly
 // like the web version. The window has no Node.js: the page cannot reach your files or run programs.
 //
-// Optional: if a notebook pack (the JupyterLite site, docs/NOTEBOOKS.md) is in the folder "jupyterlite" next to the
-// app data (Help > Open the notebook pack folder), it is served on 127.0.0.1:3002 and the Notebook panel works.
+// The product is the same as Docker Compose runs: the app, the ArcGIS map viewer (3001) and the Python notebooks
+// (3002) are inside the installer and start with the window (stack.cjs).
 "use strict";
 const {
   app,
@@ -13,67 +13,16 @@ const {
   session,
   shell,
 } = require("electron");
-const fs = require("node:fs");
-const path = require("node:path");
 
-const {
-  createSiteServer,
-  listen,
-  policyFromInc,
-} = require("./site-server.cjs");
+const { PORTS, startStack } = require("./stack.cjs");
 
-const APP_PORT = 3000; // the notebook site and the viewer list this origin as the one that may embed them
-const LITE_PORT = 3002;
+const APP_PORT = PORTS.app; // the notebook site and the viewer list this origin as the one that may embed them
 const ORIGIN = `http://127.0.0.1:${APP_PORT}`;
 const PROJECT = "https://github.com/balalex12/trazo";
 
 const resources = app.isPackaged ? process.resourcesPath : __dirname;
-const siteDir = path.join(resources, "site");
-const packDir = () =>
-  process.env.TRAZO_NOTEBOOK_DIR ||
-  path.join(app.getPath("userData"), "jupyterlite");
-
 const servers = [];
 let win = null;
-
-const startApp = async () => {
-  const csp = policyFromInc(
-    fs.readFileSync(path.join(siteDir, "_csp.inc"), "utf8"),
-  );
-  const server = createSiteServer({
-    root: siteDir,
-    csp,
-    spa: true,
-    exclude: ["/_csp.inc"],
-    ollamaCloud: true,
-  });
-  await listen(server, APP_PORT);
-  servers.push(server);
-};
-
-/** the notebook pack, when there is one: the same policy that its build wrote (_csp.conf) */
-const startNotebookPack = async () => {
-  const dir = packDir();
-  if (
-    !fs.existsSync(path.join(dir, "_csp.conf")) ||
-    !fs.existsSync(path.join(dir, "lab", "index.html"))
-  ) {
-    return false;
-  }
-  const server = createSiteServer({
-    root: dir,
-    csp: policyFromInc(fs.readFileSync(path.join(dir, "_csp.conf"), "utf8")),
-    exclude: ["/_csp.conf"],
-    permissions: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
-  });
-  try {
-    await listen(server, LITE_PORT);
-    servers.push(server);
-    return true;
-  } catch {
-    return false; // the port is taken: the app works, the Notebook panel says it cannot find the site
-  }
-};
 
 const isOurs = (url) => {
   try {
@@ -162,13 +111,6 @@ const buildMenu = () => {
         label: "Help",
         submenu: [
           { label: "Trazo on GitHub", click: () => openOutside(PROJECT) },
-          {
-            label: "Open the notebook pack folder",
-            click: () => {
-              fs.mkdirSync(packDir(), { recursive: true });
-              shell.openPath(packDir());
-            },
-          },
         ],
       },
     ]),
@@ -186,7 +128,8 @@ if (!app.requestSingleInstanceLock()) {
   });
   app.whenReady().then(async () => {
     try {
-      await startApp();
+      const stack = await startStack(resources);
+      servers.push(...stack.servers);
     } catch (e) {
       dialog.showErrorBox(
         "Trazo could not start",
@@ -197,7 +140,6 @@ if (!app.requestSingleInstanceLock()) {
       app.quit();
       return;
     }
-    await startNotebookPack();
     hardenSession();
     buildMenu();
     createWindow();

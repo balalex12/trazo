@@ -1,4 +1,4 @@
-// Gets the desktop app ready to be packed: copies the built site and its icon into desktop/ and writes the
+// Gets the desktop app ready to be packed: copies the built site, the map viewer, the notebooks and the icon into desktop/ and writes the
 // Content-Security-Policy for it. Run it from anywhere after building the app:
 //
 //   node tools/build-library.js --profile=public      # the library of what is published (no Calcite glyphs)
@@ -33,6 +33,34 @@ execFileSync(
   ],
   { stdio: "inherit" },
 );
+// the ArcGIS map viewer (what the app embeds for live maps), with the policy of its server configuration
+const viewer = path.join(here, "viewer");
+rmSync(viewer, { recursive: true, force: true });
+cpSync(path.join(root, "viewer"), viewer, { recursive: true });
+cpSync(
+  path.join(root, "deploy", "nginx", "viewer.conf"),
+  path.join(viewer, "_csp.conf"),
+);
+
+// the Python notebooks (JupyterLite and Pyodide, built by tools/build-jupyterlite.mjs): part of the product, so a
+// release stops here when they are missing; a development build may go without them
+const lite = path.join(here, "jupyterlite");
+rmSync(lite, { recursive: true, force: true });
+const builtLite = path.join(root, "assets", "jupyterlite");
+if (existsSync(path.join(builtLite, "_csp.conf"))) {
+  cpSync(builtLite, lite, { recursive: true });
+} else if (process.env.TRAZO_REQUIRE_NOTEBOOKS) {
+  console.error(
+    "assets/jupyterlite is missing: run `node tools/build-jupyterlite.mjs` first.",
+  );
+  process.exit(1);
+} else {
+  mkdirSync(lite, { recursive: true }); // electron-builder wants the folder; without the notebooks it stays empty
+  console.warn(
+    "Notebooks not included (assets/jupyterlite is missing; node tools/build-jupyterlite.mjs builds it).",
+  );
+}
+
 // electron-builder makes the .ico and the .icns from one 512 px png
 mkdirSync(path.join(here, "build"), { recursive: true });
 cpSync(

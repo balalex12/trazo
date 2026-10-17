@@ -1,41 +1,34 @@
-// Serves the built site on 127.0.0.1 for the portable web zip (docs/INSTALL.md): the same local server and security
-// headers as the desktop app, without Electron. Needs Node.js 18 or newer.
+// Runs Trazo from this folder, on your own computer, with the same three local servers as the desktop app and Docker:
+//   the app http://127.0.0.1:3000, the ArcGIS map viewer http://127.0.0.1:3001, the Python notebooks http://127.0.0.1:3002
+// All of them listen on 127.0.0.1 only. Needs Node.js 18 or newer.
 //
-//   node serve.cjs [port]        (default 3000: the notebook site and the map viewer expect that address)
+//   node serve.cjs        (or double click start-trazo.bat on Windows, run ./start-trazo.sh on Linux and macOS)
 //
-// Next to this file: site-server.cjs and the folder site/ (the built app and its _csp.inc).
+// Next to this file: site-server.cjs, stack.cjs and the folders site/, viewer/ and jupyterlite/.
 "use strict";
-const fs = require("node:fs");
-const path = require("node:path");
+const { startStack } = require("./stack.cjs");
 
-const {
-  createSiteServer,
-  listen,
-  policyFromInc,
-} = require("./site-server.cjs");
-
-const root = path.join(__dirname, "site");
-const port = Number(process.argv[2] || 3000);
-if (!Number.isInteger(port) || port < 1 || port > 65535) {
-  console.error("The port must be a number between 1 and 65535.");
-  process.exit(2);
-}
-const server = createSiteServer({
-  root,
-  csp: policyFromInc(fs.readFileSync(path.join(root, "_csp.inc"), "utf8")),
-  spa: true,
-  exclude: ["/_csp.inc"],
-  ollamaCloud: true,
-});
-listen(server, port).then(
-  () =>
-    console.log(
-      `Trazo is running on http://127.0.0.1:${port}  (Ctrl+C to stop)`,
-    ),
+startStack(__dirname).then(
+  ({ started }) => {
+    console.log("Trazo is running (Ctrl+C to stop):");
+    console.log("  the app         http://127.0.0.1:3000   <- open this one");
+    for (const [name, url] of [
+      ["viewer", "http://127.0.0.1:3001"],
+      ["notebooks", "http://127.0.0.1:3002"],
+    ]) {
+      console.log(
+        `  ${name.padEnd(15)} ${url}${
+          started.includes(name)
+            ? ""
+            : "   (not available: its folder is missing or its port is taken)"
+        }`,
+      );
+    }
+  },
   (e) => {
     console.error(
       e && e.code === "EADDRINUSE"
-        ? `Port ${port} is in use. Close what uses it, or run: node serve.cjs <another port>`
+        ? "Port 3000 is in use. Close what uses it (maybe Trazo in Docker or the desktop app) and try again."
         : String((e && e.message) || e),
     );
     process.exit(1);

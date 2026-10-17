@@ -33,7 +33,7 @@ Helvetica and Emoji have no font files here (system fonts). The full text of the
 | Asset | Where | Source | License | Redistributed here? |
 | --- | --- | --- | --- | --- |
 | ArcGIS Architecture Center icons (Enterprise Components, Data Stores, General, IT Components, Containers & Labels, User Personas, User Types) | `assets/esri-icons/*.svg`, library sections "Esri Architecture Center · …" | Esri, _ArcGIS Architecture Center → Diagramming resources_ (`ArcGIS_Visio_Toolkit.zip`, updated 2024-12-19): https://architecture.arcgis.com/en/framework/architecture-practices/diagramming-resources.html | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) © Esri | **Yes**, with attribution; adapted only by converting Visio geometry to SVG (`tools/visio_to_svg.py`) |
-| Calcite UI icons (Utility Network and service/SDK glyphs, container badges) | generated library only | `@esri/calcite-ui-icons` 4.6.0-next.21 via jsDelivr | Esri Master License Agreement (use/redistribute **without modification**) | **No.** Downloaded by `tools/fetch-calcite.mjs` into git-ignored `assets/calcite/` and embedded unmodified (byte-for-byte) in the locally generated library; neither is committed. **The releases and published images are built with `--profile=public`, which leaves them out** |
+| Calcite UI icons (Utility Network and service/SDK glyphs, container badges) | library sections "Utility Network (Esri Calcite icons)" and "Services & SDKs (Esri Calcite icons)" | `@esri/calcite-ui-icons` 4.6.0-next.21 via jsDelivr | © Esri, Esri Master License Agreement | **Yes, unmodified**, in every build (installers, web zip, Docker image). Downloaded by `tools/fetch-calcite.mjs` into git-ignored `assets/calcite/` and embedded byte-for-byte in the generated library; never committed |
 | Own icon packs ("Trazo · GIS & Spatial Data", "Trazo · Data Engineering", "Trazo · Machine Learning", 63 glyphs) | `tools/own-icons/icons.cjs`, library sections "Trazo · …" | original neutral drawings made from geometric primitives by this project; no vendor logos or artwork. Names may mention tools (FME, GeoPandas, GDAL…) only to say what a glyph stands for | MIT | yes |
 | Project mark / app icons | `public/favicon*`, `public/*chrome*`, welcome screen | original artwork by this project (`tools/make-icons.cjs`) | MIT | yes |
 
@@ -43,16 +43,16 @@ Attribution for the CC BY 4.0 icons: _"ArcGIS architecture icons © Esri, licens
 
 | Component | Use | License | Notes |
 | --- | --- | --- | --- |
-| ArcGIS Maps SDK for JavaScript 4.31 | interactive maps in `viewer/` | © Esri, Esri license terms | **Loaded at runtime from `js.arcgis.com`**; not redistributed. Users must comply with Esri's terms and keep map attributions |
+| ArcGIS Maps SDK for JavaScript 4.31 | interactive maps in `viewer/` | © Esri | **Loaded at runtime from `js.arcgis.com`** when a map is opened; not part of this repository. Map attributions are kept |
 | mp4-muxer 5.1.3 | MP4 export | MIT (© Vanilagy) | vendored `public/vendor/mp4-muxer.js`, sha256 `e239cb3fa122c48bc9cefda504c301a52edafbc27c1506f19f8c33480084bdf7` |
 | gifenc 1.0.3 | GIF export | MIT (© Matt DesLauriers) | vendored `public/vendor/gifenc.js`, sha256 `217761244379253ba5815510d3048a4fb1f4c4dbe9fb51a5cfbfe26f34eec093` |
 | Pyodide 314.0.6 | Python in the browser (notebooks, optional) | MPL-2.0 (© the Pyodide contributors); its packages keep their own licenses (NumPy, pandas, SciPy, scikit-learn, matplotlib… BSD/PSF-style) | **Downloaded at build time** by `tools/build-jupyterlite.mjs` into git-ignored `assets/jupyterlite/`; not committed. Pinned SHA-256 in that file |
 | JupyterLite 0.8.6, JupyterLab, Jupyter Notebook | notebook interface (optional) | BSD-3-Clause (© the Jupyter contributors) | built at build time from pinned pip packages; not committed |
 | nginx | serving static files in Docker | BSD-2-Clause | official image, not modified |
 
-## Community libraries (downloaded at build time, not redistributed)
+## Community libraries (downloaded at build time, included in the builds)
 
-These libraries come from the community catalog at https://libraries.excalidraw.com (repository [excalidraw/excalidraw-libraries](https://github.com/excalidraw/excalidraw-libraries), MIT). Excalidraw's publishing flow states that submitted libraries are published under the **MIT License**, and each belongs to its author. They are **not committed here**: `libraries/community.json` lists them and `tools/fetch-community-libraries.mjs` downloads them from the official repository when you run `node tools/build-library.js`. Each one appears in the panel as its own section "Community · <name> (<author>)".
+These libraries come from the community catalog at https://libraries.excalidraw.com (repository [excalidraw/excalidraw-libraries](https://github.com/excalidraw/excalidraw-libraries), MIT). Excalidraw's publishing flow states that submitted libraries are published under the **MIT License**, and each belongs to its author. They are **not committed here** (the builds include them): `libraries/community.json` lists them and `tools/fetch-community-libraries.mjs` downloads them from the official repository when you run `node tools/build-library.js`. Each one appears in the panel as its own section "Community · <name> (<author>)".
 
 | Library | Author(s) | Source file in the catalog | Items | Contains third-party brand logos |
 | --- | --- | --- | --- | --- |
@@ -73,7 +73,7 @@ These libraries come from the community catalog at https://libraries.excalidraw.
 | Stick Figures | [Youri Tjang](https://github.com/youritjang) | `youritjang/stick-figures.excalidrawlib` | 9 | no |
 | System Design Components | [Rohan Pithadiya](https://github.com/Rohanpithadiya) | `rohanp/system-design.excalidrawlib` | 24 | no |
 
-"Contains third-party brand logos": the MIT license a library author grants does **not** cover the trademarks of the companies whose logos/icons are drawn (e.g. Microsoft, GitHub, database and ML vendors). Those libraries are skipped by `node tools/build-library.js --profile=public` (use it for anything you publish) and are used locally under each vendor's own brand guidelines. See [docs/LIBRARIES.md](docs/LIBRARIES.md).
+"Contains third-party brand logos": the MIT license a library author grants does **not** cover the trademarks of the companies whose logos/icons are drawn (e.g. Microsoft, GitHub, database and ML vendors). The published builds include those libraries, the same as a build from a clone; the logos remain the property of their owners and are used under each vendor's own brand guidelines. `node tools/build-library.js --profile=public` leaves them out. See [docs/LIBRARIES.md](docs/LIBRARIES.md).
 
 ## Inspiration (no code copied)
 

@@ -14,7 +14,7 @@ Nothing to do: the notebooks are built **inside Docker** and start with the rest
 docker compose up -d --build       # then open http://127.0.0.1:3002 (the first build downloads about 230 MB)
 ```
 
-Without Docker, on a computer that has Python 3, `tar` with bzip2 and Node.js 18+ (on Windows the Python command is `python`): `node tools/build-jupyterlite.mjs` builds the site into `assets/jupyterlite`, and any static server with the headers of `deploy/nginx/lite.conf` can serve it. The `Trazo-Notebook-Pack-X.Y.Z.zip` of a [release](https://github.com/balalex12/trazo/releases) is the same site already built: unzip it so that the folder `assets/jupyterlite` exists.
+Without Docker, on a computer that has Python 3, `tar` with bzip2 and Node.js 18+ (on Windows the Python command is `python`): `node tools/build-jupyterlite.mjs` builds the site into `assets/jupyterlite`, and any static server with the headers of `deploy/nginx/lite.conf` can serve it. The desktop app, the web zip and the Docker images of a release already carry this site.
 
 Then in Trazo press **🐍 Notebook** (bottom bar), or **Menu → Python notebook…**, or the command palette, or the **Python notebook…** button of **Import to diagram**. The notebook opens in a **panel next to the canvas**, inside Trazo, with starter notebooks, `welcome.ipynb` and `churn.ipynb`. **✕** hides the panel without stopping anything (the kernel and its variables stay), **⇔** makes it wider and **↗** opens the same notebook site in its own tab.
 

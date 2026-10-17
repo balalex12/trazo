@@ -1,13 +1,14 @@
 # Builds everything a release has and, when asked, publishes it: the desktop installers (Windows, Linux, macOS), the
-# portable web zip, the notebook pack, the Docker images and a DRAFT GitHub release with a SHA256SUMS file.
+# portable web zip, the Docker image (with a compose file) and a DRAFT GitHub release with a SHA256SUMS file.
 #
 #   - Actions > Release > Run workflow, with a version (for example 0.2.0): with "publish" off (the default) it only
 #     builds, and the files can be downloaded from the run, to try them before anything is published.
 #   - With "publish" on, or when a tag v* is pushed, it also pushes the images to ghcr.io and creates a draft release
 #     that you read and publish by hand.
 #
-# Everything published is built with the public library (--profile=public: no Esri Calcite glyphs, no third-party brand
-# logos, see docs/LIBRARIES.md). Nothing is signed (docs/DESKTOP.md says what the systems will warn about).
+# Every way of installing is the same product: the full icon library, the app, the ArcGIS map viewer and the Python
+# notebooks (inside each installer, the zip and the Docker image). Nothing is signed (docs/DESKTOP.md says what the
+# systems will warn about).
 name: Release
 
 on:
@@ -71,7 +72,7 @@ jobs:
   # The site, built once with the public library. The desktop apps and the web zip use it as it is.
   web:
     name: Web build
-    needs: meta
+    needs: [meta, notebook]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -83,7 +84,7 @@ jobs:
           node-version: 22.x
           cache: yarn
       - run: yarn install --frozen-lockfile
-      - run: node tools/build-library.js --profile=public
+      - run: node tools/build-library.js
       - run: yarn build:app:docker
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -91,22 +92,29 @@ jobs:
           path: excalidraw-app/build
           retention-days: 7
           if-no-files-found: error
-      - name: The portable web zip
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: jupyterlite
+          path: assets/jupyterlite
+      - name: The portable web zip (the app, the map viewer and the notebooks)
         env:
           VERSION: ${{ needs.meta.outputs.version }}
+          TRAZO_REQUIRE_NOTEBOOKS: "1"
         run: |
           out="Trazo-Web-$VERSION"
           mkdir -p "release/$out"
           node desktop/prepare.mjs
-          cp -r desktop/site "release/$out/site"
-          cp desktop/serve.cjs desktop/site-server.cjs LICENSE THIRD_PARTY_NOTICES.md "release/$out/"
+          cp -r desktop/site desktop/viewer desktop/jupyterlite "release/$out/"
+          cp desktop/serve.cjs desktop/site-server.cjs desktop/stack.cjs desktop/start-trazo.bat desktop/start-trazo.sh LICENSE THIRD_PARTY_NOTICES.md "release/$out/"
+          chmod +x "release/$out/start-trazo.sh"
           cat > "release/$out/README.txt" <<'EOF'
-          Trazo, the web version, ready to serve from your own computer.
+          Trazo, ready to run from your own computer. It needs Node.js 18 or newer (https://nodejs.org).
 
-            node serve.cjs          (Node.js 18 or newer) then open http://127.0.0.1:3000
+            Windows:        double click start-trazo.bat
+            Linux, macOS:   ./start-trazo.sh      (or: node serve.cjs)
 
-          It listens on 127.0.0.1 only. The folder "site" is plain static files: you can also serve it with any web
-          server (add the Content-Security-Policy that is in site/_csp.inc, written for nginx).
+          Then open http://127.0.0.1:3000. The map viewer runs on port 3001 and the Python notebooks on 3002.
+          Everything listens on 127.0.0.1 only, so nobody else on your network can reach it.
           More: https://github.com/balalex12/trazo/blob/main/docs/INSTALL.md
           Credits and licenses: LICENSE and THIRD_PARTY_NOTICES.md.
           EOF
@@ -120,7 +128,7 @@ jobs:
 
   desktop:
     name: Desktop (${{ matrix.name }})
-    needs: [meta, web]
+    needs: [meta, web, notebook]
     strategy:
       fail-fast: false
       matrix:
@@ -144,7 +152,13 @@ jobs:
         with:
           name: web-build
           path: excalidraw-app/build
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: jupyterlite
+          path: assets/jupyterlite
       - run: node desktop/prepare.mjs
+        env:
+          TRAZO_REQUIRE_NOTEBOOKS: "1"
       - name: rpm tools (the .rpm is built with rpmbuild)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y rpm
@@ -156,7 +170,19 @@ jobs:
         run: |
           npm ci
           npx electron-builder ${{ matrix.args }} --publish never -c.extraMetadata.version="$VERSION"
-      # a smoke test of the app that was built: it starts, serves Trazo with its security headers and the public library
+      # nothing may be dropped on the way into the installer (the packer filters some file names): the notebooks and the
+      # viewer in the app are the same files that were built
+      - name: The installer carries every file
+        if: runner.os == 'Linux'
+        run: |
+          for d in jupyterlite viewer site; do
+            a=$(find "desktop/$d" -type f | wc -l)
+            b=$(find "desktop/dist/linux-unpacked/resources/$d" -type f | wc -l)
+            echo "$d: $a files built, $b in the app"
+            [ "$a" = "$b" ] || { echo "files were dropped from $d"; exit 1; }
+          done
+      # a smoke test of the app that was built: it starts and serves Trazo, the map viewer and the notebooks with their
+      # security headers, and the full library
       - name: Smoke test (Linux)
         if: runner.os == 'Linux'
         env:
@@ -185,7 +211,7 @@ jobs:
   # for it (the release notes say which files are there).
   desktop-mac:
     name: Desktop (macOS)
-    needs: [meta, web]
+    needs: [meta, web, notebook]
     runs-on: macos-latest
     continue-on-error: true
     timeout-minutes: 45
@@ -200,7 +226,13 @@ jobs:
         with:
           name: web-build
           path: excalidraw-app/build
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: jupyterlite
+          path: assets/jupyterlite
       - run: node desktop/prepare.mjs
+        env:
+          TRAZO_REQUIRE_NOTEBOOKS: "1"
       - name: Installers
         working-directory: desktop
         env:
@@ -218,9 +250,10 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-  # The notebook of the desktop app: Pyodide and the data science packages, pinned and checked against a SHA-256
+  # The Python notebooks: JupyterLite, Pyodide and the data science packages (pinned and checked against a SHA-256). The
+  # installers and the zip carry this site, so it is built first.
   notebook:
-    name: Notebook pack
+    name: Notebooks
     needs: meta
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -232,23 +265,10 @@ jobs:
         with:
           node-version: 22.x
       - run: node tools/build-jupyterlite.mjs
-      - name: Zip
-        env:
-          VERSION: ${{ needs.meta.outputs.version }}
-        run: |
-          mkdir -p pack
-          cp -r assets/jupyterlite pack/jupyterlite
-          cp LICENSE THIRD_PARTY_NOTICES.md pack/
-          cat > pack/README.txt <<'EOF'
-          The notebook pack of Trazo's desktop app: Python in the app (Pyodide) with pandas, scikit-learn and more.
-          Unzip it so that the folder "jupyterlite" is in the app's data folder (Trazo: Help > Open the notebook pack
-          folder), then restart Trazo. More: https://github.com/balalex12/trazo/blob/main/docs/DESKTOP.md
-          EOF
-          (cd pack && zip -qr "../Trazo-Notebook-Pack-$VERSION.zip" .)
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: notebook-pack
-          path: Trazo-Notebook-Pack-*.zip
+          name: jupyterlite
+          path: assets/jupyterlite
           retention-days: 7
           if-no-files-found: error
 
@@ -268,11 +288,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 22.x
-      # the Dockerfile builds the site from the folder: the library it finds there is the one that gets published
-      - run: node tools/build-library.js --profile=public
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Log in to ghcr.io
@@ -288,12 +303,15 @@ jobs:
           VERSION: ${{ needs.meta.outputs.version }}
           LATEST: ${{ needs.meta.outputs.latest }}
         run: |
-          app="$IMAGE:$VERSION"
-          mcp="$IMAGE-mcp:$VERSION"
-          if [ "$LATEST" = "true" ]; then app="$app,$IMAGE:latest"; mcp="$mcp,$IMAGE-mcp:latest"; fi
-          echo "app=$app" >> "$GITHUB_OUTPUT"
-          echo "mcp=$mcp" >> "$GITHUB_OUTPUT"
-      - name: The app (nginx, read-only, ports on 127.0.0.1 when run with the compose file)
+          for pair in app:"$IMAGE" mcp:"$IMAGE-mcp"; do
+            name="${pair%%:*}"; image="${pair#*:}"
+            tags="$image:$VERSION"
+            if [ "$LATEST" = "true" ]; then tags="$tags,$image:latest"; fi
+            echo "$name=$tags" >> "$GITHUB_OUTPUT"
+          done
+      # The Dockerfile builds everything itself, inside Docker: the library (the full one, with the Calcite glyphs), the
+      # app, the map viewer and the notebooks.
+      - name: The whole product in one image (the app, the map viewer and the notebooks)
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
@@ -302,7 +320,7 @@ jobs:
           tags: ${{ steps.tags.outputs.app }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.description=Trazo: hand-drawn diagrams that move. A local-first diagram studio.
+            org.opencontainers.image.description=Trazo: hand-drawn diagrams that move. The app (3000), the ArcGIS map viewer (3001) and the Python notebooks (3002).
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.version=${{ needs.meta.outputs.version }}
       - name: The MCP server
@@ -338,9 +356,13 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          pattern: "{web-zip,desktop-*,notebook-pack}"
+          pattern: "{web-zip,desktop-*}"
           path: files
           merge-multiple: true
+      - name: The compose file of the published images
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: sed "s/__VERSION__/$VERSION/" deploy/docker-compose.release.yml > files/docker-compose.yml
       - name: Checksums
         run: |
           cd files
@@ -361,5 +383,7 @@ jobs:
           fi
           flags=""
           if printf '%s' "$VERSION" | grep -q -- '-'; then flags="--prerelease"; fi
+          # the notes may name the version with the placeholder __VERSION__ (file names, image tags)
+          sed "s/__VERSION__/$VERSION/g" "$notes" > "$RUNNER_TEMP/notes.md"
           gh release create "v$VERSION" files/* --draft $flags --target "$GITHUB_SHA" \
-            --title "Trazo v$VERSION" --notes-file "$notes"
+            --title "Trazo v$VERSION" --notes-file "$RUNNER_TEMP/notes.md"
