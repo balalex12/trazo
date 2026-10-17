@@ -1,0 +1,26 @@
+# Trazo from the published image: no clone, no build. Save this file, then:   docker compose up -d
+# Open http://localhost:3000 (the app). The ArcGIS map viewer is on 3001 and the Python notebooks on 3002.
+# It is the same product and the same hardening as docker-compose.yml of the repository (a test keeps them equal).
+#   - ports are bound to 127.0.0.1: not reachable from your LAN
+#   - read-only root filesystem, all capabilities dropped except what nginx needs, no privilege escalation
+# The image is public: nothing to log in to. Update: docker compose pull && docker compose up -d
+name: trazo
+
+services:
+  trazo:
+    image: ghcr.io/balalex12/trazo:__VERSION__
+    container_name: trazo
+    ports:
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3001:3001"
+      - "127.0.0.1:3002:3002"
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETGID, SETUID]
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped

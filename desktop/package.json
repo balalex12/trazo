@@ -31,12 +31,21 @@
     "files": [
       "main.cjs",
       "site-server.cjs",
+      "stack.cjs",
       "package.json"
     ],
     "extraResources": [
       {
         "from": "site",
         "to": "site"
+      },
+      {
+        "from": "viewer",
+        "to": "viewer"
+      },
+      {
+        "from": "jupyterlite",
+        "to": "jupyterlite"
       },
       {
         "from": "../LICENSE",

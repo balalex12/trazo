@@ -85,7 +85,7 @@ const CREDITS: [string, string][] = [
   ],
   [
     "Esri Calcite UI icons",
-    "Esri Master License Agreement, © Esri. Downloaded at build time, not redistributed.",
+    "Esri Master License Agreement, © Esri. Included unmodified, as downloaded.",
   ],
   [
     "ArcGIS Maps SDK for JavaScript",

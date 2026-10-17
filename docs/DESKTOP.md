@@ -34,20 +34,21 @@ The app does not check for updates (it makes no network request on its own). Wat
 - **Screen recording of the whole app** (a recorder mode that asks the system to share the screen) is not available in the desktop app yet; the canvas recorder, the MP4/GIF export and the narration work.
 - Only one Trazo runs at a time, and port 3000 must be free (close Trazo in Docker first): the notebook site and the map viewer list that address as the one that may embed them.
 
-## The notebook (optional)
+## The notebooks and the maps are inside
 
-The notebook panel runs Python in the app from a separate download, the **notebook pack** (`Trazo-Notebook-Pack-X.Y.Z.zip`, a few hundred MB: Pyodide and the data science packages, see [NOTEBOOKS.md](NOTEBOOKS.md)). Unzip it so that its `lab/` folder is inside a folder called `jupyterlite` in the app's data folder: in the app, **Help → Open the notebook pack folder** opens the right place. Restart Trazo. Without the pack everything else works and the notebook panel says it cannot find the site.
+The installer carries the whole product: the full icon library, the Python notebooks (JupyterLite and Pyodide, with pandas, scikit-learn, GeoPandas and more, see [NOTEBOOKS.md](NOTEBOOKS.md)) and the ArcGIS map viewer. They start with the window, on ports 3001 (maps) and 3002 (notebooks), only for your own computer. There is nothing else to download or unzip. This is also why the installers are large (a few hundred MB).
 
 ## Build it yourself
 
 ```bash
-node tools/build-library.js --profile=public   # the library of what is published (no Calcite glyphs, see LIBRARIES.md)
+node tools/build-library.js                    # the full icon library
+node tools/build-jupyterlite.mjs               # the notebooks (Python 3, tar with bzip2; on Windows the Python command is `python`)
 yarn build:app:docker                          # the site, the way the Docker image builds it
-node desktop/prepare.mjs                       # copies it into desktop/site
+node desktop/prepare.mjs                       # copies the site, the map viewer and the notebooks into desktop/
 cd desktop && npm ci && npm run dist           # the installers of your system, in desktop/dist
 ```
 
-`npm run dist` builds what the system can: on Linux the `.AppImage`, `.deb` (and the `.rpm` if `rpmbuild` is installed) and `.tar.gz`; Windows installers on Windows, macOS ones on a Mac. `npm start` opens the app without packing it. Use `--profile=public` for anything you give to other people; leave it out only for your own computer.
+`npm run dist` builds what the system can: on Linux the `.AppImage`, `.deb` (and the `.rpm` if `rpmbuild` is installed) and `.tar.gz`; Windows installers on Windows, macOS ones on a Mac. `npm start` opens the app without packing it. Without `node tools/build-jupyterlite.mjs` the app is built without the notebooks (`prepare.mjs` says so).
 
 ## Where the code is
 

@@ -1,4 +1,6 @@
 node_modules/
 site/
+viewer/
+jupyterlite/
 dist/
 build/
