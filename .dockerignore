@@ -4,11 +4,15 @@
 !.eslintrc.json
 !.npmrc
 !.prettierrc
+!assets/esri-icons/
+!deploy/nginx/app.conf
+!libraries/
 !excalidraw-app/
 !package.json
 !public/
 !packages/
 !scripts/
+!tools/
 !tsconfig.json
 !yarn.lock
 

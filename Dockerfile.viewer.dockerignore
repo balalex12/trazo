@@ -1,0 +1,3 @@
+*
+!viewer/
+!deploy/nginx/viewer.conf

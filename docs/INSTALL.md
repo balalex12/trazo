@@ -25,7 +25,7 @@ Trazo **never checks for updates by itself** (it makes no network request on its
 | **Linux AppImage** / **`.tar.gz`** | download the new file, make it executable again (`chmod +x`), delete the old one |
 | **Docker image** | `docker pull ghcr.io/balalex12/trazo:latest && docker rm -f trazo && docker run -d --name trazo --restart unless-stopped -p 127.0.0.1:3000:80 ghcr.io/balalex12/trazo:latest` |
 | **Web zip** | unzip the new `Trazo-Web-X.Y.Z.zip` (it makes its own folder) and run `node serve.cjs` there; delete the old folder |
-| **Docker Compose, from the source** | `git pull`, then `docker compose up -d --build` (if icon libraries changed: `docker compose --profile setup run --rm setup` first) |
+| **Docker Compose, from the source** | `git pull`, then `docker compose up -d --build` (it rebuilds the icon libraries, the app, the map viewer and the notebooks that changed) |
 | **Node.js dev server, from the source** | `git pull`, `yarn`, then `yarn start` |
 | **MCP image** (Claude Code / Desktop) | from the source: `git pull`, then `docker compose --profile mcp build mcp`; from the registry: `docker pull ghcr.io/balalex12/trazo-mcp:latest` |
 | **Notebook pack** | see [NOTEBOOKS.md](NOTEBOOKS.md): rebuild it from the source, or unzip the new `Trazo-Notebook-Pack-X.Y.Z.zip` of the release over the old one (see [DESKTOP.md](DESKTOP.md)) |
@@ -66,14 +66,13 @@ Pick one. Both give you the **full** icon library (it is downloaded at build tim
 git clone https://github.com/balalex12/trazo.git
 cd trazo
 
-docker compose --profile setup run --rm setup   # once: downloads the icon libraries
-docker compose up -d --build                     # first build takes a few minutes
+docker compose up -d --build                     # the whole installation: the first build takes a few minutes
 ```
 
-Open **http://localhost:3000**.
+Open **http://localhost:3000**. That one command builds, **inside Docker**, the icon libraries (Esri Calcite glyphs, the Esri Architecture Center icons and the community libraries), the app, the ArcGIS map viewer and the Python notebooks, and starts them. Nothing is installed or run on your computer apart from Docker.
 
-- The `setup` step downloads the icon libraries (Esri Calcite glyphs and the community libraries) and writes them into the folder. It is the only step that needs the internet, and it runs in a throwaway container. With Node.js 20+ you can run `node tools/build-library.js` instead.
-- The app, the map viewer and the (optional) notebook site listen on `127.0.0.1` only (ports 3000, 3001, 3002): nobody else on your network can reach them. Containers are read-only, run without extra privileges and have no write access outside their temporary folders.
+- The build downloads the icon libraries from their official sources and Pyodide (about 230 MB, checked against pinned hashes) for the notebooks. It is the only part that needs the internet, it happens while building, and it is cached for the next build. The running containers need no network.
+- The app (3000), the map viewer (3001) and the Python notebooks (3002) listen on `127.0.0.1` only: nobody else on your network can reach them. Containers are read-only, run without extra privileges and have no write access outside their temporary folders.
 
 | To              | Run                                             |
 | --------------- | ----------------------------------------------- |
@@ -125,7 +124,7 @@ Once a model is connected you get two things: **Text to diagram** and the **✦ 
 
 ## Let Claude draw in Trazo (MCP, optional)
 
-`docker compose up` runs the app (`trazo-app:local`, port 3000) and the map viewer (port 3001). The MCP server is a **separate image** (`trazo-mcp:local`) that is **not** started that way: you build it once, and your Claude app starts it on demand (it has no ports and no network, and stops when Claude is done). To build everything at once, including the MCP image: `docker compose --profile mcp build`. The Python notebooks (port 3002) are optional too: [NOTEBOOKS.md](NOTEBOOKS.md).
+`docker compose up` runs the app (`trazo-app:local`, port 3000), the map viewer (port 3001) and the Python notebooks (port 3002). The MCP server is a **separate image** (`trazo-mcp:local`) that is **not** started that way: you build it once, and your Claude app starts it on demand (it has no ports and no network, and stops when Claude is done). To build everything at once, including the MCP image: `docker compose --profile mcp build`.
 
 For **Claude Code** or **Claude Desktop**, with their own login and no API key. Trazo guides you:
 
@@ -143,7 +142,7 @@ In **your browser** (diagrams, settings) and in the files you save. There is no 
 ## Remove it
 
 ```bash
-docker compose --profile mcp --profile setup down --rmi all    # stops it and removes the images used here
+docker compose --profile mcp down --rmi all    # stops it and removes the images used here
 ```
 
 If you installed the MCP server in Claude, remove that too (`claude mcp remove trazo`, or delete the `trazo` entry in Claude Desktop's config). If you ever installed the CLI bridge: `node tools/cli-bridge.mjs --uninstall`. Delete the repository folder to remove the rest.

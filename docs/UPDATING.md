@@ -12,8 +12,7 @@ git config rerere.enabled true      # remember conflict resolutions between upda
 After resolving conflicts:
 
 ```bash
-node tools/build-library.js
-docker compose build --no-cache
+docker compose build --no-cache      # also rebuilds the icon libraries and the notebooks, inside Docker
 docker compose up -d
 npm i --no-save puppeteer-core && node tools/audit/network-audit.cjs   # MUST report: no external hosts, no CSP violations
 ```

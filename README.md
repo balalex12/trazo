@@ -98,8 +98,7 @@ You only need **Docker** (with Compose v2). No Node.js, no account.
 ```bash
 git clone https://github.com/balalex12/trazo.git && cd trazo
 
-docker compose --profile setup run --rm setup   # once: downloads the icon libraries
-docker compose up -d --build                     # first build takes a few minutes
+docker compose up -d --build                     # the whole installation: first build takes a few minutes
 
 # open http://localhost:3000
 ```
@@ -133,9 +132,9 @@ What Docker runs:
 | Image | What it is | When it runs |
 | --- | --- | --- |
 | `trazo-app:local` | the Trazo app (port 3000) | always, with `docker compose up` |
-| `nginx` (viewer) | the map viewer (port 3001) | always, with `docker compose up` |
-| `nginx` (notebooks) | Python notebooks in the browser (port 3002), see [docs/NOTEBOOKS.md](docs/NOTEBOOKS.md) | only if you built them: `docker compose --profile lite up -d` |
-| `trazo-mcp:local` | the MCP server | only if you built it, and only while Claude is using it. No ports, no network |
+| `trazo-viewer:local` | the map viewer (port 3001) | always, with `docker compose up` |
+| `trazo-lite:local` | Python notebooks in the browser (port 3002), see [docs/NOTEBOOKS.md](docs/NOTEBOOKS.md) | always, with `docker compose up` |
+| `trazo-mcp:local` | the MCP server | only if you built it (`docker compose --profile mcp build mcp`), and only while Claude is using it. No ports, no network |
 
 Is it safe? Read [docs/SECURITY.md](docs/SECURITY.md): what is hardened, what the optional parts can and cannot do, and how to check it yourself.
 
@@ -215,8 +214,7 @@ Solo necesitas **Docker** (con Compose v2). Sin Node.js y sin cuenta.
 
 ```bash
 git clone https://github.com/balalex12/trazo.git && cd trazo
-docker compose --profile setup run --rm setup   # una vez: descarga las librerías de iconos
-docker compose up -d --build                     # la primera vez tarda unos minutos
+docker compose up -d --build                     # toda la instalación: la primera vez tarda unos minutos
 # abre http://localhost:3000
 ```
 

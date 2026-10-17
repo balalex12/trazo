@@ -107,9 +107,9 @@ A small Node script (`tools/cli-bridge.mjs`) you install or start yourself, that
 
 What remains: a **process running as you** can read the token file and use the bridge, but it could already read the CLI's own credentials, so it gains nothing new. Autostart means a small server is always listening on your machine; `--uninstall` removes it and it is not installed unless you run `--install`. And the **providers' terms** about subscription logins may restrict this use: that is yours to check (see CLI_BRIDGE.md).
 
-### 4.4 Optional setup container
+### 4.4 The build (the only step with network access)
 
-`docker compose --profile setup run --rm setup` runs `tools/build-library.js` in a throwaway Node container to download the icon libraries from their official sources (Esri Calcite glyphs from jsDelivr at a pinned version, community libraries from the public `excalidraw-libraries` repository), then writes them into the repository folder. It is the only container that has network access, only for that step, with `cap_drop: ALL`; the downloaded files are plain data (SVG and drawing JSON), not code.
+`docker compose up -d --build` builds every image from this repository. Two build stages download things, and only while building: the icon libraries (`tools/build-library.js`: Esri Calcite glyphs from jsDelivr at a pinned version, community libraries from the public `excalidraw-libraries` repository) and the notebooks (`tools/build-jupyterlite.mjs`: Pyodide and the Python packages, each checked against a pinned SHA-256). The downloaded files are JSON, SVG and static assets that are copied into the images; none of them is executed on your computer. The running containers have no network access needs of their own.
 
 ## 5. Where sensitive data lives (and the residual risk)
 

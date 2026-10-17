@@ -58,11 +58,11 @@ This repository is a **derivative of Excalidraw** (MIT) published as an independ
 Browser tests (`yarn test:e2e`, `tools/e2e/`, see `docs/TESTING.md`) run the app in a real Chrome and check, among other things, that nothing leaves the machine and that the credits are in the About dialog; run them after UI changes.
 
 ```
-node tools/build-library.js          # fetch Calcite + generate public/arcgis.excalidrawlib (git-ignored)
-docker compose up -d --build         # app :3000, viewer :3001, both 127.0.0.1 only; TypeScript errors fail the build
+docker compose up -d --build         # everything, built inside Docker (icon libraries, app :3000, viewer :3001, notebooks :3002), all on 127.0.0.1; TypeScript errors fail the build
+node tools/build-library.js          # only without Docker: fetch Calcite + generate public/arcgis.excalidrawlib (git-ignored)
 ```
 
-The viewer folder is mounted read-only: edit `viewer/*` and reload, no rebuild. Test with headless Chrome through `puppeteer-core` (install into a scratch dir, NOT in the repo). Library panel: `.sidebar-trigger`; menu: `.main-menu-trigger`; library items: `.library-unit__dragger`.
+The images contain their own files and server configuration (`Dockerfile`, `Dockerfile.lite`, `Dockerfile.viewer`): after editing `viewer/*` or `deploy/nginx/*`, run `docker compose up -d --build`. Test with headless Chrome through `puppeteer-core` (install into a scratch dir, NOT in the repo). Library panel: `.sidebar-trigger`; menu: `.main-menu-trigger`; library items: `.library-unit__dragger`.
 
 ## Libraries pipeline
 

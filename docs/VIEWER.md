@@ -56,7 +56,7 @@ This needs two more updates to match, both already commented in the files:
 
 An `http://` override needs the CSP in `scripts/csp-hashes.mjs` to list it explicitly (it already does this automatically from the same build arg). An `https://` override needs nothing extra there: `frame-src` already allows `https:` broadly, for ArcGIS app embeds.
 
-If you also run `node tools/build-library.js` (or `docker compose --profile setup run setup`) to (re)generate `public/arcgis.excalidrawlib`, set the same `VITE_APP_ARCGIS_VIEWER_ORIGIN` in that shell first, so the **Interactive Map** library item points at the right place too:
+If you also run `node tools/build-library.js` to (re)generate `public/arcgis.excalidrawlib`, set the same `VITE_APP_ARCGIS_VIEWER_ORIGIN` in that shell first, so the **Interactive Map** library item points at the right place too:
 
 ```
 VITE_APP_ARCGIS_VIEWER_ORIGIN=http://localhost:3400 node tools/build-library.js
