@@ -194,6 +194,15 @@ jobs:
         continue-on-error: true
         shell: bash
         run: node desktop/smoke.mjs desktop/dist/win-unpacked/Trazo.exe
+      # the recorder's screen sharing: the page shares itself and video comes out (Windows reports without stopping)
+      - name: Screen recording works in the app (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a desktop/node_modules/.bin/electron desktop/capture-check.cjs --no-sandbox
+      - name: Screen recording works in the app (Windows)
+        if: runner.os == 'Windows'
+        continue-on-error: true
+        shell: bash
+        run: desktop/node_modules/.bin/electron desktop/capture-check.cjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-${{ matrix.name }}
@@ -241,6 +250,9 @@ jobs:
         run: |
           npm ci
           npx electron-builder --mac --publish never -c.extraMetadata.version="$VERSION" -c.mac.identity=-
+      - name: Screen recording works in the app
+        continue-on-error: true
+        run: desktop/node_modules/.bin/electron desktop/capture-check.cjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-macOS

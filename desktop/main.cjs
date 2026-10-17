@@ -14,6 +14,7 @@ const {
   shell,
 } = require("electron");
 
+const { chooseDisplayMedia } = require("./capture.cjs");
 const { PORTS, startStack } = require("./stack.cjs");
 
 const APP_PORT = PORTS.app; // the notebook site and the viewer list this origin as the one that may embed them
@@ -42,6 +43,7 @@ const ALLOWED = new Set([
   "clipboard-sanitized-write",
   "fullscreen",
   "media",
+  "display-capture",
 ]);
 const hardenSession = () => {
   const s = session.defaultSession;
@@ -51,6 +53,11 @@ const hardenSession = () => {
   s.setPermissionCheckHandler(
     (_wc, permission, requestingOrigin) =>
       ALLOWED.has(permission) && isOurs(requestingOrigin),
+  );
+  // The recorder's "Whole app" and "Canvas + maps" modes ask to share a tab, as they do in a browser; here that is this
+  // page, and only this page (capture.cjs).
+  s.setDisplayMediaRequestHandler((request, callback) =>
+    callback(chooseDisplayMedia(request, isOurs)),
   );
 };
 

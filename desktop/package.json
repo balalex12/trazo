@@ -32,6 +32,7 @@
       "main.cjs",
       "site-server.cjs",
       "stack.cjs",
+      "capture.cjs",
       "package.json"
     ],
     "extraResources": [
