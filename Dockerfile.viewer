@@ -1,7 +1,0 @@
-# The ArcGIS map viewer that the app embeds in the canvas (docs/VIEWER.md): static files and their server configuration.
-FROM nginx:stable-alpine-slim@sha256:2c605dbeab79a6b2a63340474fe58119d0ef95bdc4b1f41df0aa689659b3d13b
-
-COPY viewer /usr/share/nginx/html
-COPY deploy/nginx/viewer.conf /etc/nginx/conf.d/default.conf
-
-HEALTHCHECK CMD wget -q -O /dev/null http://localhost || exit 1

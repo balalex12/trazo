@@ -2,72 +2,34 @@
 #   - ports are bound to 127.0.0.1: not reachable from your LAN
 #   - read-only root filesystem, all capabilities dropped except what nginx needs, no privilege escalation
 #   - everything is built from this repository, inside Docker: `docker compose up -d --build` is the whole installation
-#     (the app on 3000, the ArcGIS map viewer on 3001, the Python notebooks on 3002). Nothing is pulled from Excalidraw.
+#     (one image: the app on 3000, the ArcGIS map viewer on 3001, the Python notebooks on 3002). Nothing is pulled from Excalidraw.
 name: trazo
 
 services:
-  app:
+  # The whole product in one image: the app (3000), the ArcGIS map viewer (3001) and the Python notebooks (3002).
+  # The first build downloads the icon libraries and about 230 MB for the notebooks (checked against pinned hashes).
+  trazo:
     build:
       context: .
       args:
         - NODE_ENV=production
         # Optional: move the ArcGIS viewer off its default origin (same host, port 3001).
-        # Uncomment and set if you changed the "viewer" service's port below, or put the
-        # viewer behind its own domain/tunnel. See the Dockerfile and docs/VIEWER.md.
+        # Uncomment and set if you changed the viewer's port below, or put the viewer behind its own
+        # domain/tunnel. See the Dockerfile and docs/VIEWER.md (and frame-ancestors in deploy/nginx/viewer.conf).
         # - ARCGIS_VIEWER_ORIGIN=http://localhost:3400
-    image: trazo-app:local
-    container_name: trazo-app
+    image: trazo:local
+    container_name: trazo
     ports:
-      - "127.0.0.1:3000:80"
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3001:3001"
+      - "127.0.0.1:3002:3002"
     read_only: true
     tmpfs:
       - /var/cache/nginx
       - /var/run
       - /tmp
     cap_drop: [ALL]
-    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
-
-  viewer:
-    build:
-      context: .
-      dockerfile: Dockerfile.viewer
-    image: trazo-viewer:local
-    container_name: trazo-viewer
-    # If you change the host port here, also set ARCGIS_VIEWER_ORIGIN on the app build above and
-    # update frame-ancestors in deploy/nginx/viewer.conf to match.
-    ports:
-      - "127.0.0.1:3001:80"
-    read_only: true
-    tmpfs:
-      - /var/cache/nginx
-      - /var/run
-      - /tmp
-    cap_drop: [ALL]
-    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
-    security_opt:
-      - no-new-privileges:true
-    restart: unless-stopped
-
-  # Python notebooks in the browser (docs/NOTEBOOKS.md): JupyterLite and Pyodide, built inside Docker. The first build
-  # downloads about 230 MB (checked against pinned hashes); after that it is cached.
-  lite:
-    build:
-      context: .
-      dockerfile: Dockerfile.lite
-    image: trazo-lite:local
-    container_name: trazo-lite
-    ports:
-      - "127.0.0.1:3002:80"
-    read_only: true
-    tmpfs:
-      - /var/cache/nginx
-      - /var/run
-      - /tmp
-    cap_drop: [ALL]
-    cap_add: [CHOWN, SETGID, SETUID, NET_BIND_SERVICE]
+    cap_add: [CHOWN, SETGID, SETUID]
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped

@@ -5,7 +5,8 @@
 !.npmrc
 !.prettierrc
 !assets/esri-icons/
-!deploy/nginx/app.conf
+!deploy/nginx/
+!deploy/docker-entrypoint/
 !libraries/
 !excalidraw-app/
 !package.json
@@ -13,6 +14,7 @@
 !packages/
 !scripts/
 !tools/
+!viewer/
 !tsconfig.json
 !yarn.lock
 

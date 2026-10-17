@@ -131,9 +131,7 @@ What Docker runs:
 
 | Image | What it is | When it runs |
 | --- | --- | --- |
-| `trazo-app:local` | the Trazo app (port 3000) | always, with `docker compose up` |
-| `trazo-viewer:local` | the map viewer (port 3001) | always, with `docker compose up` |
-| `trazo-lite:local` | Python notebooks in the browser (port 3002), see [docs/NOTEBOOKS.md](docs/NOTEBOOKS.md) | always, with `docker compose up` |
+| `trazo:local` | the whole product in one image: the app (port 3000), the map viewer (3001) and the Python notebooks (3002, see [docs/NOTEBOOKS.md](docs/NOTEBOOKS.md)) | always, with `docker compose up` |
 | `trazo-mcp:local` | the MCP server | only if you built it (`docker compose --profile mcp build mcp`), and only while Claude is using it. No ports, no network |
 
 Is it safe? Read [docs/SECURITY.md](docs/SECURITY.md): what is hardened, what the optional parts can and cannot do, and how to check it yourself.
